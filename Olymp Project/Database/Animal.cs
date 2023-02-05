@@ -13,6 +13,27 @@
         public int ChipperId { get; set; }
         public long ChippingLocationId { get; set; }
         public long[] VisitedLocations { get; set; }
-        public DateTime DeathDateTime { get; set; }
+        public DateTime? DeathDateTime { get; set; } = null;
+
+        public Animal(long id,
+                      long[] animalTypes,
+                      float weight,
+                      float length,
+                      float height,
+                      string gender,
+                      int chipperId,
+                      long chippingLocationId,
+                      long[] visitedLocations)
+        {
+            Id = id;
+            AnimalTypes = animalTypes;
+            Weight = weight;
+            Length = length;
+            Height = height;
+            Gender = gender;
+            ChipperId = chipperId;
+            ChippingLocationId = chippingLocationId;
+            VisitedLocations = visitedLocations;
+        }
     }
 }

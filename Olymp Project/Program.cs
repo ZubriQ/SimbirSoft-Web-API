@@ -1,3 +1,5 @@
+global using Olymp_Project.Database;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
