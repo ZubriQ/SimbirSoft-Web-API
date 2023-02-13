@@ -12,9 +12,6 @@ builder.Services.AddSqlServer<AnimalChipizationContext>(connection);
 builder.Services.AddTransient<IChipizationService, ChipizationService>();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-//builder.Services.AddControllersWithViews()
-//    .AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

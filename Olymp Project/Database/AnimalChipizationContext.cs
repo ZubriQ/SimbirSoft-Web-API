@@ -22,13 +22,9 @@ namespace Olymp_Project.Database
         public virtual DbSet<Type> Types { get; set; } = null!;
         public virtual DbSet<VisitedLocation> VisitedLocations { get; set; } = null!;
 
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    if (!optionsBuilder.IsConfigured)
-        //    {
-        //        optionsBuilder.UseSqlServer(_configuration.GetConnectionString("animal-chipization"));
-        //    }
-        //}
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

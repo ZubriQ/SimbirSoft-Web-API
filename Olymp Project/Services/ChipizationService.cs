@@ -24,7 +24,12 @@ namespace Olymp_Project.Services
                 }
                 // TODO: check if Email is valid. 400
 
+                // TODO: add cancelation token?
+                // (saves calculation time if the request is aborted)
+                // https://stackoverflow.com/questions/71799601/context-addasync-savechangesasync-double-await
+
                 await _db.Accounts.AddAsync(account);
+                await _db.SaveChangesAsync();
                 return (HttpStatusCode.OK, account);
             }
             catch (Exception)
