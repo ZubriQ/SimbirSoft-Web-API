@@ -1,16 +1,21 @@
-﻿namespace Olymp_Project.Database
+﻿using System;
+using System.Collections.Generic;
+
+namespace Olymp_Project.Database
 {
-    public class Location
+    public partial class Location
     {
+        public Location()
+        {
+            Animals = new HashSet<Animal>();
+            VisitedLocations = new HashSet<VisitedLocation>();
+        }
+
         public long Id { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
 
-        public Location(long id, double latitude, double longitude)
-        {
-            Id = id;
-            Latitude = latitude;
-            Longitude = longitude;
-        }
+        public virtual ICollection<Animal> Animals { get; set; }
+        public virtual ICollection<VisitedLocation> VisitedLocations { get; set; }
     }
 }

@@ -1,5 +1,3 @@
-global using Olymp_Project.Database;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -8,6 +6,14 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+var connection = builder.Configuration.GetConnectionString("animal-chipization");
+builder.Services.AddSqlServer<AnimalChipizationContext>(connection);
+builder.Services.AddTransient<IChipizationService, ChipizationService>();
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+//builder.Services.AddControllersWithViews()
+//    .AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 var app = builder.Build();
 

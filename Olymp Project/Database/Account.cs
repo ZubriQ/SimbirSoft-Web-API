@@ -1,20 +1,21 @@
-﻿namespace Olymp_Project.Database
-{
-    public class Account
-    {
-        public int? Id { get; set; }
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public string? Email { get; set; }
-        public string? Password { get; set; }
+﻿using System;
+using System.Collections.Generic;
 
-        public Account(int id, string firstName, string lastName, string email, string password)
+namespace Olymp_Project.Database
+{
+    public partial class Account
+    {
+        public Account()
         {
-            Id = id;
-            FirstName = firstName;
-            LastName = lastName;
-            Email = email;
-            Password = password;
+            Animals = new HashSet<Animal>();
         }
+
+        public int Id { get; set; }
+        public string FirstName { get; set; } = null!;
+        public string LastName { get; set; } = null!;
+        public string Email { get; set; } = null!;
+        public string Password { get; set; } = null!;
+
+        public virtual ICollection<Animal> Animals { get; set; }
     }
 }

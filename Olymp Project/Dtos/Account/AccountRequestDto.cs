@@ -1,6 +1,6 @@
-﻿namespace Olymp_Project.DTOs.Account
+﻿namespace Olymp_Project.Dtos.Account
 {
-    public class UpdateAccountDto
+    public class AccountRequestDto
     {
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
