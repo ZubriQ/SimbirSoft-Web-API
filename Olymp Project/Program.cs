@@ -7,10 +7,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
 var connection = builder.Configuration.GetConnectionString("animal-chipization");
 builder.Services.AddSqlServer<AnimalChipizationContext>(connection);
-builder.Services.AddTransient<IChipizationService, ChipizationService>();
+//builder.Services.AddTransient<IAccountService, AccountService>();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
+// TODO: This instead of IChipizationService and AddTransient.
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<ILocationService, LocationService>();
+//builder.Services.AddScoped<IAnimalTypeService, IAnimalTypeService>();
+//builder.Services.AddScoped<IAnimalService, AnimalService>();
+//builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
+
 
 var app = builder.Build();
 

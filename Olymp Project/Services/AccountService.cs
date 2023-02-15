@@ -1,17 +1,17 @@
-﻿using System.Net;
+﻿using Olymp_Project.Database;
+using Olymp_Project.Dtos.Location;
+using System.Net;
 
 namespace Olymp_Project.Services
 {
-    public partial class ChipizationService : IChipizationService
+    public partial class AccountService : IAccountService
     {
         private readonly AnimalChipizationContext _db;
 
-        public ChipizationService(AnimalChipizationContext db)
+        public AccountService(AnimalChipizationContext db)
         {
             _db = db;
         }
-
-        #region Accounts
 
         public async Task<(HttpStatusCode, Account?)> AddAccountAsync(Account account)
         {
@@ -145,27 +145,5 @@ namespace Olymp_Project.Services
                 return HttpStatusCode.InternalServerError;
             }
         }
-
-        #endregion
-
-        #region Animals
-
-        public async Task<Animal?> GetAnimalAsync(long id)
-        {
-            try
-            {
-                return await _db.Animals
-                    .AsNoTracking()
-                    .Include(a => a.VisitedLocations)
-                    .Include(a => a.Types)
-                    .FirstOrDefaultAsync(a => a.Id == id);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        #endregion
     }
 }
