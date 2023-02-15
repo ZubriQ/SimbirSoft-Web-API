@@ -1,18 +1,19 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Controllers.Validators;
+using Olymp_Project.Services.Animals;
 using System.Net;
 
 namespace Olymp_Project.Controllers
 {
     [Route("animals")]
     [ApiController]
-    public class AnimalController : ControllerBase
+    public class AnimalsController : ControllerBase
     {
         private readonly IAnimalService _service;
         private readonly IMapper _mapper;
 
-        public AnimalController(IAnimalService service, IMapper mapper)
+        public AnimalsController(IAnimalService service, IMapper mapper)
         {
             _service = service;
             _mapper = mapper;
@@ -26,7 +27,7 @@ namespace Olymp_Project.Controllers
                 return BadRequest();
             }
 
-            var animal = await _service.GetAnimalAsync((long)animalId);
+            var animal = await _service.GetAnimalAsync(animalId.Value);
             
             // TODO: 401: Неверные авторизационные данные.
             if (animal is null)

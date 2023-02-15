@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Olymp_Project.Dtos.Kind;
 
 namespace Olymp_Project
 {
@@ -14,11 +15,14 @@ namespace Olymp_Project
             CreateMap<Location, LocationResponseDto>();
             CreateMap<LocationRequestDto, Location>();
 
+            // Kind mapping
+            CreateMap<Kind, KindResponseDto>();
+
             // Animal mapping
             // Перенос необходимых идентификаторов в массивы.
             CreateMap<Animal, GetAnimalDto>()
                 .ForMember(d => d.VisitedLocations, o => o.MapFrom(s => s.VisitedLocations.Select(t => t.Id)))
-                .ForMember(d => d.AnimalTypes, o => o.MapFrom(s => s.Types.Select(t => t.Id)));
+                .ForMember(d => d.AnimalTypes, o => o.MapFrom(s => s.Kinds.Select(t => t.Id)));
         }
     }
 }

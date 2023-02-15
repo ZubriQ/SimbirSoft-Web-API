@@ -1,4 +1,4 @@
-﻿namespace Olymp_Project.Services
+﻿namespace Olymp_Project.Services.Animals
 {
     public interface IAnimalService
     {

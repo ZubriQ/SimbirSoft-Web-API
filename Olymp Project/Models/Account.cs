@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Olymp_Project.Database
+namespace Olymp_Project.Models
 {
     public partial class Account
     {

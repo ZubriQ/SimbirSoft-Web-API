@@ -3,28 +3,24 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace Olymp_Project.Database
+namespace Olymp_Project.Models
 {
-    public partial class AnimalChipizationContext : DbContext
+    public partial class ChipizationDbContext : DbContext
     {
-        public AnimalChipizationContext()
+        public ChipizationDbContext()
         {
         }
 
-        public AnimalChipizationContext(DbContextOptions<AnimalChipizationContext> options)
+        public ChipizationDbContext(DbContextOptions<ChipizationDbContext> options)
             : base(options)
         {
         }
 
         public virtual DbSet<Account> Accounts { get; set; } = null!;
         public virtual DbSet<Animal> Animals { get; set; } = null!;
+        public virtual DbSet<Kind> Kinds { get; set; } = null!;
         public virtual DbSet<Location> Locations { get; set; } = null!;
-        public virtual DbSet<Type> Types { get; set; } = null!;
         public virtual DbSet<VisitedLocation> VisitedLocations { get; set; } = null!;
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -65,30 +61,30 @@ namespace Olymp_Project.Database
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Animal_Location");
 
-                entity.HasMany(d => d.Types)
+                entity.HasMany(d => d.Kinds)
                     .WithMany(p => p.Animals)
                     .UsingEntity<Dictionary<string, object>>(
-                        "AnimalType",
-                        l => l.HasOne<Type>().WithMany().HasForeignKey("TypeId").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_AnimalType_Type"),
+                        "AnimalKind",
+                        l => l.HasOne<Kind>().WithMany().HasForeignKey("KindId").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_AnimalType_Type"),
                         r => r.HasOne<Animal>().WithMany().HasForeignKey("AnimalId").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_AnimalType_Animal"),
                         j =>
                         {
-                            j.HasKey("AnimalId", "TypeId");
+                            j.HasKey("AnimalId", "KindId").HasName("PK_AnimalType");
 
-                            j.ToTable("AnimalType");
+                            j.ToTable("AnimalKind");
                         });
+            });
+
+            modelBuilder.Entity<Kind>(entity =>
+            {
+                entity.ToTable("Kind");
+
+                entity.Property(e => e.Name).HasMaxLength(50);
             });
 
             modelBuilder.Entity<Location>(entity =>
             {
                 entity.ToTable("Location");
-            });
-
-            modelBuilder.Entity<Type>(entity =>
-            {
-                entity.ToTable("Type");
-
-                entity.Property(e => e.Name).HasMaxLength(50);
             });
 
             modelBuilder.Entity<VisitedLocation>(entity =>

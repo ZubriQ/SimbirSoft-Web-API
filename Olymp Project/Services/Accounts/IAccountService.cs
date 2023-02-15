@@ -1,7 +1,6 @@
-﻿using Olymp_Project.Dtos.Location;
-using System.Net;
+﻿using System.Net;
 
-namespace Olymp_Project.Services
+namespace Olymp_Project.Services.Accounts
 {
     public interface IAccountService
     {

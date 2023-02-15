@@ -1,6 +1,4 @@
-﻿using Olymp_Project.Database;
-
-namespace Olymp_Project.Controllers.Validators
+﻿namespace Olymp_Project.Controllers.Validators
 {
     public static class LocationValidator
     {

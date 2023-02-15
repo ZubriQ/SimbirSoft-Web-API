@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Olymp_Project.Database
+namespace Olymp_Project.Models
 {
-    public partial class Type
+    public partial class Kind
     {
-        public Type()
+        public Kind()
         {
             Animals = new HashSet<Animal>();
         }

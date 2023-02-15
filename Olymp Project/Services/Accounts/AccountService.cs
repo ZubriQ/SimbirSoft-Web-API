@@ -1,14 +1,12 @@
-﻿using Olymp_Project.Database;
-using Olymp_Project.Dtos.Location;
-using System.Net;
+﻿using System.Net;
 
-namespace Olymp_Project.Services
+namespace Olymp_Project.Services.Accounts
 {
     public partial class AccountService : IAccountService
     {
-        private readonly AnimalChipizationContext _db;
+        private readonly ChipizationDbContext _db;
 
-        public AccountService(AnimalChipizationContext db)
+        public AccountService(ChipizationDbContext db)
         {
             _db = db;
         }
@@ -40,14 +38,7 @@ namespace Olymp_Project.Services
 
         public async Task<Account?> GetAccountAsync(int id)
         {
-            try
-            {
-                return await _db.Accounts.FirstOrDefaultAsync(a => a.Id == id);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
+            return await _db.Accounts.FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public async Task<IEnumerable<Account>> GetAccountsAsync(AccountQuery query, Paging paging)
@@ -64,30 +55,28 @@ namespace Olymp_Project.Services
 
         private async Task<List<Account>> GetFilteredAccounts(AccountQuery query, Paging paging)
         {
-            List<Account> accounts = await _db.Accounts.ToListAsync();
+            var accounts = _db.Accounts.AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(query.FirstName) && accounts.Count > 0)
+            if (!string.IsNullOrWhiteSpace(query.FirstName))
             {
-                var filteredAccounts = accounts.Where(a => accounts.Any(b => a.FirstName.Contains(query.FirstName)))
-                                               .ToList();
-                accounts = filteredAccounts;
+                accounts = accounts.Where(a => a.FirstName.Contains(query.FirstName));
             }
 
-            if (!string.IsNullOrWhiteSpace(query.LastName) && accounts.Count > 0)
+            if (!string.IsNullOrWhiteSpace(query.LastName))
             {
-                var filteredAccounts = accounts.Where(a => accounts.Any(b => a.LastName.Contains(query.LastName)))
-                                               .ToList();
-                accounts = filteredAccounts;
+                accounts = accounts.Where(a => a.LastName.Contains(query.LastName));
             }
 
-            if (!string.IsNullOrWhiteSpace(query.Email) && accounts.Count > 0)
+            if (!string.IsNullOrWhiteSpace(query.Email))
             {
-                var filteredAccounts = accounts.Where(a => accounts.Any(b => a.Email.Contains(query.Email)))
-                                               .ToList();
-                accounts = filteredAccounts;
+                accounts = accounts.Where(a => a.Email.Contains(query.Email));
             }
 
-            return accounts.Skip((int)paging.From).Take((int)paging.Size).OrderBy(a => a.Id).ToList();
+            return await accounts
+                .OrderBy(a => a.Id)
+                .Skip(paging.From.Value)
+                .Take(paging.Size.Value)
+                .ToListAsync();
         }
 
         public async Task<Account?> UpdateAccountAsync(int id, AccountRequestDto account)

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Controllers.Validators;
+using Olymp_Project.Services.Accounts;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 
@@ -10,12 +11,12 @@ namespace Olymp_Project.Controllers
     //[Authorize]
     [Route("accounts")]
     [ApiController]
-    public class AccountController : ControllerBase
+    public class AccountsController : ControllerBase
     {
         private readonly IAccountService _service;
         private readonly IMapper _mapper;
 
-        public AccountController(IAccountService service, IMapper mapper)
+        public AccountsController(IAccountService service, IMapper mapper)
         {
             _service = service;
             _mapper = mapper;
@@ -58,8 +59,8 @@ namespace Olymp_Project.Controllers
                 return BadRequest();
             }
 
-            var account = await _service.GetAccountAsync((int)accountId);
-            if (account == null)
+            var account = await _service.GetAccountAsync(accountId.Value);
+            if (account is null)
             {
                 return NotFound();
             }
@@ -100,8 +101,8 @@ namespace Olymp_Project.Controllers
                 return BadRequest();
             }
 
-            var updatedAccount = await _service.UpdateAccountAsync((int)accountId, account);
-            if (updatedAccount == null)
+            var updatedAccount = await _service.UpdateAccountAsync(accountId.Value, account);
+            if (updatedAccount is null)
             {
                 return NotFound();
             }
@@ -122,7 +123,7 @@ namespace Olymp_Project.Controllers
             // TODO: 401: unAuthorized.
             // TODO: 403: Удаление НЕ своего акка
 
-            var status = await _service.DeleteAccountAsync((int)accountId);
+            var status = await _service.DeleteAccountAsync(accountId.Value);
             switch (status)
             {
                 case HttpStatusCode.Forbidden:

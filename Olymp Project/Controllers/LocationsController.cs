@@ -2,19 +2,19 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Controllers.Validators;
-using Olymp_Project.Dtos.Location;
+using Olymp_Project.Services.Locations;
 using System.Net;
 
 namespace Olymp_Project.Controllers
 {
     [Route("locations")]
     [ApiController]
-    public class LocationController : ControllerBase
+    public class LocationsController : ControllerBase
     {
         private readonly ILocationService _service;
         private readonly IMapper _mapper;
 
-        public LocationController(ILocationService service, IMapper mapper)
+        public LocationsController(ILocationService service, IMapper mapper)
         {
             _service = service;
             _mapper = mapper;
@@ -83,7 +83,7 @@ namespace Olymp_Project.Controllers
             // invalid credentials.
 
             (HttpStatusCode status, Location? updatedLocation) =
-                await _service.UpdateLocationAsync((long)pointId, _mapper.Map<Location>(location));
+                await _service.UpdateLocationAsync(pointId.Value, _mapper.Map<Location>(location));
 
             switch (status)
             {
@@ -110,7 +110,7 @@ namespace Olymp_Project.Controllers
             // TODO: 401 unauthorized;
             // invalid credentials.
 
-            var status = await _service.DeleteLocationAsync((long)pointId);
+            var status = await _service.DeleteLocationAsync(pointId.Value);
             switch (status)
             {
                 case HttpStatusCode.NotFound:

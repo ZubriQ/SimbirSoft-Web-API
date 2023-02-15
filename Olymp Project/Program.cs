@@ -1,3 +1,8 @@
+using Olymp_Project.Services.Accounts;
+using Olymp_Project.Services.Animals;
+using Olymp_Project.Services.Kinds;
+using Olymp_Project.Services.Locations;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -9,14 +14,12 @@ builder.Services.AddSwaggerGen();
 
 
 var connection = builder.Configuration.GetConnectionString("animal-chipization");
-builder.Services.AddSqlServer<AnimalChipizationContext>(connection);
-//builder.Services.AddTransient<IAccountService, AccountService>();
+builder.Services.AddSqlServer<ChipizationDbContext>(connection);
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
-// TODO: This instead of IChipizationService and AddTransient.
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
-//builder.Services.AddScoped<IAnimalTypeService, IAnimalTypeService>();
-//builder.Services.AddScoped<IAnimalService, AnimalService>();
+builder.Services.AddScoped<IKindService, KindService>();
+builder.Services.AddScoped<IAnimalService, AnimalService>();
 //builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
 
 

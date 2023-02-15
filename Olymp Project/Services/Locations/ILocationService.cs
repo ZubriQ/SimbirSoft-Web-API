@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Olymp_Project.Services
+namespace Olymp_Project.Services.Locations
 {
     public interface ILocationService
     {

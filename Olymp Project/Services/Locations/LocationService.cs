@@ -1,26 +1,19 @@
 ﻿using System.Net;
 
-namespace Olymp_Project.Services
+namespace Olymp_Project.Services.Locations
 {
     public class LocationService : ILocationService
     {
-        private readonly AnimalChipizationContext _db;
+        private readonly ChipizationDbContext _db;
 
-        public LocationService(AnimalChipizationContext db)
+        public LocationService(ChipizationDbContext db)
         {
             _db = db;
         }
 
         public async Task<Location?> GetLocationAsync(long id)
         {
-            try
-            {
-                return await _db.Locations.FirstOrDefaultAsync(a => a.Id == id);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
+            return await _db.Locations.FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public async Task<(HttpStatusCode, Location?)> AddLocationAsync(Location location)

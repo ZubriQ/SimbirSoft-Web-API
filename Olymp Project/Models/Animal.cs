@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Olymp_Project.Database
+namespace Olymp_Project.Models
 {
     public partial class Animal
     {
         public Animal()
         {
             VisitedLocations = new HashSet<VisitedLocation>();
-            Types = new HashSet<Type>();
+            Kinds = new HashSet<Kind>();
         }
 
         public long Id { get; set; }
@@ -26,6 +26,6 @@ namespace Olymp_Project.Database
         public virtual Location ChippingLocation { get; set; } = null!;
         public virtual ICollection<VisitedLocation> VisitedLocations { get; set; }
 
-        public virtual ICollection<Type> Types { get; set; }
+        public virtual ICollection<Kind> Kinds { get; set; }
     }
 }
