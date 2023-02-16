@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using Olymp_Project.Models;
+using System.Net;
 
 namespace Olymp_Project.Services.Locations
 {
@@ -27,14 +28,19 @@ namespace Olymp_Project.Services.Locations
                     return (HttpStatusCode.Conflict, null);
                 }
 
-                await _db.Locations.AddAsync(location);
-                await _db.SaveChangesAsync();
-                return (HttpStatusCode.Created, location);
+                return await AddLocation(location);
             }
             catch (Exception)
             {
                 return (HttpStatusCode.InternalServerError, null);
             }
+        }
+
+        private async Task<(HttpStatusCode, Location)> AddLocation(Location location)
+        {
+            await _db.Locations.AddAsync(location);
+            await _db.SaveChangesAsync();
+            return (HttpStatusCode.Created, location);
         }
 
         public async Task<(HttpStatusCode, Location?)> UpdateLocationAsync(long id, Location location)
@@ -46,18 +52,14 @@ namespace Olymp_Project.Services.Locations
                 {
                     return (HttpStatusCode.NotFound, null);
                 }
-
                 var exists = await _db.Locations.AnyAsync(l => l.Latitude == location.Latitude
-                                                               && l.Longitude == location.Longitude);
+                                                            && l.Longitude == location.Longitude);
                 if (exists)
                 {
                     return (HttpStatusCode.Conflict, null);
                 }
 
-                UpdateLocation(locationToUpdate, location);
-                _db.Entry(locationToUpdate).State = EntityState.Modified;
-                await _db.SaveChangesAsync();
-                return (HttpStatusCode.OK, locationToUpdate);
+                return await UpdateLocation(locationToUpdate, location);
             }
             catch (Exception)
             {
@@ -65,7 +67,17 @@ namespace Olymp_Project.Services.Locations
             }
         }
 
-        private void UpdateLocation(Location destination, Location source)
+        private async Task<(HttpStatusCode, Location)> UpdateLocation(
+            Location destination, 
+            Location source)
+        {
+            AssignNewData(destination, source);
+            _db.Entry(destination).State = EntityState.Modified;
+            await _db.SaveChangesAsync();
+            return (HttpStatusCode.OK, destination);
+        }
+
+        private void AssignNewData(Location destination, Location source)
         {
             destination.Latitude = source.Latitude;
             destination.Longitude = source.Longitude;
@@ -86,14 +98,19 @@ namespace Olymp_Project.Services.Locations
                     return HttpStatusCode.BadRequest;
                 }
 
-                _db.Locations.Remove(location);
-                await _db.SaveChangesAsync();
-                return HttpStatusCode.OK;
+                return await RemoveLocation(location);
             }
             catch (Exception)
             {
                 return HttpStatusCode.InternalServerError;
             }
+        }
+
+        private async Task<HttpStatusCode> RemoveLocation(Location location)
+        {
+            _db.Locations.Remove(location);
+            await _db.SaveChangesAsync();
+            return HttpStatusCode.OK;
         }
     }
 }

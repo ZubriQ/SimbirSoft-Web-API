@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Controllers.Validators;
+using Olymp_Project.Dtos.Kind;
 using Olymp_Project.Services.Locations;
 using System.Net;
 
@@ -21,17 +22,18 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("{pointId:long}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LocationResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<LocationResponseDto>> GetLocation(long? pointId) // TODO: 401 unauthorized
+        public async Task<ActionResult<LocationResponseDto>> GetLocation(long? pointId) 
         {
             if (!IdValidator.IsValid(pointId))
             {
                 return BadRequest();
             }
-            
+
+            // TODO: 401 unauthorized
             var location = await _service.GetLocationAsync(pointId.Value);
             if (location is null)
             {
@@ -41,7 +43,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(LocationResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -66,7 +68,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPut("{pointId:long}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LocationResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

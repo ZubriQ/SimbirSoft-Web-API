@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using Olymp_Project.Models;
+using System.Net;
 
 namespace Olymp_Project.Services.Accounts
 {
@@ -89,11 +90,7 @@ namespace Olymp_Project.Services.Accounts
                     return null;
                 }
 
-                UpdateAccount(dbAccount, account);
-                _db.Entry(dbAccount).State = EntityState.Modified;
-                _db.SaveChanges(); // TODO: async?
-
-                return dbAccount;
+                return await UpdateAccount(dbAccount, account);
             }
             catch (Exception)
             {
@@ -101,7 +98,15 @@ namespace Olymp_Project.Services.Accounts
             }
         }
 
-        private void UpdateAccount(Account account, AccountRequestDto newData)
+        private async Task<Account> UpdateAccount(Account account, AccountRequestDto newData)
+        {
+            AssignNewData(account, newData);
+            _db.Entry(account).State = EntityState.Modified;
+            _db.SaveChanges(); // TODO: async?
+            return account;
+        }
+
+        private void AssignNewData(Account account, AccountRequestDto newData)
         {
             account.FirstName = newData.FirstName;
             account.LastName = newData.LastName;
@@ -125,14 +130,19 @@ namespace Olymp_Project.Services.Accounts
                     return HttpStatusCode.BadRequest;
                 }
 
-                _db.Accounts.Remove(account);
-                await _db.SaveChangesAsync();
-                return HttpStatusCode.OK;
+                return await RemoveAccount(account);
             }
             catch (Exception)
             {
                 return HttpStatusCode.InternalServerError;
             }
+        }
+
+        private async Task<HttpStatusCode> RemoveAccount(Account account)
+        {
+            _db.Accounts.Remove(account);
+            await _db.SaveChangesAsync();
+            return HttpStatusCode.OK;
         }
     }
 }

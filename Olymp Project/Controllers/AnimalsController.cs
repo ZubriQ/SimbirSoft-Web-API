@@ -20,7 +20,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("{animalId:int}")]
-        public async Task<ActionResult<GetAnimalDto>> GetAnimalAsync(long? animalId)
+        public async Task<ActionResult<GetAnimalDto>> GetAnimal(long? animalId)
         {
             if (!IdValidator.IsValid(animalId))
             {
