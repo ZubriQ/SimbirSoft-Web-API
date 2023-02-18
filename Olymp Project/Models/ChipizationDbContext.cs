@@ -13,7 +13,7 @@ namespace Olymp_Project.Models
 
         public ChipizationDbContext(DbContextOptions<ChipizationDbContext> options)
             : base(options)
-        {
+        { // TODO: add EnsureCreated
         }
 
         public virtual DbSet<Account> Accounts { get; set; } = null!;

@@ -12,7 +12,7 @@ namespace Olymp_Project.Services.Accounts
             _db = db;
         }
 
-        public async Task<(HttpStatusCode, Account?)> AddAccountAsync(Account account)
+        public async Task<(HttpStatusCode, Account?)> InsertAccountAsync(Account account)
         {
             try
             {
@@ -56,7 +56,7 @@ namespace Olymp_Project.Services.Accounts
 
         private async Task<List<Account>> GetFilteredAccounts(AccountQuery query, Paging paging)
         {
-            var accounts = _db.Accounts.AsQueryable();
+            IQueryable<Account> accounts = _db.Accounts.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query.FirstName))
             {
@@ -115,7 +115,7 @@ namespace Olymp_Project.Services.Accounts
             //account.Password = newData.Password;
         }
 
-        public async Task<HttpStatusCode> DeleteAccountAsync(int id)
+        public async Task<HttpStatusCode> RemoveAccountAsync(int id)
         {
             try
             {

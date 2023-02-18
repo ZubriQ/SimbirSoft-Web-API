@@ -1,6 +1,6 @@
 ﻿namespace Olymp_Project.Dtos.Animal
 {
-    public class GetAnimalDto
+    public class AnimalResponseDto
     {
         public long Id { get; set; }
         public long[] AnimalKinds { get; set; } = null!;

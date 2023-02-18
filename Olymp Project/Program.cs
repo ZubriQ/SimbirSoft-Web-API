@@ -12,7 +12,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
 var connection = builder.Configuration.GetConnectionString("animal-chipization");
 builder.Services.AddSqlServer<ChipizationDbContext>(connection);
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
@@ -21,7 +20,6 @@ builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IKindService, KindService>();
 builder.Services.AddScoped<IAnimalService, AnimalService>();
 //builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
-
 
 var app = builder.Build();
 

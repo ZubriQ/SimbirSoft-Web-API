@@ -20,9 +20,15 @@ namespace Olymp_Project
 
             // Animal mapping
             // Перенос необходимых идентификаторов из классов в массивы.
-            CreateMap<Animal, GetAnimalDto>()
+            CreateMap<Animal, AnimalResponseDto>()
                 .ForMember(d => d.VisitedLocations, o => o.MapFrom(s => s.VisitedLocations.Select(t => t.Id)))
                 .ForMember(d => d.AnimalKinds, o => o.MapFrom(s => s.Kinds.Select(t => t.Id)));
+
+            CreateMap<long, Kind>()
+                .ForMember(d => d.Id, o => o.MapFrom(s => s));
+
+            CreateMap<PostAnimalDto, Animal>()
+                .ForMember(d => d.Kinds, o => o.MapFrom(s => s.AnimalKinds.Select(id => new Kind { Id = id })));
         }
     }
 }

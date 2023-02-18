@@ -2,14 +2,14 @@
 {
     public static class IdValidator
     {
-        public static bool IsValid(int? id)
+        public static bool IsValid(int? value)
         {
-            return id.HasValue && id > 0;
+            return value.HasValue && value > 0;
         }
 
-        public static bool IsValid(long? id)
+        public static bool IsValid(long? value)
         {
-            return id.HasValue && id > 0;
+            return value.HasValue && value > 0;
         }
     }
 }

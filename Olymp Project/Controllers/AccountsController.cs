@@ -27,15 +27,16 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<AccountResponseDto>> AddAccount(AccountRequestDto account) // TODO: 403 already authorized
+        public async Task<ActionResult<AccountResponseDto>> CreateAccount(AccountRequestDto account)
         {
             if (!AccountValidator.IsValid(account) || !new EmailAddressAttribute().IsValid(account.Email))
             {
                 return BadRequest();
             }
+            // TODO: 403 already authorized
 
             (HttpStatusCode status, Account? createdAccount) = 
-                await _service.AddAccountAsync(_mapper.Map<Account>(account));
+                await _service.InsertAccountAsync(_mapper.Map<Account>(account));
 
             switch (status)
             {
@@ -44,7 +45,8 @@ namespace Olymp_Project.Controllers
                 case HttpStatusCode.Conflict:
                     return Conflict();
             }
-            return CreatedAtAction(nameof(AddAccount), _mapper.Map<AccountResponseDto>(createdAccount));
+            return CreatedAtAction(nameof(CreateAccount), 
+                _mapper.Map<AccountResponseDto>(createdAccount));
         }
 
         [HttpGet("{accountId:int}")]
@@ -52,12 +54,13 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<AccountResponseDto>> GetAccount(int? accountId) // TODO: 401: Неверные авторизационные данные.
+        public async Task<ActionResult<AccountResponseDto>> GetAccount(int? accountId) 
         {
             if (IdValidator.IsValid(accountId))
             {
                 return BadRequest();
             }
+            // TODO: 401: Неверные авторизационные данные.
 
             var account = await _service.GetAccountAsync(accountId.Value);
             if (account is null)
@@ -123,7 +126,7 @@ namespace Olymp_Project.Controllers
             // TODO: 401: unAuthorized.
             // TODO: 403: Удаление НЕ своего акка
 
-            var status = await _service.DeleteAccountAsync(accountId.Value);
+            var status = await _service.RemoveAccountAsync(accountId.Value);
             switch (status)
             {
                 case HttpStatusCode.Forbidden:
