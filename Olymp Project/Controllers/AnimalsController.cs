@@ -19,6 +19,8 @@ namespace Olymp_Project.Controllers
             _mapper = mapper;
         }
 
+        #region Animal
+
         [HttpGet("{animalId:int}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AnimalResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -113,5 +115,79 @@ namespace Olymp_Project.Controllers
             }
             return Ok(_mapper.Map<AnimalResponseDto>(updatedAnimal));
         }
+
+        [HttpDelete("{animalId:long}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteAnimal(long? animalId)
+        {
+            if (!IdValidator.IsValid(animalId))
+            {
+                return BadRequest();
+            }
+
+            HttpStatusCode status = await _service.RemoveAnimalAsync(animalId!.Value);
+
+            switch (status)
+            {
+                case HttpStatusCode.BadRequest:
+                    return BadRequest();
+                case HttpStatusCode.NotFound:
+                    return BadRequest();
+            }
+            return Ok();
+        }
+
+        #endregion
+
+        #region Animal kinds
+
+        [HttpPost("{animalId:long}/types/{kindId}")]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AnimalResponseDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<AnimalResponseDto>> AddAnimalKind(long? animalId, long? kindId)
+        {
+            if (!IdValidator.IsValid(animalId) || !IdValidator.IsValid(kindId))
+            {
+                return BadRequest();
+            }
+
+            (HttpStatusCode code, Animal? animal) = 
+                await _service.InsertKindToAnimalAsync(animalId!.Value, kindId!.Value);
+
+            switch (code)
+            {
+                case HttpStatusCode.NotFound:
+                    return NotFound();
+                case HttpStatusCode.Conflict:
+                    return Conflict();
+            }
+            return CreatedAtAction(nameof(AddAnimalKind), _mapper.Map<AnimalResponseDto>(animal));
+        }
+
+        [HttpPut("{animalId:long}/types/")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AnimalResponseDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<AnimalResponseDto>> UpdateAnimalKind(
+            long? animalId, 
+            PutAnimalKindDto request)
+        {
+            if (!IdValidator.IsValid(animalId, request.OldKindId, request.NewKindId))
+            {
+                return BadRequest();
+            }
+
+
+        }
+
+        #endregion
     }
 }

@@ -14,6 +14,8 @@ namespace Olymp_Project.Services.Animals
             _db = db;
         }
 
+        #region Animal
+
         public async Task<Animal?> GetAnimalAsync(long id)
         {
             return await _db.Animals
@@ -22,33 +24,32 @@ namespace Olymp_Project.Services.Animals
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
 
-        public async Task<IEnumerable<Animal>> GetAnimalsAsync(AnimalQuery query, Paging paging)
+        public async Task<IQueryable<Animal>> GetAnimalsAsync(AnimalQuery query, Paging paging)
         {
             try
             {
-                return await GetFilteredAnimals(query, paging);
+                return GetFilteredAnimals(query, paging);
             }
             catch
             {
-                return Enumerable.Empty<Animal>();
+                return new List<Animal>().AsQueryable();
             }
         }
 
-        private async Task<List<Animal>> GetFilteredAnimals(AnimalQuery query, Paging paging)
+        private IQueryable<Animal> GetFilteredAnimals(AnimalQuery query, Paging paging)
         {
             // TODO: Task or ValueTask?
-            IQueryable<Animal> animals = _db.Animals
+            var animals = _db.Animals
                 .Include(a => a.VisitedLocations)
                 .Include(a => a.Kinds)
                 .AsQueryable();
 
             animals = FilterAnimals(query, animals);
 
-            return await animals
+            return animals
                 .OrderBy(a => a.Id)
                 .Skip(paging.From.Value)
-                .Take(paging.Size.Value)
-                .ToListAsync();
+                .Take(paging.Size.Value);
         }
 
         private IQueryable<Animal> FilterAnimals(AnimalQuery query, IQueryable<Animal> animals)
@@ -180,6 +181,8 @@ namespace Olymp_Project.Services.Animals
             #endregion
 
             UpdateAnimal(animalToUpdate, request);
+            await _db.SaveChangesAsync();
+            return (HttpStatusCode.OK, animalToUpdate);
         }
 
         private void UpdateAnimal(Animal animal, PutAnimalDto newData)
@@ -190,7 +193,89 @@ namespace Olymp_Project.Services.Animals
             animal.Gender = newData.Gender!;
             animal.ChipperId = newData.ChipperId!.Value;
             animal.ChippingLocationId = newData.ChippingLocationId!.Value;
-            // LifeStatus
+            animal.LifeStatus = newData.LifeStatus!;
         }
+
+        public async Task<HttpStatusCode> RemoveAnimalAsync(long id)
+        {
+            var animal = await _db.Animals.FindAsync(id);
+            if (animal is null)
+            {
+                return HttpStatusCode.NotFound;
+            }
+            // TODO: Животное покинуло локацию чипирования, при этом
+            //       есть другие посещенные точки
+            // return HttpStatusCode.BadRequest;
+            // TODO: 401
+            _db.Animals.Remove(animal);
+            await _db.SaveChangesAsync();
+            return HttpStatusCode.OK;
+        }
+
+        #endregion
+
+        #region Animal's kinds
+
+        public async Task<(HttpStatusCode, Animal?)> InsertKindToAnimalAsync(
+            long animalId, 
+            long kindId)
+        {
+            var animalToUpdate = await _db.Animals
+                .Include(a => a.VisitedLocations)
+                .Include(a => a.Kinds)
+                .FirstOrDefaultAsync(a => a.Id == animalId);
+            if (animalToUpdate is null)
+            {
+                return (HttpStatusCode.NotFound, null);
+            }
+
+            bool kindExists = await _db.Kinds.AnyAsync(k => k.Id == kindId);
+            if (!kindExists)
+            {
+                return (HttpStatusCode.NotFound, null);
+            }
+
+            bool IsKindInAnimal = animalToUpdate.Kinds.Any(k => k.Id == kindId);
+            if (IsKindInAnimal)
+            {
+                return (HttpStatusCode.Conflict, null);
+            }
+
+            try
+            {
+                return await InsertKindToAnimalAndSave(animalToUpdate, kindId);
+            }
+            catch (Exception)
+            {
+                return (HttpStatusCode.InternalServerError, null);
+            }
+        }
+
+        private async Task<(HttpStatusCode, Animal?)> InsertKindToAnimalAndSave(
+            Animal animalToUpdate, 
+            long kindId)
+        {
+            var kindToAdd = await _db.Kinds.FindAsync(kindId);
+            animalToUpdate.Kinds.Add(kindToAdd!);
+
+            _db.Animals.Attach(animalToUpdate);
+            _db.Entry(animalToUpdate).State = EntityState.Modified;
+            await _db.SaveChangesAsync();
+            return (HttpStatusCode.Created, animalToUpdate);
+        }
+
+        public Task<(HttpStatusCode, Animal?)> UpdateAnimalKindAsync(
+            long animalId, 
+            PutAnimalKindDto request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<HttpStatusCode> RemoveAnimalKindAsync(long animalId, long kindId)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }

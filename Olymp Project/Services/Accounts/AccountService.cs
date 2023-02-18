@@ -75,8 +75,8 @@ namespace Olymp_Project.Services.Accounts
 
             return await accounts
                 .OrderBy(a => a.Id)
-                .Skip(paging.From.Value)
-                .Take(paging.Size.Value)
+                .Skip(paging.From!.Value)
+                .Take(paging.Size!.Value)
                 .ToListAsync();
         }
 
@@ -108,9 +108,9 @@ namespace Olymp_Project.Services.Accounts
 
         private void AssignNewData(Account account, AccountRequestDto newData)
         {
-            account.FirstName = newData.FirstName;
-            account.LastName = newData.LastName;
-            account.Email = newData.Email;
+            account.FirstName = newData.FirstName!;
+            account.LastName = newData.LastName!;
+            account.Email = newData.Email!;
             // TODO: change password too?
             //account.Password = newData.Password;
         }

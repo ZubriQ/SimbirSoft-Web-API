@@ -5,7 +5,7 @@ namespace Olymp_Project.Controllers.Validators
 {
     public static class AnimalValidator
     {
-        #region Animal query validation
+        #region Query validation
 
         public static bool IsQueryValid(AnimalQuery query)
         {
@@ -47,7 +47,7 @@ namespace Olymp_Project.Controllers.Validators
 
         #endregion
 
-        #region Animal POST request validation
+        #region POST request validation
 
         public static bool IsRequestValid(PostAnimalDto animal)
         {
@@ -91,7 +91,7 @@ namespace Olymp_Project.Controllers.Validators
 
         #endregion
 
-        #region Animal PUT request validation
+        #region PUT request validation
 
         public static bool IsRequestValid(PutAnimalDto request)
         {
