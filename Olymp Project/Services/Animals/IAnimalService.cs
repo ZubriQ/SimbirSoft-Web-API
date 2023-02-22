@@ -14,6 +14,6 @@ namespace Olymp_Project.Services.Animals
         // Animal's kinds
         Task<(HttpStatusCode, Animal?)> InsertKindToAnimalAsync(long animalId, long kindId);
         Task<(HttpStatusCode, Animal?)> UpdateAnimalKindAsync(long animalId, PutAnimalKindDto request);
-        Task<HttpStatusCode> RemoveAnimalKindAsync(long animalId, long kindId);
+        Task<(HttpStatusCode, Animal?)> RemoveAnimalKindAsync(long animalId, long kindId);
     }
 }

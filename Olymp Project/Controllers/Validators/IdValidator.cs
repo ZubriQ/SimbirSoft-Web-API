@@ -24,16 +24,24 @@
             return true;
         }
 
-        public static bool IsValid(params int?[] ids)
-        {
-            for (int i = 0; i < ids.Length; i++)
-            {
-                if (!IsValid(ids[i]))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
+        //public static class IdValidator<T> where T : struct, IComparable<T>
+        //{
+        //    public static bool IsValid(T? id)
+        //    {
+        //        return id.HasValue && id.Value.CompareTo(default(T)) > 0;
+        //    }
+
+        //    public static bool IsValid(params T?[] ids)
+        //    {
+        //        for (int i = 0; i < ids.Length; i++)
+        //        {
+        //            if (!IsValid(ids[i]))
+        //            {
+        //                return false;
+        //            }
+        //        }
+        //        return true;
+        //    }
+        //}
     }
 }
