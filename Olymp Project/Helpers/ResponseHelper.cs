@@ -2,9 +2,9 @@
 
 namespace Olymp_Project.Helpers
 {
-    public static class StatusCodeHelper
+    public static class ResponseHelper
     {
-        public static IActionResult ToActionResult(
+        public static ActionResult GetActionResult(
             HttpStatusCode statusCode, object? value, string? actionName = "")
         {
             switch (statusCode)

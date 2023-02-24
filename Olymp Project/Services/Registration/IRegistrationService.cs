@@ -4,6 +4,6 @@ namespace Olymp_Project.Services.Registration
 {
     public interface IRegistrationService
     {
-        Task<(HttpStatusCode, Account?)> RegisterAccountAsync(Account account);
+        Task<ServiceResponse<Account?>> RegisterAccountAsync(Account account);
     }
 }

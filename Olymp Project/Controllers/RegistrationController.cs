@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Olymp_Project.Controllers.Validators;
+using Olymp_Project.Helpers;
 using Olymp_Project.Services.Registration;
 
 namespace Olymp_Project.Controllers
@@ -19,31 +19,19 @@ namespace Olymp_Project.Controllers
             _mapper = mapper;
         }
 
+        // TODO: 403 already authorized
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<AccountResponseDto>> CreateAccount(AccountRequestDto account)
+        public async Task<ActionResult<AccountResponseDto>> RegisterAccount(AccountRequestDto request)
         {
-            if (!AccountValidator.IsValid(account))
-            {
-                return BadRequest();
-            } 
-            // TODO: 403 already authorized
+            var response = await _service.RegisterAccountAsync(_mapper.Map<Account>(request));
 
-            (HttpStatusCode status, Account? createdAccount) =
-                await _service.RegisterAccountAsync(_mapper.Map<Account>(account));
-
-            switch (status)
-            {
-                case HttpStatusCode.Forbidden:
-                    return Forbid();
-                case HttpStatusCode.Conflict:
-                    return Conflict();
-            }
-            return CreatedAtAction(nameof(CreateAccount),
-                _mapper.Map<AccountResponseDto>(createdAccount));
+            var responseDto = _mapper.Map<AccountResponseDto>(response.Result);
+            return ResponseHelper.GetActionResult(
+                response.StatusCode, responseDto, nameof(RegisterAccount));
         }
     }
 }

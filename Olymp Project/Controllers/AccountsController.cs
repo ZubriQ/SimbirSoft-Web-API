@@ -69,7 +69,7 @@ namespace Olymp_Project.Controllers
             int? accountId,
             AccountRequestDto account) // TODO: 401 unauthorized
         {
-            if (!IdValidator.IsValid(accountId) || !AccountValidator.IsValid(account))
+            if (!IdValidator.IsValid(accountId) || !AccountValidator.IsValid(_mapper.Map<Account>(account)))
             {
                 return BadRequest();
             }

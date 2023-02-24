@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using Olymp_Project.Controllers.Validators;
+using System.Net;
 
 namespace Olymp_Project.Services.Registration
 {
@@ -11,28 +12,28 @@ namespace Olymp_Project.Services.Registration
             _db = db;
         }
 
-        public async Task<(HttpStatusCode, Account?)> RegisterAccountAsync(Account account)
+        public async Task<ServiceResponse<Account?>> RegisterAccountAsync(Account account)
         {
+            if (!AccountValidator.IsValid(account))
+            {
+                return new ServiceResponse<Account?>(HttpStatusCode.BadRequest);
+            }
+
+            bool emailExists = _db.Accounts.Where(a => a.Email == account.Email).Any();
+            if (emailExists)
+            {
+                return new ServiceResponse<Account?>(HttpStatusCode.Conflict);
+            }
+
             try
             {
-                bool emailExists = _db.Accounts.Where(a => a.Email == account.Email).Any();
-                if (emailExists)
-                {
-                    return (HttpStatusCode.Conflict, null);
-                }
-                // TODO: check if Email is valid. 400
-
-                // TODO: add cancelation token?
-                // (saves calculation time if the request is aborted)
-                // https://stackoverflow.com/questions/71799601/context-addasync-savechangesasync-double-await
-
                 await _db.Accounts.AddAsync(account);
                 await _db.SaveChangesAsync();
-                return (HttpStatusCode.OK, account);
+                return new ServiceResponse<Account?>(HttpStatusCode.Created, account);
             }
             catch (Exception)
             {
-                return (HttpStatusCode.InternalServerError, null);
+                return new ServiceResponse<Account?>(HttpStatusCode.InternalServerError);
             }
         }
     }

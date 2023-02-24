@@ -32,7 +32,7 @@ namespace Olymp_Project.Services.Accounts
         private async Task<List<Account>> GetFilteredAccounts(AccountQuery query, Paging paging)
         {
             IQueryable<Account> accounts = _db.Accounts.AsQueryable();
-
+            // TODO: ToLower or ToUpper 
             if (!string.IsNullOrWhiteSpace(query.FirstName))
             {
                 accounts = accounts.Where(a => a.FirstName.Contains(query.FirstName));
