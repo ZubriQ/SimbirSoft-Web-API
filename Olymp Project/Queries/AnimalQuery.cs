@@ -1,8 +1,5 @@
 ﻿namespace Olymp_Project.Queries
 {
-    /// <summary>
-    /// Animals search query.
-    /// </summary>
     public class AnimalQuery
     {
         public DateTime? StartDateTime { get; set; }

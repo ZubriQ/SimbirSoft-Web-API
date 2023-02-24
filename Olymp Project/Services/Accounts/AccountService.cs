@@ -75,8 +75,8 @@ namespace Olymp_Project.Services.Accounts
 
             return await accounts
                 .OrderBy(a => a.Id)
-                .Skip(paging.From!.Value)
-                .Take(paging.Size!.Value)
+                .Skip(paging.Skip!.Value)
+                .Take(paging.Take!.Value)
                 .ToListAsync();
         }
 

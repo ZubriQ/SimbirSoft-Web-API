@@ -2,7 +2,7 @@
 {
     public class Paging
     {
-        public int? From { get; set; } = 0;
-        public int? Size { get; set; } = 10;
+        public int? Skip { get; set; } = 0;
+        public int? Take { get; set; } = 10;
     }
 }

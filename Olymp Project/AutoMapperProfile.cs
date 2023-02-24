@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Olymp_Project.Dtos.Kind;
+using Olymp_Project.Dtos.VisitedLocation;
 
 namespace Olymp_Project
 {
@@ -29,6 +30,9 @@ namespace Olymp_Project
 
             CreateMap<PostAnimalDto, Animal>()
                 .ForMember(d => d.Kinds, o => o.MapFrom(s => s.AnimalKinds.Select(id => new Kind { Id = id })));
+
+            // Visited Location mapping
+            CreateMap<VisitedLocation, VisitedLocationResponseDto>();
         }
     }
 }

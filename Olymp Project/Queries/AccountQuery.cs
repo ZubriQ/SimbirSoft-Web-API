@@ -1,8 +1,5 @@
 ﻿namespace Olymp_Project.Queries
 {
-    /// <summary>
-    /// Accounts search query.
-    /// </summary>
     public class AccountQuery
     {
         public string? FirstName { get; set; }

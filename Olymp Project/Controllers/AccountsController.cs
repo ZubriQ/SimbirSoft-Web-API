@@ -62,7 +62,7 @@ namespace Olymp_Project.Controllers
             }
             // TODO: 401: Неверные авторизационные данные.
 
-            var account = await _service.GetAccountAsync(accountId.Value);
+            var account = await _service.GetAccountAsync(accountId!.Value);
             if (account is null)
             {
                 return NotFound();
@@ -77,7 +77,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<IEnumerable<AccountResponseDto>>> GetAccounts(
             [FromQuery] AccountQuery query,
-            [FromQuery] Paging paging) // TODO: 401 unathorized.
+            [FromQuery] Paging paging) // TODO: 401 unathorized, but allow anonymous?
         {
             if (!PagingValidator.IsValid(paging))
             {
@@ -104,7 +104,7 @@ namespace Olymp_Project.Controllers
                 return BadRequest();
             }
 
-            var updatedAccount = await _service.UpdateAccountAsync(accountId.Value, account);
+            var updatedAccount = await _service.UpdateAccountAsync(accountId!.Value, account);
             if (updatedAccount is null)
             {
                 return NotFound();
@@ -126,7 +126,7 @@ namespace Olymp_Project.Controllers
             // TODO: 401: unAuthorized.
             // TODO: 403: Удаление НЕ своего акка
 
-            var status = await _service.RemoveAccountAsync(accountId.Value);
+            var status = await _service.RemoveAccountAsync(accountId!.Value);
             switch (status)
             {
                 case HttpStatusCode.Forbidden:
