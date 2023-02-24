@@ -27,7 +27,7 @@ namespace Olymp_Project.Mapping
                 .ForMember(d => d.Id, o => o.MapFrom(s => s));
 
             CreateMap<PostAnimalDto, Animal>()
-                .ForMember(d => d.Kinds, o => o.MapFrom(s => s.AnimalKinds.Select(id => new Kind { Id = id })));
+                .ForMember(d => d.Kinds, o => o.MapFrom(s => s.AnimalKinds!.Select(id => new Kind { Id = id })));
 
             // Visited Location mapping
             CreateMap<VisitedLocation, VisitedLocationResponseDto>();

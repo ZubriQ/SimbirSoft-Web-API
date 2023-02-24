@@ -12,7 +12,7 @@ namespace Olymp_Project.Services.Kinds
             _db = context;
         }
 
-        public async Task<(HttpStatusCode, Kind?)> AddAnimalKindAsync(string name)
+        public async Task<(HttpStatusCode, Kind?)> InsertAnimalKindAsync(string name)
         {
             try
             {
@@ -38,7 +38,7 @@ namespace Olymp_Project.Services.Kinds
             return (HttpStatusCode.OK, newKind);
         }
 
-        public async Task<HttpStatusCode> DeleteAnimalKindAsync(long id)
+        public async Task<HttpStatusCode> RemoveAnimalKindAsync(long id)
         {
             var kind = await _db.Kinds.Include(k => k.Animals).FirstOrDefaultAsync(k => k.Id == id);
             if (kind is null)

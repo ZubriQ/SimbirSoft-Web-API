@@ -10,13 +10,13 @@ namespace Olymp_Project.Controllers
     [ApiController]
     public class VisitedLocationsController : ControllerBase
     {
-        private readonly IMapper _mapper;
         private readonly IVisitedLocationService _service;
+        private readonly IMapper _mapper;
 
-        public VisitedLocationsController(IMapper mapper, IVisitedLocationService service)
+        public VisitedLocationsController(IVisitedLocationService service, IMapper mapper)
         {
-            _mapper = mapper;
             _service = service;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -45,7 +45,7 @@ namespace Olymp_Project.Controllers
                 case HttpStatusCode.NotFound:
                     return NotFound();
             }
-            return Ok(visitedLocations.Select(l => _mapper.Map<VisitedLocationResponseDto>(l)));
+            return Ok(visitedLocations.Select(vl => _mapper.Map<VisitedLocationResponseDto>(vl)));
         }
 
         [HttpPost("{locationId:long}")]

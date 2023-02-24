@@ -45,7 +45,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<LocationResponseDto>> AddLocation(LocationRequestDto location)
+        public async Task<ActionResult<LocationResponseDto>> CreateLocation(LocationRequestDto location)
         {
             if (!LocationValidator.IsValid(location))
             {
@@ -62,7 +62,7 @@ namespace Olymp_Project.Controllers
                 return Conflict();
             }
             var mappedLocation = _mapper.Map<LocationResponseDto>(addedLocation);
-            return CreatedAtAction(nameof(AddLocation), mappedLocation);
+            return CreatedAtAction(nameof(CreateLocation), mappedLocation);
         }
 
         [HttpPut("{pointId:long}")]
@@ -110,7 +110,7 @@ namespace Olymp_Project.Controllers
             // TODO: 401 unauthorized;
             // invalid credentials.
 
-            var status = await _service.DeleteLocationAsync(pointId.Value);
+            var status = await _service.RemoveLocationAsync(pointId.Value);
             switch (status)
             {
                 case HttpStatusCode.NotFound:

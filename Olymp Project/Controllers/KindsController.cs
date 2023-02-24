@@ -13,10 +13,10 @@ namespace Olymp_Project.Controllers
         private readonly IKindService _service;
         private readonly IMapper _mapper;
 
-        public KindsController(IMapper mapper, IKindService kindService)
+        public KindsController(IKindService kindService, IMapper mapper)
         {
-            _mapper = mapper;
             _service = kindService;
+            _mapper = mapper;
         }
 
         [HttpGet("{kindId:long}")]
@@ -31,6 +31,7 @@ namespace Olymp_Project.Controllers
                 return BadRequest();
             }
             // TODO: 401
+
             var kind = await _service.GetAnimalKindAsync(kindId.Value);
             if (kind is null)
             {
@@ -44,7 +45,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<KindResponseDto>> AddKind(string? name)
+        public async Task<ActionResult<KindResponseDto>> CreateKind(string? name)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -52,13 +53,13 @@ namespace Olymp_Project.Controllers
             }
             // TODO: 401: неавториз. акк; неверные авториз. данные.
 
-            (HttpStatusCode status, var kind) = await _service.AddAnimalKindAsync(name);
+            (HttpStatusCode status, var kind) = await _service.InsertAnimalKindAsync(name);
 
             if (status is HttpStatusCode.Conflict)
             {
                 return Conflict();
             }
-            return Ok(_mapper.Map<KindResponseDto>(kind));
+            return CreatedAtAction(nameof(CreateKind), _mapper.Map<KindResponseDto>(kind));
         }
 
         [HttpPut("{kindId:long}")]
@@ -100,7 +101,7 @@ namespace Olymp_Project.Controllers
                 return BadRequest();
             }
 
-            var status = await _service.DeleteAnimalKindAsync(kindId.Value);
+            var status = await _service.RemoveAnimalKindAsync(kindId.Value);
             switch(status)
             {
                 case HttpStatusCode.BadRequest:

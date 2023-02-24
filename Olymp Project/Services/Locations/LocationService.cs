@@ -83,7 +83,7 @@ namespace Olymp_Project.Services.Locations
             destination.Longitude = source.Longitude;
         }
 
-        public async Task<HttpStatusCode> DeleteLocationAsync(long id)
+        public async Task<HttpStatusCode> RemoveLocationAsync(long id)
         {
             try
             {

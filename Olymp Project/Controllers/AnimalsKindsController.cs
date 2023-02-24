@@ -10,13 +10,13 @@ namespace Olymp_Project.Controllers
     [ApiController]
     public class AnimalsKindsController : ControllerBase
     {
-        private readonly IMapper _mapper;
         private readonly IAnimalKindService _service;
+        private readonly IMapper _mapper;
 
         public AnimalsKindsController(IAnimalKindService service, IMapper mapper)
         {
-            _mapper = mapper;
             _service = service;
+            _mapper = mapper;
         }
 
         [HttpPost("{kindId}")]
@@ -25,11 +25,11 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<AnimalResponseDto>> AddAnimalKind(
+        public async Task<ActionResult<AnimalResponseDto>> CreateAnimalKind(
             [FromRoute] long? animalId,
             [FromRoute] long? kindId)
         {
-            if (!IdValidator.IsValid(animalId) || !IdValidator.IsValid(kindId))
+            if (!IdValidator.IsValid(animalId, kindId))
             {
                 return BadRequest();
             }
@@ -44,7 +44,7 @@ namespace Olymp_Project.Controllers
                 case HttpStatusCode.Conflict:
                     return Conflict();
             }
-            return CreatedAtAction(nameof(AddAnimalKind), _mapper.Map<AnimalResponseDto>(animal));
+            return CreatedAtAction(nameof(CreateAnimalKind), _mapper.Map<AnimalResponseDto>(animal));
         }
 
         [HttpPut]
