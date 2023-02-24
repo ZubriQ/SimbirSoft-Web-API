@@ -29,7 +29,7 @@ namespace Olymp_Project.Controllers
             if (!AccountValidator.IsValid(account))
             {
                 return BadRequest();
-            }
+            } 
             // TODO: 403 already authorized
 
             (HttpStatusCode status, Account? createdAccount) =
