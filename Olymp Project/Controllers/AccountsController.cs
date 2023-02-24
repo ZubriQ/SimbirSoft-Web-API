@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Controllers.Validators;
 using Olymp_Project.Services.Accounts;
-using System.ComponentModel.DataAnnotations;
-using System.Net;
 
 namespace Olymp_Project.Controllers
 {
@@ -20,33 +18,6 @@ namespace Olymp_Project.Controllers
         {
             _service = service;
             _mapper = mapper;
-        }
-
-        [HttpPost("~/registration")]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AccountResponseDto))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<AccountResponseDto>> CreateAccount(AccountRequestDto account)
-        {
-            if (!AccountValidator.IsValid(account) || !new EmailAddressAttribute().IsValid(account.Email))
-            {
-                return BadRequest();
-            }
-            // TODO: 403 already authorized
-
-            (HttpStatusCode status, Account? createdAccount) = 
-                await _service.InsertAccountAsync(_mapper.Map<Account>(account));
-
-            switch (status)
-            {
-                case HttpStatusCode.Forbidden:
-                    return Forbid();
-                case HttpStatusCode.Conflict:
-                    return Conflict();
-            }
-            return CreatedAtAction(nameof(CreateAccount), 
-                _mapper.Map<AccountResponseDto>(createdAccount));
         }
 
         [HttpGet("{accountId:int}")]
@@ -98,8 +69,7 @@ namespace Olymp_Project.Controllers
             int? accountId,
             AccountRequestDto account) // TODO: 401 unauthorized
         {
-            if (!IdValidator.IsValid(accountId) || !AccountValidator.IsValid(account) 
-                || !new EmailAddressAttribute().IsValid(account.Email))
+            if (!IdValidator.IsValid(accountId) || !AccountValidator.IsValid(account))
             {
                 return BadRequest();
             }

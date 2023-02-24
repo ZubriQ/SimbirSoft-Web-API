@@ -3,12 +3,12 @@
     public class VisitedLocationRequestDto
     {
         /// <summary>
-        /// Old location.
+        /// Visited location that we need to update.
         /// </summary>
         public long? VisitedLocationId { get; set; }
 
         /// <summary>
-        /// Newly visited location.
+        /// New location.
         /// </summary>
         public long? LocationId { get; set; }
     }

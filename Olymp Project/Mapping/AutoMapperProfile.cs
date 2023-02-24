@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
-using Olymp_Project.Dtos.Kind;
-using Olymp_Project.Dtos.VisitedLocation;
 
-namespace Olymp_Project
+namespace Olymp_Project.Mapping
 {
     public class AutoMapperProfile : Profile
     {

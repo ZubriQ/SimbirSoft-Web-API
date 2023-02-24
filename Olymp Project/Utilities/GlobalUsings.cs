@@ -1,0 +1,10 @@
+﻿global using Microsoft.EntityFrameworkCore;
+global using System.Net;
+global using Olymp_Project.Models;
+global using Olymp_Project.Queries;
+global using Olymp_Project.Dtos.Account;
+global using Olymp_Project.Dtos.Animal;
+global using Olymp_Project.Dtos.AnimalKind;
+global using Olymp_Project.Dtos.Kind;
+global using Olymp_Project.Dtos.Location;
+global using Olymp_Project.Dtos.VisitedLocation;

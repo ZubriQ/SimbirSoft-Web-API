@@ -2,9 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Controllers.Validators;
-using Olymp_Project.Dtos.Kind;
 using Olymp_Project.Services.Kinds;
-using System.Net;
 
 namespace Olymp_Project.Controllers
 {

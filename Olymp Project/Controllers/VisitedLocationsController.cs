@@ -2,10 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Controllers.Validators;
-using Olymp_Project.Dtos.VisitedLocation;
-using Olymp_Project.Models;
 using Olymp_Project.Services.VisitedLocations;
-using System.Net;
 
 namespace Olymp_Project.Controllers
 {

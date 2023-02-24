@@ -12,31 +12,6 @@ namespace Olymp_Project.Services.Accounts
             _db = db;
         }
 
-        public async Task<(HttpStatusCode, Account?)> InsertAccountAsync(Account account)
-        {
-            try
-            {
-                bool emailExists = _db.Accounts.Where(a => a.Email == account.Email).Any();
-                if (emailExists)
-                {
-                    return (HttpStatusCode.Conflict, null);
-                }
-                // TODO: check if Email is valid. 400
-
-                // TODO: add cancelation token?
-                // (saves calculation time if the request is aborted)
-                // https://stackoverflow.com/questions/71799601/context-addasync-savechangesasync-double-await
-
-                await _db.Accounts.AddAsync(account);
-                await _db.SaveChangesAsync();
-                return (HttpStatusCode.OK, account);
-            }
-            catch (Exception)
-            {
-                return (HttpStatusCode.InternalServerError, null);
-            }
-        }
-
         public async Task<Account?> GetAccountAsync(int id)
         {
             return await _db.Accounts.FirstOrDefaultAsync(a => a.Id == id);
@@ -82,14 +57,14 @@ namespace Olymp_Project.Services.Accounts
 
         public async Task<Account?> UpdateAccountAsync(int id, AccountRequestDto account)
         {
+            var dbAccount = _db.Accounts.FirstOrDefault(a => a.Id == id); // TODO: async?
+            if (dbAccount is null)
+            {
+                return null;
+            }
+
             try
             {
-                var dbAccount = _db.Accounts.FirstOrDefault(a => a.Id == id); // TODO: async?
-                if (dbAccount is null)
-                {
-                    return null;
-                }
-
                 return await UpdateAccount(dbAccount, account);
             }
             catch (Exception)
@@ -117,19 +92,20 @@ namespace Olymp_Project.Services.Accounts
 
         public async Task<HttpStatusCode> RemoveAccountAsync(int id)
         {
+            var account = await _db.Accounts.FirstOrDefaultAsync(a => a.Id == id);
+            if (account is null)
+            {
+                return HttpStatusCode.Forbidden;
+            }
+
+            var linkedAnimal = await _db.Animals.FirstOrDefaultAsync(a => a.ChipperId == id);
+            if (linkedAnimal is not null)
+            {
+                return HttpStatusCode.BadRequest;
+            }
+
             try
             {
-                var account = await _db.Accounts.FirstOrDefaultAsync(a => a.Id == id);
-                if (account is null)
-                {
-                    return HttpStatusCode.Forbidden;
-                }
-                var linkedAnimal = await _db.Animals.FirstOrDefaultAsync(a => a.ChipperId == id);
-                if (linkedAnimal is not null)
-                {
-                    return HttpStatusCode.BadRequest;
-                }
-
                 return await RemoveAccount(account);
             }
             catch (Exception)

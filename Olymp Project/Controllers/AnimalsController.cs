@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Controllers.Validators;
 using Olymp_Project.Services.Animals;
-using System.Net;
 
 namespace Olymp_Project.Controllers
 {
@@ -18,8 +18,6 @@ namespace Olymp_Project.Controllers
             _service = service;
             _mapper = mapper;
         }
-
-        #region Animal
 
         [HttpGet("{animalId:int}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AnimalResponseDto))]
@@ -139,99 +137,5 @@ namespace Olymp_Project.Controllers
             }
             return Ok();
         }
-
-        #endregion
-
-        #region Animal kinds
-
-        [HttpPost("{animalId:long}/types/{kindId}")]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AnimalResponseDto))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<AnimalResponseDto>> AddAnimalKind(
-            long? animalId,
-            long? kindId)
-        {
-            if (!IdValidator.IsValid(animalId) || !IdValidator.IsValid(kindId))
-            {
-                return BadRequest();
-            }
-
-            (HttpStatusCode code, Animal? animal) = 
-                await _service.InsertKindToAnimalAsync(animalId!.Value, kindId!.Value);
-
-            switch (code)
-            {
-                case HttpStatusCode.NotFound:
-                    return NotFound();
-                case HttpStatusCode.Conflict:
-                    return Conflict();
-            }
-            return CreatedAtAction(nameof(AddAnimalKind), _mapper.Map<AnimalResponseDto>(animal));
-        }
-
-        [HttpPut("{animalId:long}/types/")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AnimalResponseDto))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<AnimalResponseDto>> UpdateAnimalKind(
-            long? animalId, 
-            PutAnimalKindDto request)
-        {
-            if (!IdValidator.IsValid(animalId, request.OldKindId, request.NewKindId))
-            {
-                return BadRequest();
-            }
-            // TODO: 401
-
-            (HttpStatusCode code, Animal? updatedAnimal) = 
-                await _service.UpdateAnimalKindAsync(animalId!.Value, request);
-
-            switch (code)
-            {
-                case HttpStatusCode.BadRequest:
-                    return BadRequest();
-                case HttpStatusCode.NotFound:
-                    return NotFound();
-                case HttpStatusCode.Conflict:
-                    return Conflict();
-            }
-            return Ok(_mapper.Map<AnimalResponseDto>(updatedAnimal));
-        }
-
-        [HttpDelete("{animalId:long}/types/{kindId:long}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AnimalResponseDto))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<AnimalResponseDto>> DeleteAnimalKind(
-            long? animalId,
-            long? kindId)
-        {
-            if (!IdValidator.IsValid(animalId) || !IdValidator.IsValid(kindId))
-            {
-                return BadRequest();
-            }
-            // TODO: 401
-
-            (HttpStatusCode code, Animal? deletedAnimal) = 
-                await _service.RemoveAnimalKindAsync(animalId!.Value, kindId!.Value);
-                
-            switch (code)
-            {
-                case HttpStatusCode.BadRequest:
-                    return BadRequest();
-                case HttpStatusCode.NotFound:
-                    return NotFound();
-            }
-            return Ok(_mapper.Map<AnimalResponseDto>(deletedAnimal));
-        }
-
-
-        #endregion
     }
 }

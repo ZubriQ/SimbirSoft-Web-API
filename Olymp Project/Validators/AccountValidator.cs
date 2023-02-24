@@ -1,4 +1,6 @@
-﻿namespace Olymp_Project.Controllers.Validators
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Olymp_Project.Controllers.Validators
 {
     public static class AccountValidator
     {
@@ -6,8 +8,9 @@
         {
             return !string.IsNullOrWhiteSpace(account.FirstName)
                 && !string.IsNullOrWhiteSpace(account.LastName)
+                && !string.IsNullOrWhiteSpace(account.Password)
                 && !string.IsNullOrWhiteSpace(account.Email)
-                && !string.IsNullOrWhiteSpace(account.Password);
+                && new EmailAddressAttribute().IsValid(account.Email);
         }
     }
 }

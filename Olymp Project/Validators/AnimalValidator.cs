@@ -1,7 +1,4 @@
-﻿using Olymp_Project.Models;
-using System.Reflection;
-
-namespace Olymp_Project.Controllers.Validators
+﻿namespace Olymp_Project.Controllers.Validators
 {
     public static class AnimalValidator
     {

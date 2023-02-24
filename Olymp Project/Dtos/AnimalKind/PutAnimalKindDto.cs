@@ -1,4 +1,4 @@
-﻿namespace Olymp_Project.Dtos.Animal
+﻿namespace Olymp_Project.Dtos.AnimalKind
 {
     public class PutAnimalKindDto
     {

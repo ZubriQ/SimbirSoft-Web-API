@@ -1,7 +1,9 @@
 using Olymp_Project.Services.Accounts;
 using Olymp_Project.Services.Animals;
+using Olymp_Project.Services.AnimalsKinds;
 using Olymp_Project.Services.Kinds;
 using Olymp_Project.Services.Locations;
+using Olymp_Project.Services.Registration;
 using Olymp_Project.Services.VisitedLocations;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,11 +18,15 @@ builder.Services.AddSwaggerGen();
 var connection = builder.Configuration.GetConnectionString("animal-chipization");
 builder.Services.AddSqlServer<ChipizationDbContext>(connection);
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IKindService, KindService>();
 builder.Services.AddScoped<IAnimalService, AnimalService>();
+builder.Services.AddScoped<IAnimalKindService, AnimalKindService>();
 builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
+
 
 var app = builder.Build();
 
