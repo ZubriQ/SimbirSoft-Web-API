@@ -24,6 +24,7 @@ namespace Olymp_Project.Controllers
         // TODO: 403 already authorized
         
         [HttpPost]
+        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

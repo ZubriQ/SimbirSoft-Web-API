@@ -9,10 +9,10 @@ namespace Olymp_Project.Authentication
 {
     public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
-        private readonly IAuthenticationService _userService;
+        private readonly IApiAuthenticationService _userService;
 
         public BasicAuthenticationHandler(
-            IAuthenticationService userService,
+            IApiAuthenticationService userService,
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
@@ -51,12 +51,9 @@ namespace Olymp_Project.Authentication
                 new Claim(ClaimTypes.NameIdentifier, account.Id.ToString()),
                 new Claim(ClaimTypes.Name, account.Email),
             };
-
             var identity = new ClaimsIdentity(claims, Scheme.Name);
             var principal = new ClaimsPrincipal(identity);
-
             var ticket = new AuthenticationTicket(principal, Scheme.Name);
-
             return AuthenticateResult.Success(ticket);
         }
     }

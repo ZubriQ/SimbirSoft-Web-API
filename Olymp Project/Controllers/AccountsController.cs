@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Olymp_Project.Controllers.Validators;
 using Olymp_Project.Helpers;
 using Olymp_Project.Services.Accounts;
 
@@ -22,9 +21,8 @@ namespace Olymp_Project.Controllers
             _mapper = mapper;
         }
 
-        // TODO: 401: Неверные авторизационные данные.
         [HttpGet("{accountId:int}")]
-        [Authorize(AuthenticationSchemes = "BasicAuthentication")]
+        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -40,13 +38,14 @@ namespace Olymp_Project.Controllers
 
         // TODO: 401 unathorized, but allow anonymous?
         [HttpGet("search")]
-        [Authorize(AuthenticationSchemes = "Basic")]
+        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountResponseDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<IEnumerable<AccountResponseDto>>> GetAccounts(
             [FromQuery] AccountQuery query,
-            [FromQuery] Paging paging) 
+            [FromQuery] Paging paging)
         {
             var response = await _service.GetAccountsAsync(query, paging);
 
@@ -56,6 +55,7 @@ namespace Olymp_Project.Controllers
 
         // TODO: 401 unauthorized   
         [HttpPut("{accountId:int}")]
+        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -74,6 +74,7 @@ namespace Olymp_Project.Controllers
         // TODO: 401: unAuthorized.
         // TODO: 403: Удаление НЕ своего акка
         [HttpDelete("{accountId:int}")]
+        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

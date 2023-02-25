@@ -1,10 +1,10 @@
 ﻿namespace Olymp_Project.Authentication
 {
-    public class AuthenticationService : IAuthenticationService
+    public class ApiAuthenticationService : IApiAuthenticationService
     {
         private readonly ChipizationDbContext _db;
 
-        public AuthenticationService(ChipizationDbContext db)
+        public ApiAuthenticationService(ChipizationDbContext db)
         {
             _db = db;
         }

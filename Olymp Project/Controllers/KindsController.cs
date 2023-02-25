@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Controllers.Validators;
@@ -6,6 +7,7 @@ using Olymp_Project.Services.Kinds;
 
 namespace Olymp_Project.Controllers
 {
+    [Authorize]
     [Route("animals/types")]
     [ApiController]
     public class KindsController : ControllerBase
@@ -20,6 +22,8 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("{kindId:long}")]
+        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(KindResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -41,6 +45,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPost]
+        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(KindResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -63,6 +68,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPut("{kindId:long}")]
+        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(KindResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -90,6 +96,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpDelete("{kindId:long}")]
+        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

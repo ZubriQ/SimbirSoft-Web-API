@@ -16,9 +16,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
+#region Configurating SwaggerGen and Basic authentication
+
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "webapi", Version = "v1" });
     options.AddSecurityDefinition("Basic", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -39,10 +42,19 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddAuthentication("BasicAuthentication")
+    .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
+
+#endregion
+
+#region Configurating Database, AutoMapper and Services
+
 var connection = builder.Configuration.GetConnectionString("animal-chipization");
 builder.Services.AddSqlServer<ChipizationDbContext>(connection);
+
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
+builder.Services.AddScoped<IApiAuthenticationService, ApiAuthenticationService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
@@ -50,10 +62,8 @@ builder.Services.AddScoped<IKindService, KindService>();
 builder.Services.AddScoped<IAnimalService, AnimalService>();
 builder.Services.AddScoped<IAnimalKindService, AnimalKindService>();
 builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
-builder.Services.AddScoped<Olymp_Project.Authentication.IAuthenticationService, Olymp_Project.Authentication.AuthenticationService>();
 
-builder.Services.AddAuthentication("BasicAuthentication")
-    .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
+#endregion
 
 var app = builder.Build();
 

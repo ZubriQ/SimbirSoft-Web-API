@@ -8,3 +8,4 @@ global using Olymp_Project.Dtos.AnimalKind;
 global using Olymp_Project.Dtos.Kind;
 global using Olymp_Project.Dtos.Location;
 global using Olymp_Project.Dtos.VisitedLocation;
+global using Olymp_Project.Utilities;

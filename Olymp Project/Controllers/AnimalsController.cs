@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Controllers.Validators;
@@ -6,6 +7,7 @@ using Olymp_Project.Services.Animals;
 
 namespace Olymp_Project.Controllers
 {
+    [Authorize]
     [Route("animals")]
     [ApiController]
     public class AnimalsController : ControllerBase
@@ -20,6 +22,8 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("{animalId:int}")]
+        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AnimalResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -41,6 +45,8 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("search")]
+        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AnimalResponseDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -59,6 +65,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPost]
+        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AnimalResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -88,6 +95,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPut("{animalId:long}")]
+        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AnimalResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -115,6 +123,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpDelete("{animalId:long}")]
+        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
