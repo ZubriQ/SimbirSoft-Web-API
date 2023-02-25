@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Helpers;
@@ -6,6 +7,7 @@ using Olymp_Project.Services.Registration;
 
 namespace Olymp_Project.Controllers
 {
+    [Authorize]
     [Route("registration")]
     [ApiController]
     public class RegistrationController : ControllerBase
@@ -20,7 +22,9 @@ namespace Olymp_Project.Controllers
         }
 
         // TODO: 403 already authorized
+        
         [HttpPost]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -29,9 +33,8 @@ namespace Olymp_Project.Controllers
         {
             var response = await _service.RegisterAccountAsync(_mapper.Map<Account>(request));
 
-            var responseDto = _mapper.Map<AccountResponseDto>(response.Result);
-            return ResponseHelper.GetActionResult(
-                response.StatusCode, responseDto, nameof(RegisterAccount));
+            var responseDto = _mapper.Map<AccountResponseDto>(response.Data);
+            return ResponseHelper.GetActionResult(response.StatusCode, responseDto, nameof(RegisterAccount));
         }
     }
 }

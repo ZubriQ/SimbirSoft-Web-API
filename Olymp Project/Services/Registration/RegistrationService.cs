@@ -1,5 +1,6 @@
 ﻿using Olymp_Project.Controllers.Validators;
-using System.Net;
+using Olymp_Project.Responses;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Olymp_Project.Services.Registration
 {
@@ -12,7 +13,7 @@ namespace Olymp_Project.Services.Registration
             _db = db;
         }
 
-        public async Task<ServiceResponse<Account>> RegisterAccountAsync(Account account)
+        public async Task<IServiceResponse<Account>> RegisterAccountAsync(Account account)
         {
             if (!AccountValidator.IsValid(account))
             {

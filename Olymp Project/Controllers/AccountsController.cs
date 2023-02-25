@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Controllers.Validators;
+using Olymp_Project.Helpers;
 using Olymp_Project.Services.Accounts;
 
 namespace Olymp_Project.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("accounts")]
     [ApiController]
     public class AccountsController : ControllerBase
@@ -20,45 +22,39 @@ namespace Olymp_Project.Controllers
             _mapper = mapper;
         }
 
+        // TODO: 401: Неверные авторизационные данные.
         [HttpGet("{accountId:int}")]
+        [Authorize(AuthenticationSchemes = "BasicAuthentication")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AccountResponseDto>> GetAccount(int? accountId) 
         {
-            if (IdValidator.IsValid(accountId))
-            {
-                return BadRequest();
-            }
-            // TODO: 401: Неверные авторизационные данные.
+            var response = await _service.GetAccountAsync(accountId!.Value);
 
-            var account = await _service.GetAccountAsync(accountId!.Value);
-            if (account is null)
-            {
-                return NotFound();
-            }
-            return Ok(_mapper.Map<AccountResponseDto>(account));
+            var accountDto = _mapper.Map<AccountResponseDto>(response.Data);
+            return ResponseHelper.GetActionResult(response.StatusCode, accountDto);
         }
 
+        // TODO: 401 unathorized, but allow anonymous?
         [HttpGet("search")]
-        //[Authorize(AuthenticationSchemes = "Basic")]
+        [Authorize(AuthenticationSchemes = "Basic")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountResponseDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<IEnumerable<AccountResponseDto>>> GetAccounts(
             [FromQuery] AccountQuery query,
-            [FromQuery] Paging paging) // TODO: 401 unathorized, but allow anonymous?
+            [FromQuery] Paging paging) 
         {
-            if (!PagingValidator.IsValid(paging))
-            {
-                return BadRequest();
-            }
-            
-            var accounts = await _service.GetAccountsAsync(query, paging);
-            return Ok(accounts.Select(a => _mapper.Map<AccountResponseDto>(a)));
+            var response = await _service.GetAccountsAsync(query, paging);
+
+            var accountsDto = response.Data!.Select(a => _mapper.Map<AccountResponseDto>(a));
+            return ResponseHelper.GetActionResult(response.StatusCode, accountsDto);
         }
 
+        // TODO: 401 unauthorized   
         [HttpPut("{accountId:int}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -67,21 +63,16 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AccountResponseDto>> UpdateAccount(
             int? accountId,
-            AccountRequestDto account) // TODO: 401 unauthorized
+            AccountRequestDto request)  
         {
-            if (!IdValidator.IsValid(accountId) || !AccountValidator.IsValid(_mapper.Map<Account>(account)))
-            {
-                return BadRequest();
-            }
+            var response = await _service.UpdateAccountAsync(accountId!.Value, request);
 
-            var updatedAccount = await _service.UpdateAccountAsync(accountId!.Value, account);
-            if (updatedAccount is null)
-            {
-                return NotFound();
-            }
-            return Ok(_mapper.Map<AccountResponseDto>(updatedAccount));
+            var accountDto = _mapper.Map<Account>(response.Data);
+            return ResponseHelper.GetActionResult(response.StatusCode, accountDto);
         }
 
+        // TODO: 401: unAuthorized.
+        // TODO: 403: Удаление НЕ своего акка
         [HttpDelete("{accountId:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -89,22 +80,8 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteAccount(int? accountId)
         {
-            if (!IdValidator.IsValid(accountId))
-            {
-                return BadRequest();
-            }
-            // TODO: 401: unAuthorized.
-            // TODO: 403: Удаление НЕ своего акка
-
-            var status = await _service.RemoveAccountAsync(accountId!.Value);
-            switch (status)
-            {
-                case HttpStatusCode.Forbidden:
-                    return Forbid();
-                case HttpStatusCode.BadRequest:
-                    return BadRequest();
-            }
-            return Ok();
+            var statusCode = await _service.RemoveAccountAsync(accountId!.Value);
+            return ResponseHelper.GetActionResult(statusCode);
         }
     }
 }

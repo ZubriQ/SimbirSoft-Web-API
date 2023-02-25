@@ -1,12 +1,13 @@
-﻿using System.Net;
+﻿using Olymp_Project.Responses;
+using System.Net;
 
 namespace Olymp_Project.Services.Accounts
 {
     public interface IAccountService
     {
-        Task<Account?> GetAccountAsync(int id);
-        Task<IEnumerable<Account>> GetAccountsAsync(AccountQuery query, Paging paging);
-        Task<Account?> UpdateAccountAsync(int id, AccountRequestDto account);
-        Task<HttpStatusCode> RemoveAccountAsync(int id);
+        Task<IServiceResponse<Account>> GetAccountAsync(int? id);
+        Task<IServiceResponse<ICollection<Account>>> GetAccountsAsync(AccountQuery query, Paging paging);
+        Task<IServiceResponse<Account>> UpdateAccountAsync(int? id, AccountRequestDto request);
+        Task<HttpStatusCode> RemoveAccountAsync(int? id);
     }
 }
