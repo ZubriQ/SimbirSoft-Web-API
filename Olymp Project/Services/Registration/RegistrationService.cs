@@ -1,6 +1,5 @@
 ﻿using Olymp_Project.Controllers.Validators;
 using Olymp_Project.Responses;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Olymp_Project.Services.Registration
 {
@@ -13,14 +12,14 @@ namespace Olymp_Project.Services.Registration
             _db = db;
         }
 
-        public async Task<IServiceResponse<Account>> RegisterAccountAsync(Account account)
+        public async Task<IServiceResponse<Account>> RegisterAccountAsync(AccountRequestDto request)
         {
-            if (!AccountValidator.IsValid(account))
+            if (!AccountValidator.IsValid(request))
             {
                 return new ServiceResponse<Account>(HttpStatusCode.BadRequest);
             }
 
-            bool emailExists = await _db.Accounts.AnyAsync(a => a.Email == account.Email);
+            bool emailExists = await _db.Accounts.AnyAsync(a => a.Email == request.Email);
             if (emailExists)
             {
                 return new ServiceResponse<Account>(HttpStatusCode.Conflict);
@@ -28,14 +27,27 @@ namespace Olymp_Project.Services.Registration
 
             try
             {
-                await _db.Accounts.AddAsync(account);
+                Account newAccount = CreateAccount(request);
+                await _db.Accounts.AddAsync(newAccount);
                 await _db.SaveChangesAsync();
-                return new ServiceResponse<Account>(HttpStatusCode.Created, account);
+                return new ServiceResponse<Account>(HttpStatusCode.Created, newAccount);
             }
             catch (Exception)
             {
                 return new ServiceResponse<Account>(HttpStatusCode.InternalServerError);
             }
+        }
+
+        private Account CreateAccount(AccountRequestDto data)
+        {
+            Account newAccount = new Account()
+            {
+                FirstName = data.FirstName!,
+                LastName = data.LastName!,
+                Email = data.LastName!,
+                Password = data.Password!
+            };
+            return newAccount;
         }
     }
 }

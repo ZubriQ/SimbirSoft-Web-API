@@ -5,7 +5,6 @@ namespace Olymp_Project.Responses
     public class ServiceResponse<T> : IServiceResponse<T>
     {
         public HttpStatusCode StatusCode { get; set; }
-
         public T? Data { get; set; } = default;
 
         public ServiceResponse(HttpStatusCode statusCode, T data)

@@ -35,7 +35,7 @@ namespace Olymp_Project.Controllers
                 return Forbid();
             }
 
-            var response = await _service.RegisterAccountAsync(_mapper.Map<Account>(request));
+            var response = await _service.RegisterAccountAsync(request);
 
             var dto = _mapper.Map<AccountResponseDto>(response.Data);
             return ResponseHelper.GetActionResult(response.StatusCode, dto, nameof(RegisterAccount));

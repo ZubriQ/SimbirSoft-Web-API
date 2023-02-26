@@ -55,7 +55,6 @@ namespace Olymp_Project.Controllers
             {
                 return BadRequest();
             }
-            // TODO: 401: неавториз. акк; неверные авториз. данные.
 
             (HttpStatusCode status, var kind) = await _service.InsertAnimalKindAsync(name);
 

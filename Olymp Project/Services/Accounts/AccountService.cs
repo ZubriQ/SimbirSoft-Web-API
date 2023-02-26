@@ -3,6 +3,7 @@ using Olymp_Project.Models;
 using Olymp_Project.Responses;
 using System.Linq;
 using System.Net;
+using System.Security.Principal;
 
 namespace Olymp_Project.Services.Accounts
 {
@@ -21,20 +22,17 @@ namespace Olymp_Project.Services.Accounts
             {
                 return new ServiceResponse<Account>(HttpStatusCode.BadRequest);
             }
-            var account = await _db.Accounts.FirstOrDefaultAsync(a => a.Id == id);
-            if (account is not null)
-            {
-                return new ServiceResponse<Account>(HttpStatusCode.OK, account);
-            }
-            else
+
+            if (await _db.Accounts.FirstOrDefaultAsync(a => a.Id == id) is not Account account)
             {
                 return new ServiceResponse<Account>(HttpStatusCode.NotFound, null!);
             }
+
+            return new ServiceResponse<Account>(HttpStatusCode.OK, account);
         }
 
         public async Task<IServiceResponse<ICollection<Account>>> GetAccountsAsync(
-            AccountQuery query, 
-            Paging paging)
+            AccountQuery query, Paging paging)
         {
             if (!PagingValidator.IsValid(paging))
             {
@@ -43,7 +41,6 @@ namespace Olymp_Project.Services.Accounts
 
             try
             {
-                // TODO: Test IQueryable vs IEnumerable.
                 var accounts = GetFilteredAccounts(query, paging);
                 return new CollectionServiceResponse<Account>(HttpStatusCode.OK, accounts);
             }
@@ -53,26 +50,27 @@ namespace Olymp_Project.Services.Accounts
             }
         }
 
-        private IQueryable<Account> GetFilteredAccounts(AccountQuery query, Paging paging)
+        // TODO: Make this layer as a Service, and move the method into a Repository?
+        private IQueryable<Account> GetFilteredAccounts(AccountQuery filter, Paging paging)
         {
             IQueryable<Account> accounts = _db.Accounts.AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(query.FirstName))
+            if (!string.IsNullOrWhiteSpace(filter.FirstName))
             {
                 accounts = accounts.Where(a => a.FirstName.Contains(
-                    query.FirstName, StringComparison.OrdinalIgnoreCase));
+                    filter.FirstName, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (!string.IsNullOrWhiteSpace(query.LastName))
+            if (!string.IsNullOrWhiteSpace(filter.LastName))
             {
                 accounts = accounts.Where(a => a.LastName.Contains(
-                    query.LastName, StringComparison.OrdinalIgnoreCase));
+                    filter.LastName, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (!string.IsNullOrWhiteSpace(query.Email))
+            if (!string.IsNullOrWhiteSpace(filter.Email))
             {
                 accounts = accounts.Where(a => a.Email.Contains(
-                    query.Email, StringComparison.OrdinalIgnoreCase));
+                    filter.Email, StringComparison.OrdinalIgnoreCase));
             }
 
             return accounts
@@ -81,27 +79,22 @@ namespace Olymp_Project.Services.Accounts
                 .Take(paging.Take!.Value);
         }
 
-        public async Task<IServiceResponse<Account>> UpdateAccountAsync(int? id, AccountRequestDto request)
+        public async Task<IServiceResponse<Account>> UpdateAccountAsync(
+            int? id, AccountRequestDto request)
         {
             if (!IdValidator.IsValid(id) || !AccountValidator.IsValid(request))
             {
                 return new ServiceResponse<Account>(HttpStatusCode.BadRequest);
             }
 
-            var account = _db.Accounts.FirstOrDefault(a => a.Id == id); // TODO: async?
-            if (account is null)
+            if (_db.Accounts.FirstOrDefault(a => a.Id == id) is not Account account)
             {
                 return new ServiceResponse<Account>(HttpStatusCode.NotFound);
             }
-            // TODO: optimize
+
             try
             {
-                AssignNewData(account, request);
-
-                _db.Accounts.Attach(account);
-                _db.Entry(account).State = EntityState.Modified;
-                await _db.SaveChangesAsync(); // TODO: async?
-                return new ServiceResponse<Account>(HttpStatusCode.OK, account);
+                return await UpdateAccountAndSaveChangesAsync(account, request);
             }
             catch (Exception)
             {
@@ -109,12 +102,22 @@ namespace Olymp_Project.Services.Accounts
             }
         }
 
-        private void AssignNewData(Account account, AccountRequestDto newData)
+        // TODO: Make this layer as a Service, and move the method into a Repository?
+        private async Task<IServiceResponse<Account>> UpdateAccountAndSaveChangesAsync(
+            Account account, AccountRequestDto dto)
+        {
+            AssignAccountData(account, dto);
+            _db.Accounts.Attach(account);
+            _db.Entry(account).State = EntityState.Modified;
+            await _db.SaveChangesAsync();
+            return new ServiceResponse<Account>(HttpStatusCode.OK, account);
+        }
+
+        private void AssignAccountData(Account account, AccountRequestDto newData)
         {
             account.FirstName = newData.FirstName!;
             account.LastName = newData.LastName!;
             account.Email = newData.Email!;
-            // TODO: change password too?
             // TODO: or if password == password then change the data?
         }
 
@@ -125,19 +128,16 @@ namespace Olymp_Project.Services.Accounts
                 return HttpStatusCode.BadRequest;
             }
 
-            var account = await _db.Accounts.FirstOrDefaultAsync(a => a.Id == id);
-            if (account is null)
+            if (await _db.Accounts.FirstOrDefaultAsync(a => a.Id == id) is not Account account)
             {
                 return HttpStatusCode.Forbidden;
             }
-
             if (account.Email != login)
             {
                 return HttpStatusCode.Forbidden;
             }
 
-            var linkedAnimal = await _db.Animals.FirstOrDefaultAsync(a => a.ChipperId == id);
-            if (linkedAnimal is not null)
+            if (await _db.Animals.FirstOrDefaultAsync(a => a.ChipperId == id) is Animal linkedAnimal)
             {
                 return HttpStatusCode.BadRequest;
             }
@@ -152,6 +152,7 @@ namespace Olymp_Project.Services.Accounts
             }
         }
 
+        // TODO: repository layer?
         private async Task<HttpStatusCode> RemoveAccount(Account account)
         {
             _db.Accounts.Remove(account);
