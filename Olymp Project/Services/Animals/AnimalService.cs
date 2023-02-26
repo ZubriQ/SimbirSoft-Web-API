@@ -31,7 +31,6 @@
 
         private IQueryable<Animal> GetFilteredAnimals(AnimalQuery query, Paging paging)
         {
-            // TODO: Task or ValueTask?
             var animals = _db.Animals
                 .Include(a => a.VisitedLocations)
                 .Include(a => a.Kinds)

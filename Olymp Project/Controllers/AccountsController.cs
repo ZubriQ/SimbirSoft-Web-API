@@ -28,7 +28,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<AccountResponseDto>> GetAccount(int? accountId) 
+        public async Task<ActionResult<AccountResponseDto>> GetAccount([FromRoute] int? accountId) 
         {
             var response = await _service.GetAccountAsync(accountId!.Value);
 
@@ -36,7 +36,6 @@ namespace Olymp_Project.Controllers
             return ResponseHelper.GetActionResult(response.StatusCode, accountDto);
         }
 
-        // TODO: 401 unathorized, but allow anonymous?
         [HttpGet("search")]
         [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [AllowAnonymous]
@@ -53,7 +52,6 @@ namespace Olymp_Project.Controllers
             return ResponseHelper.GetActionResult(response.StatusCode, accountsDto);
         }
 
-        // TODO: 401 unauthorized   
         [HttpPut("{accountId:int}")]
         [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountResponseDto))]
@@ -62,8 +60,8 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AccountResponseDto>> UpdateAccount(
-            int? accountId,
-            AccountRequestDto request)  
+            [FromRoute] int? accountId,
+            [FromBody] AccountRequestDto request)  
         {
             var response = await _service.UpdateAccountAsync(accountId!.Value, request);
 
@@ -71,17 +69,15 @@ namespace Olymp_Project.Controllers
             return ResponseHelper.GetActionResult(response.StatusCode, accountDto);
         }
 
-        // TODO: 401: unAuthorized.
-        // TODO: 403: Удаление НЕ своего акка
         [HttpDelete("{accountId:int}")]
         [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> DeleteAccount(int? accountId)
+        public async Task<IActionResult> DeleteAccount([FromRoute] int? accountId)
         {
-            var statusCode = await _service.RemoveAccountAsync(accountId!.Value);
+            var statusCode = await _service.RemoveAccountAsync(accountId!.Value, User.Identity!.Name);
             return ResponseHelper.GetActionResult(statusCode);
         }
     }

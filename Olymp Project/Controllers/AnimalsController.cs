@@ -28,7 +28,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<AnimalResponseDto>> GetAnimal(long? animalId)
+        public async Task<ActionResult<AnimalResponseDto>> GetAnimal([FromRoute] long? animalId)
         {
             if (!IdValidator.IsValid(animalId))
             {
@@ -71,7 +71,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<AnimalResponseDto>> CreateAnimal(PostAnimalDto request)
+        public async Task<ActionResult<AnimalResponseDto>> CreateAnimal([FromBody] PostAnimalDto request)
         {
             if (!AnimalValidator.IsRequestValid(request))
             {
@@ -101,8 +101,8 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AnimalResponseDto>> UpdateAnimal(
-            long? animalId, 
-            PutAnimalDto request)
+            [FromRoute] long? animalId, 
+            [FromBody] PutAnimalDto request)
         {
             if (!IdValidator.IsValid(animalId) || !AnimalValidator.IsRequestValid(request))
             {
@@ -128,7 +128,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeleteAnimal(long? animalId)
+        public async Task<IActionResult> DeleteAnimal([FromRoute] long? animalId)
         {
             if (!IdValidator.IsValid(animalId))
             {

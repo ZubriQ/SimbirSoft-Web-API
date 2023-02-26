@@ -118,7 +118,7 @@ namespace Olymp_Project.Services.Accounts
             // TODO: or if password == password then change the data?
         }
 
-        public async Task<HttpStatusCode> RemoveAccountAsync(int? id)
+        public async Task<HttpStatusCode> RemoveAccountAsync(int? id, string? login)
         {
             if (!IdValidator.IsValid(id))
             {
@@ -127,6 +127,11 @@ namespace Olymp_Project.Services.Accounts
 
             var account = await _db.Accounts.FirstOrDefaultAsync(a => a.Id == id);
             if (account is null)
+            {
+                return HttpStatusCode.Forbidden;
+            }
+
+            if (account.Email != login)
             {
                 return HttpStatusCode.Forbidden;
             }

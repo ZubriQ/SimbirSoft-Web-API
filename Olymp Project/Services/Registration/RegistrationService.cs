@@ -20,7 +20,7 @@ namespace Olymp_Project.Services.Registration
                 return new ServiceResponse<Account>(HttpStatusCode.BadRequest);
             }
 
-            bool emailExists = _db.Accounts.Where(a => a.Email == account.Email).Any();
+            bool emailExists = await _db.Accounts.AnyAsync(a => a.Email == account.Email);
             if (emailExists)
             {
                 return new ServiceResponse<Account>(HttpStatusCode.Conflict);

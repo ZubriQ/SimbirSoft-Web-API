@@ -21,22 +21,22 @@ namespace Olymp_Project.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("{pointId:long}")]
+        [HttpGet("{locationId:long}")]
         [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LocationResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<LocationResponseDto>> GetLocation(long? pointId) 
+        public async Task<ActionResult<LocationResponseDto>> GetLocation([FromRoute] long? locationId)
         {
-            if (!IdValidator.IsValid(pointId))
+            if (!IdValidator.IsValid(locationId))
             {
                 return BadRequest();
             }
 
             // TODO: 401 unauthorized
-            var location = await _service.GetLocationAsync(pointId.Value);
+            var location = await _service.GetLocationAsync(locationId.Value);
             if (location is null)
             {
                 return NotFound();
@@ -50,9 +50,10 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<LocationResponseDto>> CreateLocation(LocationRequestDto location)
+        public async Task<ActionResult<LocationResponseDto>> CreateLocation(
+            [FromBody] LocationRequestDto request)
         {
-            if (!LocationValidator.IsValid(location))
+            if (!LocationValidator.IsValid(request))
             {
                 return BadRequest();
             }
@@ -60,7 +61,7 @@ namespace Olymp_Project.Controllers
             // invalid credentials.
 
             (HttpStatusCode status, Location? addedLocation) = 
-                await _service.AddLocationAsync(_mapper.Map<Location>(location));
+                await _service.AddLocationAsync(_mapper.Map<Location>(request));
 
             if (status == HttpStatusCode.Conflict)
             {

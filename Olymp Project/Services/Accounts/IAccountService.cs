@@ -8,6 +8,6 @@ namespace Olymp_Project.Services.Accounts
         Task<IServiceResponse<Account>> GetAccountAsync(int? id);
         Task<IServiceResponse<ICollection<Account>>> GetAccountsAsync(AccountQuery query, Paging paging);
         Task<IServiceResponse<Account>> UpdateAccountAsync(int? id, AccountRequestDto request);
-        Task<HttpStatusCode> RemoveAccountAsync(int? id);
+        Task<HttpStatusCode> RemoveAccountAsync(int? id, string? login);
     }
 }

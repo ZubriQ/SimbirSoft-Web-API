@@ -59,7 +59,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AnimalResponseDto>> UpdateAnimalKind(
             [FromRoute] long? animalId,
-            PutAnimalKindDto request)
+            [FromBody] PutAnimalKindDto request)
         {
             if (!IdValidator.IsValid(animalId, request.OldKindId, request.NewKindId))
             {

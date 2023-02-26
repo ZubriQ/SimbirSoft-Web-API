@@ -28,15 +28,14 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<KindResponseDto>> GetKind(long? kindId)
+        public async Task<ActionResult<KindResponseDto>> GetKind([FromRoute] long? kindId)
         {
             if (!IdValidator.IsValid(kindId))
             {
                 return BadRequest();
             }
-            // TODO: 401
 
-            var kind = await _service.GetAnimalKindAsync(kindId.Value);
+            var kind = await _service.GetAnimalKindAsync(kindId!.Value);
             if (kind is null)
             {
                 return NotFound();
@@ -50,7 +49,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<KindResponseDto>> CreateKind(string? name)
+        public async Task<ActionResult<KindResponseDto>> CreateKind([FromBody] string? name)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -74,7 +73,9 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<KindResponseDto>> UpdateKind(long? kindId, string? name)
+        public async Task<ActionResult<KindResponseDto>> UpdateKind(
+            [FromRoute] long? kindId,
+            [FromBody] string? name)
         {
             if (!IdValidator.IsValid(kindId) || string.IsNullOrWhiteSpace(name))
             {
