@@ -22,7 +22,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("{accountId:int}")]
-        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -38,7 +38,7 @@ namespace Olymp_Project.Controllers
 
         // TODO: 401 unathorized, but allow anonymous?
         [HttpGet("search")]
-        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountResponseDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -55,7 +55,7 @@ namespace Olymp_Project.Controllers
 
         // TODO: 401 unauthorized   
         [HttpPut("{accountId:int}")]
-        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -74,7 +74,7 @@ namespace Olymp_Project.Controllers
         // TODO: 401: unAuthorized.
         // TODO: 403: Удаление НЕ своего акка
         [HttpDelete("{accountId:int}")]
-        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

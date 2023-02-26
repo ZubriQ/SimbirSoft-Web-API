@@ -32,7 +32,7 @@ namespace Olymp_Project.Authentication
             var authHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
             if (authHeader.Scheme != "Basic")
             {
-                return AuthenticateResult.Fail("Unsupported authentication scheme.");
+                return AuthenticateResult.Fail("Authentication scheme must be Basic.");
             }
 
             var credentialBytes = Convert.FromBase64String(authHeader.Parameter!);

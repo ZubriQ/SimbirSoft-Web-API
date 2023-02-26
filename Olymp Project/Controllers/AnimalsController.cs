@@ -22,7 +22,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("{animalId:int}")]
-        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AnimalResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -45,7 +45,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("search")]
-        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AnimalResponseDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -65,7 +65,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPost]
-        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AnimalResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -95,7 +95,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPut("{animalId:long}")]
-        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AnimalResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -123,7 +123,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpDelete("{animalId:long}")]
-        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

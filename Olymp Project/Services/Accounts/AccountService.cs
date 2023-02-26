@@ -57,20 +57,22 @@ namespace Olymp_Project.Services.Accounts
         {
             IQueryable<Account> accounts = _db.Accounts.AsQueryable();
 
-            // TODO: ToLower or ToUpper 
             if (!string.IsNullOrWhiteSpace(query.FirstName))
             {
-                accounts = accounts.Where(a => a.FirstName.Contains(query.FirstName));
+                accounts = accounts.Where(a => a.FirstName.Contains(
+                    query.FirstName, StringComparison.OrdinalIgnoreCase));
             }
 
             if (!string.IsNullOrWhiteSpace(query.LastName))
             {
-                accounts = accounts.Where(a => a.LastName.Contains(query.LastName));
+                accounts = accounts.Where(a => a.LastName.Contains(
+                    query.LastName, StringComparison.OrdinalIgnoreCase));
             }
 
             if (!string.IsNullOrWhiteSpace(query.Email))
             {
-                accounts = accounts.Where(a => a.Email.Contains(query.Email));
+                accounts = accounts.Where(a => a.Email.Contains(
+                    query.Email, StringComparison.OrdinalIgnoreCase));
             }
 
             return accounts

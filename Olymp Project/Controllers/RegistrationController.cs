@@ -21,10 +21,8 @@ namespace Olymp_Project.Controllers
             _mapper = mapper;
         }
 
-        // TODO: 403 already authorized
-        
         [HttpPost]
-        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -32,6 +30,11 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AccountResponseDto>> RegisterAccount(AccountRequestDto request)
         {
+            if (User.Identity!.IsAuthenticated)
+            {
+                return Forbid();
+            }
+
             var response = await _service.RegisterAccountAsync(_mapper.Map<Account>(request));
 
             var responseDto = _mapper.Map<AccountResponseDto>(response.Data);

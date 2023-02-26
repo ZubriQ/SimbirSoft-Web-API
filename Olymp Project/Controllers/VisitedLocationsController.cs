@@ -22,7 +22,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet]
-        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<VisitedLocationResponseDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -53,7 +53,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPost("{locationId:long}")]
-        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(VisitedLocationResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -83,7 +83,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPut]
-        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VisitedLocationResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -112,7 +112,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpDelete("{visitedLocationId:long}")]
-        [Authorize(AuthenticationSchemes = AuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
