@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Olymp_Project.Helpers.Validators;
+using Olymp_Project.Helpers;
 using Olymp_Project.Services.VisitedLocations;
 
 namespace Olymp_Project.Controllers
@@ -33,23 +33,10 @@ namespace Olymp_Project.Controllers
             [FromQuery] DateTimeRangeQuery query,
             [FromQuery] Paging paging)
         {
-            if (!IdValidator.IsValid(animalId) || !PagingValidator.IsValid(paging))
-            {
-                return BadRequest();
-            }
-            // TODO: 401
-             
-            (HttpStatusCode code, var visitedLocations) = 
-                await _service.GetVisitedLocationsAsync(animalId!.Value, query, paging);
-            
-            switch (code)
-            {
-                case HttpStatusCode.BadRequest:
-                    return BadRequest();
-                case HttpStatusCode.NotFound:
-                    return NotFound();
-            }
-            return Ok(visitedLocations.Select(vl => _mapper.Map<VisitedLocationResponseDto>(vl)));
+            var response = await _service.GetVisitedLocationsAsync(animalId!.Value, query, paging);
+
+            var dto = response.Data?.Select(vl => _mapper.Map<VisitedLocationResponseDto>(vl));
+            return ResponseHelper.GetActionResult(response.StatusCode, dto);
         }
 
         [HttpPost("{locationId:long}")]
@@ -62,24 +49,10 @@ namespace Olymp_Project.Controllers
             [FromRoute] long? animalId,
             [FromRoute] long? locationId)
         {
-            if (!IdValidator.IsValid(animalId, locationId))
-            {
-                return BadRequest();
-            }
-            // TODO: 401
+            var response = await _service.InsertVisitedLocationAsync(animalId!.Value, locationId!.Value);
 
-            (HttpStatusCode code, var visitedLocation) =
-                await _service.InsertVisitedLocationAsync(animalId!.Value, locationId!.Value);
-
-            switch (code)
-            {
-                case HttpStatusCode.BadRequest:
-                    return BadRequest();
-                case HttpStatusCode.NotFound:
-                    return NotFound();
-            }
-            return CreatedAtAction(nameof(CreateVisitedLocation), 
-                _mapper.Map<VisitedLocationResponseDto>(visitedLocation));
+            var dto = _mapper.Map<VisitedLocationResponseDto>(response.Data);
+            return ResponseHelper.GetActionResult(response.StatusCode, dto, nameof(CreateVisitedLocation));
         }
 
         [HttpPut]
@@ -92,23 +65,10 @@ namespace Olymp_Project.Controllers
             [FromRoute] long? animalId,
             [FromQuery] VisitedLocationRequestDto request)
         {
-            if (!IdValidator.IsValid(animalId, request.VisitedLocationId, request.LocationId))
-            {
-                return BadRequest();
-            }
-            // TODO: 401
+            var response = await _service.UpdateVisitedLocationAsync(animalId!.Value, request);
 
-            (HttpStatusCode code, var updatedLocation) =
-                await _service.UpdateVisitedLocationAsync(animalId!.Value, request);
-
-            switch (code)
-            {
-                case HttpStatusCode.BadRequest:
-                    return BadRequest();
-                case HttpStatusCode.NotFound:
-                    return NotFound();
-            }
-            return Ok(_mapper.Map<VisitedLocationResponseDto>(updatedLocation));
+            var dto = _mapper.Map<VisitedLocationResponseDto>(response.Data);
+            return ResponseHelper.GetActionResult(response.StatusCode, dto);
         }
 
         [HttpDelete("{visitedLocationId:long}")]
@@ -121,20 +81,9 @@ namespace Olymp_Project.Controllers
             [FromRoute] long? animalId,
             [FromRoute] long? visitedLocationId)
         {
-            if (!IdValidator.IsValid(animalId, visitedLocationId))
-            {
-                return BadRequest();
-            }
-            // TODO: 401
-
             var statusCode = await _service.RemoveVisitedLocationAsync(
                 animalId!.Value, visitedLocationId!.Value);
-
-            if (statusCode == HttpStatusCode.NotFound)
-            {
-                return NotFound();
-            }
-            return Ok();
+            return ResponseHelper.GetActionResult(statusCode);
         }
     }
 }

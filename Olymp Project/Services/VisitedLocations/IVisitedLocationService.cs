@@ -1,24 +1,22 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Olymp_Project.Dtos.VisitedLocation;
-using System.Net;
+﻿using Olymp_Project.Responses;
 
 namespace Olymp_Project.Services.VisitedLocations
 {
     public interface IVisitedLocationService
     {
-        Task<(HttpStatusCode, IEnumerable<VisitedLocation>)> GetVisitedLocationsAsync(
-            long animalId, 
+        Task<IServiceResponse<ICollection<VisitedLocation>>> GetVisitedLocationsAsync(
+            long? animalId, 
             DateTimeRangeQuery query, 
             Paging paging);
 
-        Task<(HttpStatusCode, VisitedLocation?)> InsertVisitedLocationAsync(
-            long animalId, 
-            long locationId);
+        Task<IServiceResponse<VisitedLocation>> InsertVisitedLocationAsync(
+            long? animalId, 
+            long? locationId);
 
-        Task<(HttpStatusCode, VisitedLocation?)> UpdateVisitedLocationAsync(
-            long animalId,
+        Task<IServiceResponse<VisitedLocation>> UpdateVisitedLocationAsync(
+            long? animalId,
             VisitedLocationRequestDto request);
 
-        Task<HttpStatusCode> RemoveVisitedLocationAsync(long animalId, long visitedLocationId);
+        Task<HttpStatusCode> RemoveVisitedLocationAsync(long? animalId, long? visitedLocationId);
     }
 }
