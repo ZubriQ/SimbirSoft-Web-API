@@ -1,5 +1,7 @@
 ﻿using System.Net;
+using Olymp_Project.Controllers.Validators;
 using Olymp_Project.Dtos.AnimalKind;
+using Olymp_Project.Responses;
 
 namespace Olymp_Project.Services.AnimalsKinds
 {
@@ -12,40 +14,46 @@ namespace Olymp_Project.Services.AnimalsKinds
             _db = db;
         }
 
-        public async Task<(HttpStatusCode, Animal?)> InsertKindToAnimalAsync(
+        public async Task<IServiceResponse<Animal>> InsertKindToAnimalAsync(
             long animalId,
             long kindId)
         {
-            var animalToUpdate = await _db.Animals.Include(a => a.VisitedLocations).Include(a => a.Kinds)
-                                                  .FirstOrDefaultAsync(a => a.Id == animalId);
+            if (!IdValidator.IsValid(animalId, kindId))
+            {
+                return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
+            }
+
+            var animalToUpdate = await _db.Animals
+                .Include(a => a.VisitedLocations).Include(a => a.Kinds)             
+                .FirstOrDefaultAsync(a => a.Id == animalId);
             if (animalToUpdate is null)
             {
-                return (HttpStatusCode.NotFound, null);
+                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
             }
 
             bool kindExists = await _db.Kinds.AnyAsync(k => k.Id == kindId);
             if (!kindExists)
             {
-                return (HttpStatusCode.NotFound, null);
+                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
             }
 
             bool IsKindInAnimal = animalToUpdate.Kinds.Any(k => k.Id == kindId);
             if (IsKindInAnimal)
             {
-                return (HttpStatusCode.Conflict, null);
+                return new ServiceResponse<Animal>(HttpStatusCode.Conflict);
             }
 
             try
             {
-                return await InsertKindToAnimalAndSave(animalToUpdate, kindId);
+                return await AddKindToAnimalAndSave(animalToUpdate, kindId);
             }
             catch (Exception)
             {
-                return (HttpStatusCode.InternalServerError, null);
+                return new ServiceResponse<Animal>();
             }
         }
 
-        private async Task<(HttpStatusCode, Animal?)> InsertKindToAnimalAndSave(
+        private async Task<IServiceResponse<Animal>> AddKindToAnimalAndSave(
             Animal animalToUpdate,
             long kindId)
         {
@@ -55,52 +63,56 @@ namespace Olymp_Project.Services.AnimalsKinds
             _db.Animals.Attach(animalToUpdate);
             _db.Entry(animalToUpdate).State = EntityState.Modified;
             await _db.SaveChangesAsync();
-            return (HttpStatusCode.Created, animalToUpdate);
+            return new ServiceResponse<Animal>(HttpStatusCode.Created, animalToUpdate);
         }
 
-        public async Task<(HttpStatusCode, Animal?)> UpdateAnimalKindAsync(
+        public async Task<IServiceResponse<Animal>> UpdateAnimalKindAsync(
             long animalId,
             PutAnimalKindDto request)
         {
+            if (!IdValidator.IsValid(animalId, request.OldKindId, request.NewKindId))
+            {
+                return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
+            }
+
             var animalToUpdate = await _db.Animals.Include(a => a.VisitedLocations).Include(a => a.Kinds)
                                                   .FirstOrDefaultAsync(a => a.Id == animalId);
             if (animalToUpdate is null)
             {
-                return (HttpStatusCode.NotFound, null);
+                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
             }
 
-            // Validation.
             bool kindsExist = _db.Kinds.Any(k => k.Id == request.OldKindId)
-                              && _db.Kinds.Any(k => k.Id == request.NewKindId);
+                           && _db.Kinds.Any(k => k.Id == request.NewKindId);
             if (!kindsExist)
             {
-                return (HttpStatusCode.NotFound, null);
+                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
             }
 
             bool kindExistsInAnimal = animalToUpdate.Kinds.Any(k => k.Id == request.OldKindId);
             if (!kindExistsInAnimal)
             {
-                return (HttpStatusCode.NotFound, null);
+                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
             }
 
             bool alreadyContainsKinds = animalToUpdate.Kinds.Any(k => k.Id == request.NewKindId)
                                         && animalToUpdate.Kinds.Any(k => k.Id == request.OldKindId);
             if (alreadyContainsKinds)
             {
-                return (HttpStatusCode.Conflict, null);
+                return new ServiceResponse<Animal>(HttpStatusCode.Conflict);
             }
 
             // Updating.
             var oldKind = animalToUpdate.Kinds.FirstOrDefault(k => k.Id == request.OldKindId);
             if (oldKind == null)
             {
-                return (HttpStatusCode.NotFound, null);
+                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
             }
 
             var newKind = await _db.Kinds.FindAsync(request.NewKindId!);
             if (newKind == null)
             {
-                return (HttpStatusCode.NotFound, null);
+                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
             }
 
             // TODO: optimize
@@ -109,26 +121,31 @@ namespace Olymp_Project.Services.AnimalsKinds
                 animalToUpdate.Kinds.Remove(oldKind);
                 animalToUpdate.Kinds.Add(newKind);
                 await _db.SaveChangesAsync();
-                return (HttpStatusCode.OK, animalToUpdate);
+                return new ServiceResponse<Animal>(HttpStatusCode.OK, animalToUpdate);
             }
             catch (Exception)
             {
-                return (HttpStatusCode.InternalServerError, null);
+                return new ServiceResponse<Animal>();
             }
         }
 
-        public async Task<(HttpStatusCode, Animal?)> RemoveAnimalKindAsync(long animalId, long kindId)
+        public async Task<IServiceResponse<Animal>> RemoveAnimalKindAsync(long animalId, long kindId)
         {
+            if (!IdValidator.IsValid(animalId) || !IdValidator.IsValid(kindId))
+            {
+                return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
+            }
+
             var animalToUpdate = await _db.Animals.Include(a => a.VisitedLocations).Include(a => a.Kinds)
                                           .FirstOrDefaultAsync(a => a.Id == animalId);
             if (animalToUpdate is null)
             {
-                return (HttpStatusCode.NotFound, null);
+                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
             }
 
             if (animalToUpdate.Kinds.Count() == 1 && animalToUpdate.Kinds.First().Id == kindId)
             {
-                return (HttpStatusCode.BadRequest, null);
+                return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }
 
             // 1 - Тип животного с typeId не найден;
@@ -136,23 +153,22 @@ namespace Olymp_Project.Services.AnimalsKinds
             bool kindExistsInAnimal = animalToUpdate.Kinds.Any(a => a.Id == kindId);
             if (!kindExistsInAnimal)
             {
-                return (HttpStatusCode.NotFound, null);
+                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
             }
 
             // TODO: optimize
             var kindToRemove = _db.Kinds.First(a => a.Id == kindId);
             animalToUpdate.Kinds.Remove(kindToRemove);
-
             try
             {
                 _db.Animals.Attach(animalToUpdate);
                 _db.Entry(animalToUpdate).State = EntityState.Modified;
                 await _db.SaveChangesAsync();
-                return (HttpStatusCode.OK, animalToUpdate);
+                return new ServiceResponse<Animal>(HttpStatusCode.OK, animalToUpdate);
             }
             catch (Exception)
             {
-                return (HttpStatusCode.InternalServerError, null);
+                return new ServiceResponse<Animal>();
             }
         }
     }

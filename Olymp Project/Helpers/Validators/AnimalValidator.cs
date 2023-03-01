@@ -46,7 +46,7 @@
 
         #region POST request validation
 
-        public static bool IsRequestValid(PostAnimalDto animal)
+        public static bool IsRequestValid(Animal animal)
         {
             return IsAnimalKindsValid(animal)
                 && IsSizeValid(animal.Weight, animal.Length, animal.Height)
@@ -54,11 +54,22 @@
                 && IsChippingValid(animal.ChipperId, animal.ChippingLocationId);
         }
 
-        private static bool IsAnimalKindsValid(PostAnimalDto animal)
+        private static bool IsAnimalKindsValid(Animal animal)
         {
-            return animal.AnimalKinds == null
-                || animal.AnimalKinds.Length == 0
-                || animal.AnimalKinds.Any(a => a > 0);
+            if (animal.Kinds == null || animal.Kinds.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (var kind in animal.Kinds)
+            {
+                if (kind == null || kind.Id <= 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static bool IsSizeValid(float? weight, float? length, float? height)

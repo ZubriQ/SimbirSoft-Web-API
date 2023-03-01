@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Controllers.Validators;
+using Olymp_Project.Helpers;
 using Olymp_Project.Services.Animals;
 
 namespace Olymp_Project.Controllers
@@ -30,18 +31,10 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AnimalResponseDto>> GetAnimal([FromRoute] long? animalId)
         {
-            if (!IdValidator.IsValid(animalId))
-            {
-                return BadRequest();
-            }
-            // TODO: 401: Неверные авторизационные данные.
+            var response = await _service.GetAnimalAsync(animalId!.Value);
 
-            var animal = await _service.GetAnimalAsync(animalId.Value);
-            if (animal is null)
-            {
-                return NotFound();
-            }
-            return Ok(_mapper.Map<AnimalResponseDto>(animal));
+            var animalDto = _mapper.Map<AnimalResponseDto>(response.Data);
+            return ResponseHelper.GetActionResult(HttpStatusCode.OK, animalDto);
         }
 
         [HttpGet("search")]
@@ -54,14 +47,10 @@ namespace Olymp_Project.Controllers
             [FromQuery] AnimalQuery query,
             [FromQuery] Paging paging)
         {
-            // TODO: CHECK THE DATETIMES.
-            if (!PagingValidator.IsValid(paging) || !AnimalValidator.IsQueryValid(query))
-            {
-                return BadRequest();
-            }
+            var response = await _service.GetAnimalsAsync(query, paging);
 
-            var animals = await _service.GetAnimalsAsync(query, paging);
-            return Ok(animals.Select(a => _mapper.Map<AnimalResponseDto>(a)));
+            var animalsDto = response.Data?.Select(a => _mapper.Map<AnimalResponseDto>(a));
+            return ResponseHelper.GetActionResult(response.StatusCode, animalsDto);
         }
 
         [HttpPost]
@@ -73,25 +62,11 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AnimalResponseDto>> CreateAnimal([FromBody] PostAnimalDto request)
         {
-            if (!AnimalValidator.IsRequestValid(request))
-            {
-                return BadRequest();
-            }
-            // TODO: 401
+            var response = await _service.InsertAnimalAsync(_mapper.Map<Animal>(request));
 
-            (HttpStatusCode status, Animal? createdAnimal) = 
-                await _service.InsertAnimalAsync(_mapper.Map<Animal>(request));
-
-            switch (status)
-            {
-                case HttpStatusCode.Conflict:
-                    return Conflict();
-                case HttpStatusCode.NotFound:
-                    return NotFound();
-            }
-            // Returns "visitedLocations": [], which seems OK.
-            return CreatedAtAction(nameof(CreateAnimal), 
-                _mapper.Map<AnimalResponseDto>(createdAnimal));
+            var animalDto = _mapper.Map<AnimalResponseDto>(response.Data);
+            // Should returns "visitedLocations": [], which seems OK.
+            return ResponseHelper.GetActionResult(response.StatusCode, animalDto);
         }
 
         [HttpPut("{animalId:long}")]
@@ -104,22 +79,10 @@ namespace Olymp_Project.Controllers
             [FromRoute] long? animalId, 
             [FromBody] PutAnimalDto request)
         {
-            if (!IdValidator.IsValid(animalId) || !AnimalValidator.IsRequestValid(request))
-            {
-                return BadRequest();
-            }
+            var response = await _service.UpdateAnimalAsync(animalId!.Value, request);
 
-            (HttpStatusCode code, Animal? updatedAnimal) =
-                await _service.UpdateAnimalAsync(animalId!.Value, request);
-
-            switch (code)
-            {
-                case HttpStatusCode.BadRequest:
-                    return BadRequest();
-                case HttpStatusCode.NotFound:
-                    return NotFound();
-            }
-            return Ok(_mapper.Map<AnimalResponseDto>(updatedAnimal));
+            var animalDto = _mapper.Map<AnimalResponseDto>(response.Data);
+            return ResponseHelper.GetActionResult(response.StatusCode, animalDto);
         }
 
         [HttpDelete("{animalId:long}")]
@@ -130,21 +93,8 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteAnimal([FromRoute] long? animalId)
         {
-            if (!IdValidator.IsValid(animalId))
-            {
-                return BadRequest();
-            }
-
-            HttpStatusCode status = await _service.RemoveAnimalAsync(animalId!.Value);
-
-            switch (status)
-            {
-                case HttpStatusCode.BadRequest:
-                    return BadRequest();
-                case HttpStatusCode.NotFound:
-                    return BadRequest();
-            }
-            return Ok();
+            var statusCode = await _service.RemoveAnimalAsync(animalId!.Value);
+            return ResponseHelper.GetActionResult(statusCode);
         }
     }
 }
