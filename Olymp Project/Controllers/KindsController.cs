@@ -30,9 +30,10 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<KindResponseDto>> GetKind([FromRoute] long? kindId)
         {
-            var kind = await _service.GetAnimalKindAsync(kindId!.Value);
+            var response = await _service.GetAnimalKindAsync(kindId!.Value);
 
-            return Ok(_mapper.Map<KindResponseDto>(kind));
+            var kindDto = _mapper.Map<KindResponseDto>(response.Data);
+            return ResponseHelper.GetActionResult(response.StatusCode, kindDto);
         }
 
         [HttpPost]
@@ -74,15 +75,8 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteKind(long? kindId)
         {
-            var status = await _service.RemoveAnimalKindAsync(kindId.Value);
-            switch(status)
-            {
-                case HttpStatusCode.BadRequest:
-                    return BadRequest();
-                case HttpStatusCode.NotFound:
-                    return NotFound();
-            }
-            return Ok();
+            var statusCode = await _service.RemoveAnimalKindAsync(kindId!.Value);
+            return ResponseHelper.GetActionResult(statusCode);
         }
     }
 }
