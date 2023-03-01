@@ -1,4 +1,4 @@
-﻿using Olymp_Project.Controllers.Validators;
+﻿using Olymp_Project.Helpers.Validators;
 using Olymp_Project.Responses;
 
 namespace Olymp_Project.Services.Animals
@@ -12,7 +12,7 @@ namespace Olymp_Project.Services.Animals
             _db = db;
         }
 
-        public async Task<IServiceResponse<Animal>> GetAnimalAsync(long id)
+        public async Task<IServiceResponse<Animal>> GetAnimalAsync(long? id)
         {
             if (!IdValidator.IsValid(id))
             {
@@ -165,7 +165,7 @@ namespace Olymp_Project.Services.Animals
             animal.Kinds = kinds;
         }
 
-        public async Task<IServiceResponse<Animal>> UpdateAnimalAsync(long id, PutAnimalDto request)
+        public async Task<IServiceResponse<Animal>> UpdateAnimalAsync(long? id, PutAnimalDto request)
         {
             #region Validation
             if (!IdValidator.IsValid(id) || !AnimalValidator.IsRequestValid(request))
@@ -226,7 +226,7 @@ namespace Olymp_Project.Services.Animals
             animal.LifeStatus = newData.LifeStatus!;
         }
 
-        public async Task<HttpStatusCode> RemoveAnimalAsync(long id)
+        public async Task<HttpStatusCode> RemoveAnimalAsync(long? id)
         {
             if (!IdValidator.IsValid(id))
             {

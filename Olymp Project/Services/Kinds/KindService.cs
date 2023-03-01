@@ -12,7 +12,7 @@ namespace Olymp_Project.Services.Kinds
             _db = context;
         }
 
-        public async Task<IServiceResponse<Kind>> GetAnimalKindAsync(long id)
+        public async Task<IServiceResponse<Kind>> GetAnimalKindAsync(long? id)
         {
             if (!IdValidator.IsValid(id))
             {
@@ -27,7 +27,7 @@ namespace Olymp_Project.Services.Kinds
             return new ServiceResponse<Kind>(HttpStatusCode.OK, kind);
         }
 
-        public async Task<IServiceResponse<Kind>> InsertAnimalKindAsync(string name)
+        public async Task<IServiceResponse<Kind>> InsertAnimalKindAsync(string? name)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -58,7 +58,7 @@ namespace Olymp_Project.Services.Kinds
             return new ServiceResponse<Kind>(HttpStatusCode.OK, newKind);
         }
 
-        public async Task<IServiceResponse<Kind>> UpdateAnimalKindAsync(long id, string newName)
+        public async Task<IServiceResponse<Kind>> UpdateAnimalKindAsync(long? id, string? newName)
         {
             if (!IdValidator.IsValid(id) || string.IsNullOrWhiteSpace(newName))
             {
@@ -95,7 +95,7 @@ namespace Olymp_Project.Services.Kinds
             return new ServiceResponse<Kind>(HttpStatusCode.OK, kind);
         }
 
-        public async Task<HttpStatusCode> RemoveAnimalKindAsync(long id)
+        public async Task<HttpStatusCode> RemoveAnimalKindAsync(long? id)
         {
             if (!IdValidator.IsValid(id))
             {

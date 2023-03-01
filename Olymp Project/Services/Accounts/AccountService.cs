@@ -1,4 +1,4 @@
-﻿using Olymp_Project.Controllers.Validators;
+﻿using Olymp_Project.Helpers.Validators;
 using Olymp_Project.Responses;
 
 namespace Olymp_Project.Services.Accounts

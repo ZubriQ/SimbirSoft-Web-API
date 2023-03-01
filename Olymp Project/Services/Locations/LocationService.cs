@@ -105,8 +105,8 @@ namespace Olymp_Project.Services.Locations
 
         private void AssignNewData(Location destination, LocationRequestDto source)
         {
-            destination.Latitude = source.Latitude;
-            destination.Longitude = source.Longitude;
+            destination.Latitude = source.Latitude!.Value;
+            destination.Longitude = source.Longitude!.Value;
         }
 
         public async Task<HttpStatusCode> RemoveLocationAsync(long? id)
