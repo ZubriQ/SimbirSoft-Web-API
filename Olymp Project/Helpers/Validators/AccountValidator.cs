@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Olymp_Project.Controllers.Validators
+namespace Olymp_Project.Helpers.Validators
 {
     public static class AccountValidator
     {

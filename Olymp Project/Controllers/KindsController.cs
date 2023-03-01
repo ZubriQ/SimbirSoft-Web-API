@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Olymp_Project.Controllers.Validators;
+using Olymp_Project.Helpers;
 using Olymp_Project.Services.Kinds;
 
 namespace Olymp_Project.Controllers
@@ -30,16 +30,8 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<KindResponseDto>> GetKind([FromRoute] long? kindId)
         {
-            if (!IdValidator.IsValid(kindId))
-            {
-                return BadRequest();
-            }
-
             var kind = await _service.GetAnimalKindAsync(kindId!.Value);
-            if (kind is null)
-            {
-                return NotFound();
-            }
+
             return Ok(_mapper.Map<KindResponseDto>(kind));
         }
 
@@ -51,18 +43,10 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<KindResponseDto>> CreateKind([FromBody] string? name)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return BadRequest();
-            }
+            var response = await _service.InsertAnimalKindAsync(name!);
 
-            (HttpStatusCode status, var kind) = await _service.InsertAnimalKindAsync(name);
-
-            if (status is HttpStatusCode.Conflict)
-            {
-                return Conflict();
-            }
-            return CreatedAtAction(nameof(CreateKind), _mapper.Map<KindResponseDto>(kind));
+            var kindDto = _mapper.Map<KindResponseDto>(response.Data);
+            return ResponseHelper.GetActionResult(response.StatusCode, kindDto, nameof(CreateKind));
         }
 
         [HttpPut("{kindId:long}")]
@@ -76,23 +60,10 @@ namespace Olymp_Project.Controllers
             [FromRoute] long? kindId,
             [FromBody] string? name)
         {
-            if (!IdValidator.IsValid(kindId) || string.IsNullOrWhiteSpace(name))
-            {
-                return BadRequest();
-            }
+            var response = await _service.UpdateAnimalKindAsync(kindId!.Value, name!);
 
-            // TODO: 401
-            (HttpStatusCode status, Kind? kind) = 
-                await _service.UpdateAnimalKindAsync(kindId.Value, name);
-
-            switch(status)
-            {
-                case HttpStatusCode.NotFound:
-                    return NotFound();
-                case HttpStatusCode.Conflict:
-                    return Conflict();
-            }
-            return Ok(_mapper.Map<KindResponseDto>(kind));
+            var kindDto = _mapper.Map<KindResponseDto>(response.Data);
+            return ResponseHelper.GetActionResult(response.StatusCode, kindDto);
         }
 
         [HttpDelete("{kindId:long}")]
@@ -103,11 +74,6 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteKind(long? kindId)
         {
-            if (!IdValidator.IsValid(kindId))
-            {
-                return BadRequest();
-            }
-
             var status = await _service.RemoveAnimalKindAsync(kindId.Value);
             switch(status)
             {

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Olymp_Project.Controllers.Validators;
+using Olymp_Project.Helpers.Validators;
 using Olymp_Project.Services.Locations;
 
 namespace Olymp_Project.Controllers

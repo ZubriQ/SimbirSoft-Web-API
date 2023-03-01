@@ -1,9 +1,5 @@
 ﻿using Olymp_Project.Controllers.Validators;
-using Olymp_Project.Models;
 using Olymp_Project.Responses;
-using System.Linq;
-using System.Net;
-using System.Security.Principal;
 
 namespace Olymp_Project.Services.Accounts
 {

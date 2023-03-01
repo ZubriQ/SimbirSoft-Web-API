@@ -18,6 +18,9 @@ namespace Olymp_Project.Responses
             StatusCode = statusCode;
         }
 
+        /// <summary>
+        /// Sets StatusCode to InternalServerError.
+        /// </summary>
         public ServiceResponse()
         {
             StatusCode = HttpStatusCode.InternalServerError;
