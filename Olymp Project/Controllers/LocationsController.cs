@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Olymp_Project.Helpers.Validators;
+using Olymp_Project.Helpers;
 using Olymp_Project.Services.Locations;
 
 namespace Olymp_Project.Controllers
@@ -30,18 +30,10 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<LocationResponseDto>> GetLocation([FromRoute] long? locationId)
         {
-            if (!IdValidator.IsValid(locationId))
-            {
-                return BadRequest();
-            }
+            var response = await _service.GetLocationAsync(locationId!.Value);
 
-            // TODO: 401 unauthorized
-            var location = await _service.GetLocationAsync(locationId.Value);
-            if (location is null)
-            {
-                return NotFound();
-            }
-            return Ok(_mapper.Map<LocationResponseDto>(location));
+            var locationDto = _mapper.Map<LocationResponseDto>(response.Data);
+            return ResponseHelper.GetActionResult(response.StatusCode, locationDto);
         }
 
         [HttpPost]
@@ -53,25 +45,13 @@ namespace Olymp_Project.Controllers
         public async Task<ActionResult<LocationResponseDto>> CreateLocation(
             [FromBody] LocationRequestDto request)
         {
-            if (!LocationValidator.IsValid(request))
-            {
-                return BadRequest();
-            }
-            // TODO: 401 unauthorized;
-            // invalid credentials.
+            var response = await _service.InsertLocationAsync(request);
 
-            (HttpStatusCode status, Location? addedLocation) = 
-                await _service.AddLocationAsync(_mapper.Map<Location>(request));
-
-            if (status == HttpStatusCode.Conflict)
-            {
-                return Conflict();
-            }
-            var mappedLocation = _mapper.Map<LocationResponseDto>(addedLocation);
-            return CreatedAtAction(nameof(CreateLocation), mappedLocation);
+            var dto = _mapper.Map<LocationResponseDto>(response.Data);
+            return ResponseHelper.GetActionResult(response.StatusCode, dto, nameof(CreateLocation));
         }
 
-        [HttpPut("{pointId:long}")]
+        [HttpPut("{locationId:long}")]
         [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LocationResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -79,54 +59,26 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<LocationResponseDto>> UpdateLocation(
-            long? pointId,
-            LocationRequestDto location)
+            long? locationId,
+            LocationRequestDto request)
         {
-            if (!IdValidator.IsValid(pointId) || !LocationValidator.IsValid(location))
-            {
-                return BadRequest();
-            }
-            // TODO: 401 unauthorized;
-            // invalid credentials.
+            var response = await _service.UpdateLocationAsync(locationId!.Value, request);
 
-            (HttpStatusCode status, Location? updatedLocation) =
-                await _service.UpdateLocationAsync(pointId.Value, _mapper.Map<Location>(location));
-
-            switch (status)
-            {
-                case HttpStatusCode.NotFound:
-                    return NotFound();
-                case HttpStatusCode.Conflict:
-                    return Conflict();
-            }
-            return Ok(_mapper.Map<LocationResponseDto>(updatedLocation));
+            var locationDto = _mapper.Map<LocationResponseDto>(response.Data);
+            return ResponseHelper.GetActionResult(response.StatusCode, locationDto);
         }
 
-        [HttpDelete("{pointId:long}")]
+        [HttpDelete("{locationId:long}")]
         [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> DeleteLocation(long? pointId)
+        public async Task<IActionResult> DeleteLocation(long? locationId)
         {
-            if (!IdValidator.IsValid(pointId))
-            {
-                return BadRequest();
-            }
-            // TODO: 401 unauthorized;
-            // invalid credentials.
-
-            var status = await _service.RemoveLocationAsync(pointId.Value);
-            switch (status)
-            {
-                case HttpStatusCode.NotFound:
-                    return NotFound();
-                case HttpStatusCode.BadRequest:
-                    return BadRequest();
-            }
-            return Ok();
+            var statusCode = await _service.RemoveLocationAsync(locationId!.Value);
+            return ResponseHelper.GetActionResult(statusCode);
         }
     }
 }

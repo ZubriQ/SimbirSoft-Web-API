@@ -1,5 +1,6 @@
-﻿using Olymp_Project.Models;
-using System.Net;
+﻿using Olymp_Project.Helpers.Validators;
+using Olymp_Project.Models;
+using Olymp_Project.Responses;
 
 namespace Olymp_Project.Services.Locations
 {
@@ -12,92 +13,121 @@ namespace Olymp_Project.Services.Locations
             _db = db;
         }
 
-        public async Task<Location?> GetLocationAsync(long id)
+        public async Task<IServiceResponse<Location>> GetLocationAsync(long? id)
         {
-            return await _db.Locations.FirstOrDefaultAsync(a => a.Id == id);
+            if (!IdValidator.IsValid(id))
+            {
+                return new ServiceResponse<Location>(HttpStatusCode.BadRequest);
+            }
+
+            // TODO: Test it.
+            if (await _db.Locations.FindAsync(id) is not Location location)
+            {
+                return new ServiceResponse<Location>(HttpStatusCode.NotFound);
+            }
+            return new ServiceResponse<Location>(HttpStatusCode.OK, location);
         }
 
-        public async Task<(HttpStatusCode, Location?)> AddLocationAsync(Location location)
+        public async Task<IServiceResponse<Location>> InsertLocationAsync(LocationRequestDto location)
         {
+            if (!LocationDtoValidator.IsValid(location))
+            {
+                return new ServiceResponse<Location>(HttpStatusCode.BadRequest);
+            }
+
+            bool coordinatesAlreadyExist = await _db.Locations.AnyAsync(
+                l => (l.Latitude == location.Latitude) && (l.Longitude == location.Longitude));
+            if (coordinatesAlreadyExist)
+            {
+                return new ServiceResponse<Location>(HttpStatusCode.Conflict);
+            }
+
             try
             {
-                bool exists = await _db.Locations.AnyAsync(l => l.Latitude == location.Latitude
-                                                                && l.Longitude == location.Longitude);
-                if (exists)
-                {
-                    return (HttpStatusCode.Conflict, null);
-                }
-
                 return await AddLocation(location);
             }
             catch (Exception)
             {
-                return (HttpStatusCode.InternalServerError, null);
+                return new ServiceResponse<Location>();
             }
         }
 
-        private async Task<(HttpStatusCode, Location)> AddLocation(Location location)
+        private async Task<IServiceResponse<Location>> AddLocation(LocationRequestDto location)
         {
-            await _db.Locations.AddAsync(location);
+            var newLocation = new Location()
+            {
+                Latitude = location.Latitude!.Value,
+                Longitude = location.Longitude!.Value
+            };
+            await _db.Locations.AddAsync(newLocation);
             await _db.SaveChangesAsync();
-            return (HttpStatusCode.Created, location);
+            return new ServiceResponse<Location>(HttpStatusCode.Created, newLocation);
         }
 
-        public async Task<(HttpStatusCode, Location?)> UpdateLocationAsync(long id, Location location)
+        public async Task<IServiceResponse<Location>> UpdateLocationAsync(
+            long? id, LocationRequestDto request)
         {
+            if (!IdValidator.IsValid(id) || !LocationDtoValidator.IsValid(request))
+            {
+                return new ServiceResponse<Location>(HttpStatusCode.BadRequest);
+            }
+
+            if (await _db.Locations.FirstOrDefaultAsync(l => l.Id == id) is not Location location)
+            {
+                return new ServiceResponse<Location>(HttpStatusCode.NotFound);
+            }
+
+            var exists = await _db.Locations.AnyAsync(l => l.Latitude == request.Latitude
+                                                        && l.Longitude == request.Longitude);
+            if (exists)
+            {
+                return new ServiceResponse<Location>(HttpStatusCode.Conflict);
+            }
+
             try
             {
-                var locationToUpdate = await _db.Locations.FirstOrDefaultAsync(l => l.Id == id);
-                if (locationToUpdate is null)
-                {
-                    return (HttpStatusCode.NotFound, null);
-                }
-                var exists = await _db.Locations.AnyAsync(l => l.Latitude == location.Latitude
-                                                            && l.Longitude == location.Longitude);
-                if (exists)
-                {
-                    return (HttpStatusCode.Conflict, null);
-                }
-
-                return await UpdateLocation(locationToUpdate, location);
+                return await UpdateLocation(location, request);
             }
             catch (Exception)
             {
-                return (HttpStatusCode.InternalServerError, null);
+                return new ServiceResponse<Location>();
             }
         }
 
-        private async Task<(HttpStatusCode, Location)> UpdateLocation(
-            Location destination, 
-            Location source)
+        private async Task<IServiceResponse<Location>> UpdateLocation(
+            Location location, LocationRequestDto newData)
         {
-            AssignNewData(destination, source);
-            _db.Entry(destination).State = EntityState.Modified;
+            AssignNewData(location, newData);
+            _db.Entry(location).State = EntityState.Modified;
             await _db.SaveChangesAsync();
-            return (HttpStatusCode.OK, destination);
+            return new ServiceResponse<Location>(HttpStatusCode.OK, location);
         }
 
-        private void AssignNewData(Location destination, Location source)
+        private void AssignNewData(Location destination, LocationRequestDto source)
         {
             destination.Latitude = source.Latitude;
             destination.Longitude = source.Longitude;
         }
 
-        public async Task<HttpStatusCode> RemoveLocationAsync(long id)
+        public async Task<HttpStatusCode> RemoveLocationAsync(long? id)
         {
+            if (!IdValidator.IsValid(id))
+            {
+                return HttpStatusCode.BadRequest;
+            }
+
+            if (await _db.Locations.Include(l => l.Animals).FirstOrDefaultAsync(l => l.Id == id)
+                is not Location location)
+            {
+                return HttpStatusCode.NotFound;
+            }
+            if (location.Animals.Any())
+            {
+                return HttpStatusCode.BadRequest;
+            }
+
             try
             {
-                var location = await _db.Locations.Include(l => l.Animals)
-                                                  .FirstOrDefaultAsync(l => l.Id == id);
-                if (location is null)
-                {
-                    return HttpStatusCode.NotFound;
-                }
-                if (location.Animals.Any())
-                {
-                    return HttpStatusCode.BadRequest;
-                }
-
                 return await RemoveLocation(location);
             }
             catch (Exception)

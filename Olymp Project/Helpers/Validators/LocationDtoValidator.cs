@@ -1,6 +1,6 @@
 ﻿namespace Olymp_Project.Helpers.Validators
 {
-    public static class LocationValidator
+    public static class LocationDtoValidator
     {
         public static bool IsValid(LocationRequestDto location)
         {
