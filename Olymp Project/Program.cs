@@ -9,6 +9,7 @@ using Olymp_Project.Services.Locations;
 using Olymp_Project.Services.Registration;
 using Olymp_Project.Services.VisitedLocations;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -67,6 +68,15 @@ builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
 #endregion
 
 var app = builder.Build();
+
+// Creating the db for testing.
+using (var scope = app.Services.CreateScope())
+{
+    using (var context = scope.ServiceProvider.GetRequiredService<ChipizationDbContext>())
+    {
+        context.Database.Migrate();
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
