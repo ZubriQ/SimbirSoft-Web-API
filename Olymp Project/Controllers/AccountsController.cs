@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Helpers;
 using Olymp_Project.Services.Accounts;
+using Olymp_Project.Services.Authentication;
 
 namespace Olymp_Project.Controllers
 {
@@ -30,6 +31,11 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AccountResponseDto>> GetAccount([FromRoute] int? accountId) 
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.GetAccountAsync(accountId!.Value);
 
             var accountDto = _mapper.Map<AccountResponseDto>(response.Data);
@@ -46,6 +52,11 @@ namespace Olymp_Project.Controllers
             [FromQuery] AccountQuery query,
             [FromQuery] Paging paging)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.GetAccountsAsync(query, paging);
 
             var accountsDto = response.Data!.Select(a => _mapper.Map<AccountResponseDto>(a));
@@ -63,6 +74,11 @@ namespace Olymp_Project.Controllers
             [FromRoute] int? accountId,
             [FromBody] AccountRequestDto request)  
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.UpdateAccountAsync(accountId!.Value, request);
 
             var accountDto = _mapper.Map<Account>(response.Data);
@@ -77,6 +93,11 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteAccount([FromRoute] int? accountId)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var statusCode = await _service.RemoveAccountAsync(accountId!.Value, User.Identity!.Name);
             return ResponseHelper.GetActionResult(statusCode);
         }

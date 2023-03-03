@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Helpers;
 using Olymp_Project.Services.AnimalsKinds;
+using Olymp_Project.Services.Authentication;
 
 namespace Olymp_Project.Controllers
 {
@@ -32,6 +33,11 @@ namespace Olymp_Project.Controllers
             [FromRoute] long? animalId,
             [FromRoute] long? kindId)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.InsertKindToAnimalAsync(animalId!.Value, kindId!.Value);
 
             var animalDto = _mapper.Map<AnimalResponseDto>(response.Data);
@@ -50,6 +56,11 @@ namespace Olymp_Project.Controllers
             [FromRoute] long? animalId,
             [FromBody] PutAnimalKindDto request)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.UpdateAnimalKindAsync(animalId!.Value, request);
 
             var animalDto = _mapper.Map<AnimalResponseDto>(response.Data);
@@ -66,6 +77,11 @@ namespace Olymp_Project.Controllers
             [FromRoute] long? animalId,
             [FromRoute] long? kindId)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.RemoveAnimalKindAsync(animalId!.Value, kindId!.Value);
 
             var animalDto = _mapper.Map<AnimalResponseDto>(response.Data);

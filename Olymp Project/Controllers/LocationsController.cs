@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Helpers;
+using Olymp_Project.Services.Authentication;
 using Olymp_Project.Services.Locations;
 
 namespace Olymp_Project.Controllers
@@ -30,6 +31,11 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<LocationResponseDto>> GetLocation([FromRoute] long? locationId)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.GetLocationAsync(locationId!.Value);
 
             var locationDto = _mapper.Map<LocationResponseDto>(response.Data);
@@ -45,6 +51,11 @@ namespace Olymp_Project.Controllers
         public async Task<ActionResult<LocationResponseDto>> CreateLocation(
             [FromBody] LocationRequestDto request)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.InsertLocationAsync(request);
 
             var dto = _mapper.Map<LocationResponseDto>(response.Data);
@@ -62,6 +73,11 @@ namespace Olymp_Project.Controllers
             long? locationId,
             LocationRequestDto request)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.UpdateLocationAsync(locationId!.Value, request);
 
             var locationDto = _mapper.Map<LocationResponseDto>(response.Data);
@@ -77,6 +93,11 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> DeleteLocation(long? locationId)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var statusCode = await _service.RemoveLocationAsync(locationId!.Value);
             return ResponseHelper.GetActionResult(statusCode);
         }

@@ -54,7 +54,7 @@ builder.Services.AddAuthentication(ApiAuthenticationScheme.Name)
 string connection;
 bool isTesting;
 
-if (System.Diagnostics.Debugger.IsAttached)
+if (System.Diagnostics.Debugger.IsAttached) // TODO: Remove
 {
     connection = builder.Configuration.GetConnectionString("Development");
     isTesting = false;

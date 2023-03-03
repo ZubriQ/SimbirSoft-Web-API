@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Helpers;
 using Olymp_Project.Services.Animals;
+using Olymp_Project.Services.Authentication;
 
 namespace Olymp_Project.Controllers
 {
@@ -30,6 +31,11 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AnimalResponseDto>> GetAnimal([FromRoute] long? animalId)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.GetAnimalAsync(animalId!.Value);
 
             var animalDto = _mapper.Map<AnimalResponseDto>(response.Data);
@@ -46,6 +52,11 @@ namespace Olymp_Project.Controllers
             [FromQuery] AnimalQuery query,
             [FromQuery] Paging paging)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.GetAnimalsAsync(query, paging);
 
             var animalsDto = response.Data?.Select(a => _mapper.Map<AnimalResponseDto>(a));
@@ -61,6 +72,11 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AnimalResponseDto>> CreateAnimal([FromBody] PostAnimalDto request)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.InsertAnimalAsync(_mapper.Map<Animal>(request));
 
             var animalDto = _mapper.Map<AnimalResponseDto>(response.Data);
@@ -78,6 +94,11 @@ namespace Olymp_Project.Controllers
             [FromRoute] long? animalId, 
             [FromBody] PutAnimalDto request)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.UpdateAnimalAsync(animalId!.Value, request);
 
             var animalDto = _mapper.Map<AnimalResponseDto>(response.Data);
@@ -92,6 +113,11 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteAnimal([FromRoute] long? animalId)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var statusCode = await _service.RemoveAnimalAsync(animalId!.Value);
             return ResponseHelper.GetActionResult(statusCode);
         }

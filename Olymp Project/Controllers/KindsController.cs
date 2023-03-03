@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Helpers;
+using Olymp_Project.Services.Authentication;
 using Olymp_Project.Services.Kinds;
 
 namespace Olymp_Project.Controllers
@@ -15,9 +17,9 @@ namespace Olymp_Project.Controllers
         private readonly IKindService _service;
         private readonly IMapper _mapper;
 
-        public KindsController(IKindService kindService, IMapper mapper)
+        public KindsController(IKindService service, IMapper mapper)
         {
-            _service = kindService;
+            _service = service;
             _mapper = mapper;
         }
 
@@ -30,6 +32,11 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<KindResponseDto>> GetKind([FromRoute] long? kindId)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.GetAnimalKindAsync(kindId!.Value);
 
             var kindDto = _mapper.Map<KindResponseDto>(response.Data);
@@ -44,6 +51,11 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<KindResponseDto>> CreateKind([FromBody] string? name)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.InsertAnimalKindAsync(name!);
 
             var kindDto = _mapper.Map<KindResponseDto>(response.Data);
@@ -61,6 +73,11 @@ namespace Olymp_Project.Controllers
             [FromRoute] long? kindId,
             [FromBody] string? name)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.UpdateAnimalKindAsync(kindId!.Value, name!);
 
             var kindDto = _mapper.Map<KindResponseDto>(response.Data);
@@ -75,6 +92,11 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteKind(long? kindId)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var statusCode = await _service.RemoveAnimalKindAsync(kindId!.Value);
             return ResponseHelper.GetActionResult(statusCode);
         }
