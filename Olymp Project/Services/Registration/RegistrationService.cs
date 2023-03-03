@@ -44,7 +44,7 @@ namespace Olymp_Project.Services.Registration
             {
                 FirstName = data.FirstName!,
                 LastName = data.LastName!,
-                Email = data.LastName!,
+                Email = data.Email!,
                 Password = data.Password!
             };
             return newAccount;
