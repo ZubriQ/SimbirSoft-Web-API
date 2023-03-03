@@ -30,16 +30,20 @@ namespace Olymp_Project.Models
 
                 entity.Property(e => e.Email).HasMaxLength(320);
 
-                entity.Property(e => e.FirstName).HasMaxLength(50);
+                entity.Property(e => e.FirstName).HasMaxLength(150);
 
-                entity.Property(e => e.LastName).HasMaxLength(50);
+                entity.Property(e => e.LastName).HasMaxLength(150);
 
-                entity.Property(e => e.Password).HasMaxLength(100);
+                entity.Property(e => e.Password).HasMaxLength(150);
             });
 
             modelBuilder.Entity<Animal>(entity =>
             {
                 entity.ToTable("Animal");
+
+                entity.HasIndex(e => e.ChipperId, "IX_Animal_ChipperId");
+
+                entity.HasIndex(e => e.ChippingLocationId, "IX_Animal_ChippingLocationId");
 
                 entity.Property(e => e.ChippingDateTime).HasColumnType("datetime");
 
@@ -72,6 +76,8 @@ namespace Olymp_Project.Models
                             j.HasKey("AnimalId", "KindId").HasName("PK_AnimalType");
 
                             j.ToTable("AnimalKind");
+
+                            j.HasIndex(new[] { "KindId" }, "IX_AnimalKind_KindId");
                         });
             });
 
@@ -79,7 +85,7 @@ namespace Olymp_Project.Models
             {
                 entity.ToTable("Kind");
 
-                entity.Property(e => e.Name).HasMaxLength(50);
+                entity.Property(e => e.Name).HasMaxLength(150);
             });
 
             modelBuilder.Entity<Location>(entity =>
@@ -90,6 +96,10 @@ namespace Olymp_Project.Models
             modelBuilder.Entity<VisitedLocation>(entity =>
             {
                 entity.ToTable("VisitedLocation");
+
+                entity.HasIndex(e => e.AnimalId, "IX_VisitedLocation_AnimalId");
+
+                entity.HasIndex(e => e.LocationId, "IX_VisitedLocation_LocationId");
 
                 entity.Property(e => e.VisitDateTime).HasColumnType("datetime");
 

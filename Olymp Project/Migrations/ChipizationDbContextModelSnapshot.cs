@@ -33,7 +33,7 @@ namespace Olymp_Project.Migrations
                     b.HasKey("AnimalId", "KindId")
                         .HasName("PK_AnimalType");
 
-                    b.HasIndex("KindId");
+                    b.HasIndex(new[] { "KindId" }, "IX_AnimalKind_KindId");
 
                     b.ToTable("AnimalKind", (string)null);
                 });
@@ -53,18 +53,18 @@ namespace Olymp_Project.Migrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.HasKey("Id");
 
@@ -112,9 +112,9 @@ namespace Olymp_Project.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChipperId");
+                    b.HasIndex(new[] { "ChipperId" }, "IX_Animal_ChipperId");
 
-                    b.HasIndex("ChippingLocationId");
+                    b.HasIndex(new[] { "ChippingLocationId" }, "IX_Animal_ChippingLocationId");
 
                     b.ToTable("Animal", (string)null);
                 });
@@ -129,8 +129,8 @@ namespace Olymp_Project.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.HasKey("Id");
 
@@ -175,9 +175,9 @@ namespace Olymp_Project.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AnimalId");
+                    b.HasIndex(new[] { "AnimalId" }, "IX_VisitedLocation_AnimalId");
 
-                    b.HasIndex("LocationId");
+                    b.HasIndex(new[] { "LocationId" }, "IX_VisitedLocation_LocationId");
 
                     b.ToTable("VisitedLocation", (string)null);
                 });

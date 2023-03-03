@@ -49,14 +49,14 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<KindResponseDto>> CreateKind([FromBody] string? name)
+        public async Task<ActionResult<KindResponseDto>> CreateKind([FromBody] KindRequestDto request)
         {
             if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
             {
                 return Unauthorized();
             }
 
-            var response = await _service.InsertAnimalKindAsync(name!);
+            var response = await _service.InsertAnimalKindAsync(request.Type!);
 
             var kindDto = _mapper.Map<KindResponseDto>(response.Data);
             return ResponseHelper.GetActionResult(response.StatusCode, kindDto, nameof(CreateKind));
@@ -71,14 +71,14 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<KindResponseDto>> UpdateKind(
             [FromRoute] long? kindId,
-            [FromBody] string? name)
+            [FromBody] KindRequestDto request)
         {
             if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
             {
                 return Unauthorized();
             }
 
-            var response = await _service.UpdateAnimalKindAsync(kindId!.Value, name!);
+            var response = await _service.UpdateAnimalKindAsync(kindId!.Value, request.Type);
 
             var kindDto = _mapper.Map<KindResponseDto>(response.Data);
             return ResponseHelper.GetActionResult(response.StatusCode, kindDto);

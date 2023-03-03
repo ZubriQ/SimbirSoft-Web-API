@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Helpers;
+using Olymp_Project.Helpers.Validators;
 using Olymp_Project.Services.Accounts;
 using Olymp_Project.Services.Authentication;
 
@@ -79,9 +80,9 @@ namespace Olymp_Project.Controllers
                 return Unauthorized();
             }
 
-            var response = await _service.UpdateAccountAsync(accountId!.Value, request);
+            var response = await _service.UpdateAccountAsync(accountId!.Value, request, User.Identity!.Name);
 
-            var accountDto = _mapper.Map<Account>(response.Data);
+            var accountDto = _mapper.Map<AccountResponseDto>(response.Data);
             return ResponseHelper.GetActionResult(response.StatusCode, accountDto);
         }
 

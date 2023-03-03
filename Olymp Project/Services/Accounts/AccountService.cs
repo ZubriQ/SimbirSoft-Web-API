@@ -37,7 +37,7 @@ namespace Olymp_Project.Services.Accounts
 
             try
             {
-                var accounts = GetFilteredAccounts(query, paging);
+                var accounts = await GetFilteredAccounts(query, paging);
                 return new CollectionServiceResponse<Account>(HttpStatusCode.OK, accounts);
             }
             catch (Exception)
@@ -47,26 +47,26 @@ namespace Olymp_Project.Services.Accounts
         }
 
         // TODO: Make this layer as a Service, and move the method into a Repository?
-        private IQueryable<Account> GetFilteredAccounts(AccountQuery filter, Paging paging)
+        private async Task<IQueryable<Account>> GetFilteredAccounts(AccountQuery filter, Paging paging)
         {
             IQueryable<Account> accounts = _db.Accounts.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(filter.FirstName))
             {
-                accounts = accounts.Where(a => a.FirstName.Contains(
-                    filter.FirstName, StringComparison.OrdinalIgnoreCase));
+                string firstNameLower = filter.FirstName.ToLower();
+                accounts = accounts.Where(a => a.FirstName.ToLower().Contains(firstNameLower));
             }
 
             if (!string.IsNullOrWhiteSpace(filter.LastName))
             {
-                accounts = accounts.Where(a => a.LastName.Contains(
-                    filter.LastName, StringComparison.OrdinalIgnoreCase));
+                string lastNameLower = filter.LastName.ToLower();
+                accounts = accounts.Where(a => a.LastName.ToLower().Contains(lastNameLower));
             }
 
             if (!string.IsNullOrWhiteSpace(filter.Email))
             {
-                accounts = accounts.Where(a => a.Email.Contains(
-                    filter.Email, StringComparison.OrdinalIgnoreCase));
+                string emailLower = filter.Email.ToLower();
+                accounts = accounts.Where(a => a.Email.ToLower().Contains(emailLower));
             }
 
             return accounts
@@ -76,16 +76,20 @@ namespace Olymp_Project.Services.Accounts
         }
 
         public async Task<IServiceResponse<Account>> UpdateAccountAsync(
-            int? id, AccountRequestDto request)
+            int? id, AccountRequestDto request, string? login)
         {
             if (!IdValidator.IsValid(id) || !AccountValidator.IsValid(request))
             {
                 return new ServiceResponse<Account>(HttpStatusCode.BadRequest);
             }
 
-            if (_db.Accounts.FirstOrDefault(a => a.Id == id) is not Account account)
+            if (await _db.Accounts.FindAsync(id) is not Account account)
             {
-                return new ServiceResponse<Account>(HttpStatusCode.NotFound);
+                return new ServiceResponse<Account>(HttpStatusCode.Forbidden);
+            }
+            if (account.Email != login)
+            {
+                return new ServiceResponse<Account>(HttpStatusCode.Forbidden);
             }
 
             try
@@ -114,7 +118,7 @@ namespace Olymp_Project.Services.Accounts
             account.FirstName = newData.FirstName!;
             account.LastName = newData.LastName!;
             account.Email = newData.Email!;
-            // TODO: or if password == password then change the data?
+            account.Password = newData.Password!;
         }
 
         public async Task<HttpStatusCode> RemoveAccountAsync(int? id, string? login)

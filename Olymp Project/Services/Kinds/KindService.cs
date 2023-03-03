@@ -27,14 +27,14 @@ namespace Olymp_Project.Services.Kinds
             return new ServiceResponse<Kind>(HttpStatusCode.OK, kind);
         }
 
-        public async Task<IServiceResponse<Kind>> InsertAnimalKindAsync(string? name)
+        public async Task<IServiceResponse<Kind>> InsertAnimalKindAsync(string? type)
         {
-            if (string.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(type))
             {
                 return new ServiceResponse<Kind>(HttpStatusCode.BadRequest);
             }
 
-            bool exists = await _db.Kinds.AnyAsync(k => k.Name == name);
+            bool exists = await _db.Kinds.AnyAsync(k => k.Name == type);
             if (exists)
             {
                 return new ServiceResponse<Kind>(HttpStatusCode.Conflict);
@@ -42,7 +42,7 @@ namespace Olymp_Project.Services.Kinds
 
             try
             {
-                return await AddNewKind(name);
+                return await AddNewKind(type);
             }
             catch (Exception)
             {
@@ -50,12 +50,12 @@ namespace Olymp_Project.Services.Kinds
             }
         }
 
-        private async Task<IServiceResponse<Kind>> AddNewKind(string name)
+        private async Task<IServiceResponse<Kind>> AddNewKind(string type)
         {
-            Kind newKind = new Kind() { Name = name };
+            Kind newKind = new Kind() { Name = type };
             await _db.Kinds.AddAsync(newKind);
             await _db.SaveChangesAsync();
-            return new ServiceResponse<Kind>(HttpStatusCode.OK, newKind);
+            return new ServiceResponse<Kind>(HttpStatusCode.Created, newKind);
         }
 
         public async Task<IServiceResponse<Kind>> UpdateAnimalKindAsync(long? id, string? newName)
