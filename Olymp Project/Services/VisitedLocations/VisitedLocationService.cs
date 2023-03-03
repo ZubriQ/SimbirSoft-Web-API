@@ -43,8 +43,8 @@ namespace Olymp_Project.Services.VisitedLocations
             }
 
             locations = locations.OrderBy(l => l.Id)
-                                 .Skip(paging.Skip!.Value)
-                                 .Take(paging.Take!.Value)
+                                 .Skip(paging.From!.Value)
+                                 .Take(paging.Size!.Value)
                                  .ToList();
             return new CollectionServiceResponse<VisitedLocation>(HttpStatusCode.OK, locations);
         }

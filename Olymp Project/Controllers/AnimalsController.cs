@@ -21,7 +21,7 @@ namespace Olymp_Project.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("{animalId:int}")]
+        [HttpGet("{animalId:long}")]
         [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AnimalResponseDto))]
@@ -33,7 +33,7 @@ namespace Olymp_Project.Controllers
             var response = await _service.GetAnimalAsync(animalId!.Value);
 
             var animalDto = _mapper.Map<AnimalResponseDto>(response.Data);
-            return ResponseHelper.GetActionResult(HttpStatusCode.OK, animalDto);
+            return ResponseHelper.GetActionResult(response.StatusCode, animalDto);
         }
 
         [HttpGet("search")]

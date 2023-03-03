@@ -71,8 +71,8 @@ namespace Olymp_Project.Services.Accounts
 
             return accounts
                 .OrderBy(a => a.Id)
-                .Skip(paging.Skip!.Value)
-                .Take(paging.Take!.Value);
+                .Skip(paging.From!.Value)
+                .Take(paging.Size!.Value);
         }
 
         public async Task<IServiceResponse<Account>> UpdateAccountAsync(

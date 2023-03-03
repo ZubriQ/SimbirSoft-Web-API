@@ -4,8 +4,8 @@
     {
         public static bool IsValid(Paging paging)
         {
-            return paging.Skip.HasValue && paging.Skip >= 0 
-                && paging.Take.HasValue && paging.Take > 0;
+            return paging.From.HasValue && paging.From >= 0 
+                && paging.Size.HasValue && paging.Size > 0;
         }
     }
 }

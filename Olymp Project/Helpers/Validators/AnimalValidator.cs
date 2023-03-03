@@ -8,7 +8,8 @@
         {
             return IsQueryLifeStatusValid(query.LifeStatus)
                 && IsQueryGenderValid(query.Gender)
-                && IsQueryChippingValid(query.ChipperId, query.ChippingLocationId);
+                && IsQueryChipperValid(query.ChipperId)
+                && IsQueryChippingLocationValid(query.ChippingLocationId);
             // TODO: ALSO CHECK THE DATETIMES.
         }
 
@@ -36,10 +37,28 @@
             }
         }
 
-        private static bool IsQueryChippingValid(int? chipperId, long? chippingLocationId)
+        private static bool IsQueryChipperValid(int? id)
         {
-            return chipperId > 0 || chippingLocationId > 0;
-            // TODO: if (HasValue) only then check > 0?
+            if (!id.HasValue)
+            {
+                return true;
+            }
+            else
+            {
+                return id > 0;
+            }
+        }
+
+        private static bool IsQueryChippingLocationValid(long? id)
+        {
+            if (!id.HasValue)
+            {
+                return true;
+            }
+            else
+            {
+                return id > 0;
+            }
         }
 
         #endregion

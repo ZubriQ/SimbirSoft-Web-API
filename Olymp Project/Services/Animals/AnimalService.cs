@@ -62,8 +62,8 @@ namespace Olymp_Project.Services.Animals
 
             return animals
                 .OrderBy(a => a.Id)
-                .Skip(paging.Skip!.Value)
-                .Take(paging.Take!.Value);
+                .Skip(paging.From!.Value)
+                .Take(paging.Size!.Value);
         }
 
         private IQueryable<Animal> FilterAnimals(AnimalQuery query, IQueryable<Animal> animals)
