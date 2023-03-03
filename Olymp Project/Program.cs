@@ -51,7 +51,7 @@ builder.Services.AddAuthentication(ApiAuthenticationScheme.Name)
 
 #region Configurating Database, AutoMapper and Services
 
-var connection = builder.Configuration.GetConnectionString("animal-chipization");
+var connection = builder.Configuration.GetConnectionString("Default");
 builder.Services.AddSqlServer<ChipizationDbContext>(connection);
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
@@ -69,7 +69,7 @@ builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
 
 var app = builder.Build();
 
-// Creating the db for testing.
+// Create the db for testing.
 using (var scope = app.Services.CreateScope())
 {
     using (var context = scope.ServiceProvider.GetRequiredService<ChipizationDbContext>())
