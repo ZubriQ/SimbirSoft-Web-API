@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Helpers;
+using Olymp_Project.Services.Authentication;
 using Olymp_Project.Services.VisitedLocations;
 
 namespace Olymp_Project.Controllers
@@ -33,6 +34,11 @@ namespace Olymp_Project.Controllers
             [FromQuery] DateTimeRangeQuery query,
             [FromQuery] Paging paging)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.GetVisitedLocationsAsync(animalId!.Value, query, paging);
 
             var dto = response.Data?.Select(vl => _mapper.Map<VisitedLocationResponseDto>(vl));
@@ -49,6 +55,11 @@ namespace Olymp_Project.Controllers
             [FromRoute] long? animalId,
             [FromRoute] long? locationId)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.InsertVisitedLocationAsync(animalId!.Value, locationId!.Value);
 
             var dto = _mapper.Map<VisitedLocationResponseDto>(response.Data);
@@ -65,6 +76,11 @@ namespace Olymp_Project.Controllers
             [FromRoute] long? animalId,
             [FromQuery] VisitedLocationRequestDto request)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var response = await _service.UpdateVisitedLocationAsync(animalId!.Value, request);
 
             var dto = _mapper.Map<VisitedLocationResponseDto>(response.Data);
@@ -81,6 +97,11 @@ namespace Olymp_Project.Controllers
             [FromRoute] long? animalId,
             [FromRoute] long? visitedLocationId)
         {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
             var statusCode = await _service.RemoveVisitedLocationAsync(
                 animalId!.Value, visitedLocationId!.Value);
             return ResponseHelper.GetActionResult(statusCode);
