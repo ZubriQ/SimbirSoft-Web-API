@@ -51,7 +51,20 @@ builder.Services.AddAuthentication(ApiAuthenticationScheme.Name)
 
 #region Configurating Database, AutoMapper and Services
 
-var connection = builder.Configuration.GetConnectionString("Default");
+string connection;
+bool isTesting;
+
+if (System.Diagnostics.Debugger.IsAttached)
+{
+    connection = builder.Configuration.GetConnectionString("Development");
+    isTesting = false;
+}
+else
+{
+    connection = builder.Configuration.GetConnectionString("Testing");
+    isTesting = true;
+}
+
 builder.Services.AddSqlServer<ChipizationDbContext>(connection);
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
@@ -70,11 +83,15 @@ builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
 var app = builder.Build();
 
 // Create the db for testing.
-using (var scope = app.Services.CreateScope())
+if (isTesting)
 {
-    using (var context = scope.ServiceProvider.GetRequiredService<ChipizationDbContext>())
+    using (var scope = app.Services.CreateScope())
     {
-        context.Database.Migrate();
+        using (var context = scope.ServiceProvider.GetRequiredService<ChipizationDbContext>())
+        {
+            context.Database.EnsureDeleted();
+            context.Database.Migrate();
+        }
     }
 }
 
