@@ -3,7 +3,7 @@
     public class AnimalResponseDto
     {
         public long Id { get; set; }
-        public long[] AnimalKinds { get; set; } = null!;
+        public long[] AnimalTypes { get; set; } = null!;
         public float Weight { get; set; }
         public float Length { get; set; }
         public float Height { get; set; }

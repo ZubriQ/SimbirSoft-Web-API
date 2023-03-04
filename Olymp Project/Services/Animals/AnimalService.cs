@@ -148,7 +148,7 @@ namespace Olymp_Project.Services.Animals
 
             _db.Animals.Add(animal);
             await _db.SaveChangesAsync();
-            return new ServiceResponse<Animal>(HttpStatusCode.OK, animal);
+            return new ServiceResponse<Animal>(HttpStatusCode.Created, animal);
         }
 
         private async Task InitializeKinds(Animal animal)

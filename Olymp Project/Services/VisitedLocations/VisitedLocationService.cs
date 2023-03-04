@@ -113,7 +113,7 @@ namespace Olymp_Project.Services.VisitedLocations
             };
             _db.VisitedLocations.Add(visitedLocation);
             await _db.SaveChangesAsync();
-            return new ServiceResponse<VisitedLocation>(HttpStatusCode.OK, visitedLocation);
+            return new ServiceResponse<VisitedLocation>(HttpStatusCode.Created, visitedLocation);
         }
 
         public async Task<IServiceResponse<VisitedLocation>> UpdateVisitedLocationAsync(

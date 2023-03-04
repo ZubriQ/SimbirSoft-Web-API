@@ -30,7 +30,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AccountResponseDto>> RegisterAccount(AccountRequestDto request)
         {
-            if (User.Identity!.IsAuthenticated)
+            if (User.Identity!.IsAuthenticated) // TODO: Middleware?
             {
                 return Forbid();
             }

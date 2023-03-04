@@ -52,18 +52,11 @@ builder.Services.AddAuthentication(ApiAuthenticationScheme.Name)
 #region Configurating Database, AutoMapper and Services
 
 string connection;
-bool isTesting;
-
-if (System.Diagnostics.Debugger.IsAttached) // TODO: Remove?
-{
-    connection = builder.Configuration.GetConnectionString("Development");
-    isTesting = false;
-}
-else
-{
-    connection = builder.Configuration.GetConnectionString("Testing");
-    isTesting = true;
-}
+#if DEBUG
+connection = builder.Configuration.GetConnectionString("Development");
+#else
+connection = builder.Configuration.GetConnectionString("Testing");
+#endif
 
 builder.Services.AddSqlServer<ChipizationDbContext>(connection);
 
@@ -83,17 +76,16 @@ builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
 var app = builder.Build();
 
 // Create the db for testing.
-if (isTesting)
-{
-    using (var scope = app.Services.CreateScope())
+#if !DEBUG
+using (var scope = app.Services.CreateScope())
     {
         using (var context = scope.ServiceProvider.GetRequiredService<ChipizationDbContext>())
         {
-            context.Database.EnsureDeleted();
+            //context.Database.EnsureDeleted();
             context.Database.Migrate();
         }
     }
-}
+#endif
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

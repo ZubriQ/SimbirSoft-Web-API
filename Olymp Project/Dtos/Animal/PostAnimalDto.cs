@@ -2,7 +2,7 @@
 {
     public class PostAnimalDto
     {
-        public long[]? AnimalKinds { get; set; }
+        public long[]? AnimalTypes { get; set; }
         public float? Weight { get; set; }
         public float? Length { get; set; }
         public float? Height { get; set; }
