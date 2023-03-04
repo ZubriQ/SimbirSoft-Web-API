@@ -80,12 +80,12 @@ namespace Olymp_Project.Services.AnimalsKinds
                 return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
             }
 
-            bool kindsExist = _db.Kinds.Any(k => k.Id == request.OldKindId)
-                           && _db.Kinds.Any(k => k.Id == request.NewKindId);
-            if (!kindsExist)
-            {
-                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
-            }
+            //bool kindsExist = _db.Kinds.Any(k => k.Id == request.OldKindId)
+            //               && _db.Kinds.Any(k => k.Id == request.NewKindId);
+            //if (!kindsExist)
+            //{
+            //    return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
+            //}
 
             bool kindExistsInAnimal = animalToUpdate.Kinds.Any(k => k.Id == request.OldKindId);
             if (!kindExistsInAnimal)

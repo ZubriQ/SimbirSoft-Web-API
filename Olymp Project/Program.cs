@@ -81,7 +81,7 @@ using (var scope = app.Services.CreateScope())
     {
         using (var context = scope.ServiceProvider.GetRequiredService<ChipizationDbContext>())
         {
-            //context.Database.EnsureDeleted();
+            context.Database.EnsureDeleted();
             context.Database.Migrate();
         }
     }

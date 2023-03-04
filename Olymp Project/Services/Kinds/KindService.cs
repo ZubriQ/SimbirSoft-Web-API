@@ -123,7 +123,7 @@ namespace Olymp_Project.Services.Kinds
 
         private async Task<HttpStatusCode> RemoveKind(Kind kind)
         {
-            _db.Remove(kind);
+            _db.Kinds.Remove(kind);
             await _db.SaveChangesAsync();
             return HttpStatusCode.OK;
         }

@@ -104,19 +104,16 @@ namespace Olymp_Project.Services.Animals
         {
             if (!AnimalValidator.IsRequestValid(animal))
             {
-                return new ServiceResponse<Animal>(HttpStatusCode.Conflict);
+                return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }
-
-            bool hasDuplicates = animal.Kinds.Count != animal.Kinds.Distinct().Count();
-            if (hasDuplicates)
+            // TODO: optimize ?
+            foreach (var kind in animal.Kinds)
             {
-                return new ServiceResponse<Animal>(HttpStatusCode.Conflict);
-            }
-
-            bool kindsExist = _db.Kinds.All(k => animal.Kinds.Select(n => n.Id).Contains(k.Id));
-            if (kindsExist)
-            {
-                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
+                bool kindExists = _db.Kinds.Any(k => k.Id == kind.Id);
+                if (!kindExists)
+                {
+                    return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
+                }
             }
 
             bool accountExists = _db.Accounts.Any(a => a.Id == animal.ChipperId);
@@ -129,6 +126,12 @@ namespace Olymp_Project.Services.Animals
             if (!locationExists)
             {
                 return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
+            }
+
+            bool hasDuplicates = animal.Kinds.Count != animal.Kinds.Distinct().Count();
+            if (hasDuplicates)
+            {
+                return new ServiceResponse<Animal>(HttpStatusCode.Conflict);
             }
 
             try
@@ -196,7 +199,7 @@ namespace Olymp_Project.Services.Animals
                 return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }
 
-            // Не должна быть равна первой посещенной точке
+            // Посещенная локация не должна быть равна первой посещенной точке
             if (animalToUpdate.VisitedLocations.Any()
                 && animalToUpdate.VisitedLocations.First().LocationId == request.ChippingLocationId)
             {
@@ -224,7 +227,12 @@ namespace Olymp_Project.Services.Animals
             animal.Gender = newData.Gender!;
             animal.ChipperId = newData.ChipperId!.Value;
             animal.ChippingLocationId = newData.ChippingLocationId!.Value;
-            animal.LifeStatus = newData.LifeStatus!;
+            if (animal.LifeStatus == "ALIVE" && newData.LifeStatus == "DEAD")
+            {
+                animal.DeathDateTime = DateTime.Now;
+                animal.LifeStatus = newData.LifeStatus!;
+            }
+            
         }
 
         public async Task<HttpStatusCode> RemoveAnimalAsync(long? id)
