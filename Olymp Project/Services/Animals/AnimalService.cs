@@ -20,10 +20,8 @@ namespace Olymp_Project.Services.Animals
                 return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }
 
-            var animal = await _db.Animals
-                .Include(a => a.VisitedLocations).Include(a => a.Kinds)
+            var animal = await _db.Animals.Include(a => a.VisitedLocations).Include(a => a.Kinds)
                 .FirstOrDefaultAsync(a => a.Id == id);
-
             if (animal is null)
             {
                 return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
@@ -174,7 +172,8 @@ namespace Olymp_Project.Services.Animals
                 return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }
 
-            var animalToUpdate = await _db.Animals.FindAsync(id);
+            var animalToUpdate = await _db.Animals.Include(a => a.VisitedLocations).Include(a => a.Kinds)
+                .FirstOrDefaultAsync(a => a.Id == id);
             if (animalToUpdate is null)
             {
                 return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
@@ -197,8 +196,9 @@ namespace Olymp_Project.Services.Animals
                 return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }
 
+            // Не должна быть равна первой посещенной точке
             if (animalToUpdate.VisitedLocations.Any()
-                && animalToUpdate.VisitedLocations.First().Location.Id != request.ChippingLocationId)
+                && animalToUpdate.VisitedLocations.First().LocationId == request.ChippingLocationId)
             {
                 return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }

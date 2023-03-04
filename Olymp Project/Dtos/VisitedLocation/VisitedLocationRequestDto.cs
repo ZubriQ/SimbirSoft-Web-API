@@ -5,11 +5,11 @@
         /// <summary>
         /// Visited location that we need to update.
         /// </summary>
-        public long? VisitedLocationId { get; set; }
+        public long? VisitedLocationPointId { get; set; }
 
         /// <summary>
         /// New location.
         /// </summary>
-        public long? LocationId { get; set; }
+        public long? LocationPointId { get; set; }
     }
 }

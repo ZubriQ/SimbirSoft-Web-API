@@ -9,10 +9,10 @@
         public float Height { get; set; }
         public string Gender { get; set; } = null!;
         public string LifeStatus { get; set; } = null!;
-        public DateTime ChippingDateTime { get; set; }
+        public string ChippingDateTime { get; set; } = null!;
         public int ChipperId { get; set; }
         public long ChippingLocationId { get; set; }
         public long[] VisitedLocations { get; set; } = null!;
-        public DateTime? DeathDateTime { get; set; } = null;
+        public string? DeathDateTime { get; set; }
     }
 }

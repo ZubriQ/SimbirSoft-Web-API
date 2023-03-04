@@ -120,7 +120,7 @@ namespace Olymp_Project.Services.VisitedLocations
             long? animalId, 
             VisitedLocationRequestDto request)
         {
-            if (!IdValidator.IsValid(animalId, request.VisitedLocationId, request.LocationId))
+            if (!IdValidator.IsValid(animalId, request.VisitedLocationPointId, request.LocationPointId))
             {
                 return new ServiceResponse<VisitedLocation>(HttpStatusCode.BadRequest);
             }
@@ -133,12 +133,12 @@ namespace Olymp_Project.Services.VisitedLocations
 
             // Объект с информацией о посещенной точке локации
             var visitedLocationToUpdate = await _db.VisitedLocations
-                .FirstOrDefaultAsync(l => l.Id == request.VisitedLocationId);
+                .FirstOrDefaultAsync(l => l.Id == request.VisitedLocationPointId);
             if (visitedLocationToUpdate is null)
             {
                 return new ServiceResponse<VisitedLocation>(HttpStatusCode.NotFound);
             }
-            if (visitedLocationToUpdate.LocationId == request.LocationId)
+            if (visitedLocationToUpdate.LocationId == request.LocationPointId)
             {
                 return new ServiceResponse<VisitedLocation>(HttpStatusCode.BadRequest);
             }
@@ -169,7 +169,7 @@ namespace Olymp_Project.Services.VisitedLocations
             }
 
             var existingLocation = await _db.Locations
-                .FirstOrDefaultAsync(l => l.Id == request.LocationId);
+                .FirstOrDefaultAsync(l => l.Id == request.LocationPointId);
             if (existingLocation is null)
             {
                 return new ServiceResponse<VisitedLocation>(HttpStatusCode.NotFound);
