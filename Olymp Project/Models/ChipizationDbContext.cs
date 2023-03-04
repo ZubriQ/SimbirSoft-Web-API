@@ -9,6 +9,7 @@ namespace Olymp_Project.Models
     {
         public ChipizationDbContext()
         {
+            //Database.EnsureCreated();
         }
 
         public ChipizationDbContext(DbContextOptions<ChipizationDbContext> options)
@@ -69,8 +70,8 @@ namespace Olymp_Project.Models
                     .WithMany(p => p.Animals)
                     .UsingEntity<Dictionary<string, object>>(
                         "AnimalKind",
-                        l => l.HasOne<Kind>().WithMany().HasForeignKey("KindId").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_AnimalType_Type"),
-                        r => r.HasOne<Animal>().WithMany().HasForeignKey("AnimalId").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_AnimalType_Animal"),
+                        l => l.HasOne<Kind>().WithMany().HasForeignKey("KindId").OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_AnimalType_Type"),
+                        r => r.HasOne<Animal>().WithMany().HasForeignKey("AnimalId").OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_AnimalType_Animal"),
                         j =>
                         {
                             j.HasKey("AnimalId", "KindId").HasName("PK_AnimalType");

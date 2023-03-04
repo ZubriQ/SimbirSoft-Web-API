@@ -1,4 +1,5 @@
-﻿using Olymp_Project.Helpers.Validators;
+﻿using Microsoft.EntityFrameworkCore;
+using Olymp_Project.Helpers.Validators;
 using Olymp_Project.Responses;
 
 namespace Olymp_Project.Services.Animals
@@ -233,7 +234,8 @@ namespace Olymp_Project.Services.Animals
                 return HttpStatusCode.BadRequest;
             }
 
-            var animal = await _db.Animals.FindAsync(id);
+            var animal = await _db.Animals.Include(k => k.Kinds).Include(vl => vl.VisitedLocations)
+                .FirstOrDefaultAsync(a => a.Id == id);
             if (animal is null)
             {
                 return HttpStatusCode.NotFound;
@@ -242,7 +244,7 @@ namespace Olymp_Project.Services.Animals
             //       есть другие посещенные точки
             // return HttpStatusCode.BadRequest;
             // TODO: Works?
-            if (animal.VisitedLocations.Any(vl => vl.Location.Id != animal.ChippingLocation.Id))
+            if (animal.VisitedLocations.Any(vl => vl.LocationId != animal.ChippingLocationId))
             {
                 return HttpStatusCode.BadRequest;
             }
@@ -253,7 +255,7 @@ namespace Olymp_Project.Services.Animals
                 await _db.SaveChangesAsync();
                 return HttpStatusCode.OK;
             }
-            catch
+            catch (Exception)
             {
                 return HttpStatusCode.InternalServerError;
             }

@@ -65,16 +65,15 @@ namespace Olymp_Project.Services.Kinds
                 return new ServiceResponse<Kind>(HttpStatusCode.BadRequest);
             }
 
-            if (await _db.Kinds.FirstOrDefaultAsync(k => k.Id == id) is not Kind kindToUpdate)
-            {
-                return new ServiceResponse<Kind>(HttpStatusCode.NotFound);
-            }
-
-            // TODO: String comparison?
-            var exists = await _db.Kinds.AnyAsync(k => k.Name == newName);
+            var exists = await _db.Kinds.AnyAsync(k => k.Name.ToLower() == newName.ToLower());
             if (exists)
             {
                 return new ServiceResponse<Kind>(HttpStatusCode.Conflict);
+            }
+
+            if (await _db.Kinds.FirstOrDefaultAsync(k => k.Id == id) is not Kind kindToUpdate)
+            {
+                return new ServiceResponse<Kind>(HttpStatusCode.NotFound);
             }
 
             try

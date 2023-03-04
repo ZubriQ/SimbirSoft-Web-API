@@ -15,7 +15,9 @@ namespace Olymp_Project.Mapping
             CreateMap<LocationRequestDto, Location>();
 
             // Kind mapping
-            CreateMap<Kind, KindResponseDto>();
+            CreateMap<Kind, KindResponseDto>()
+                .ForMember(d => d.Type, o => o.MapFrom(s => s.Name));
+
 
             // Animal mapping
             // Перенос необходимых идентификаторов из классов в массивы.
