@@ -16,7 +16,7 @@ services:
     depends_on:
       - database
     environment:
-      ConnectionStrings__Default: "Server=database;Database=animal-chipization;User Id=sa;Password=AN1m4l1@Ch1Pp3r!;"
+      ConnectionStrings__Testing: "Server=database;Database=animal-chipization;User Id=sa;Password=AN1m4l1@Ch1Pp3r!;"
 
   tests:
     image: mrexpen/planet_olymp_phase1

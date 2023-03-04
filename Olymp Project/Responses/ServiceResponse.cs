@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Olymp_Project.Responses
+﻿namespace Olymp_Project.Responses
 {
     public class ServiceResponse<T> : IServiceResponse<T>
     {

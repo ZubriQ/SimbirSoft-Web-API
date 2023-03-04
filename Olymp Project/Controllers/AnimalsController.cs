@@ -81,7 +81,7 @@ namespace Olymp_Project.Controllers
 
             var animalDto = _mapper.Map<AnimalResponseDto>(response.Data);
             // Should returns "visitedLocations": [], which seems OK.
-            return ResponseHelper.GetActionResult(response.StatusCode, animalDto);
+            return ResponseHelper.GetActionResult(response.StatusCode, animalDto, nameof(CreateAnimal));
         }
 
         [HttpPut("{animalId:long}")]
