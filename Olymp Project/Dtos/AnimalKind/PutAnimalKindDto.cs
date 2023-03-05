@@ -2,7 +2,7 @@
 {
     public class PutAnimalKindDto
     {
-        public long? OldKindId { get; set; }
-        public long? NewKindId { get; set; }
+        public long? OldTypeId { get; set; }
+        public long? NewTypeId { get; set; }
     }
 }

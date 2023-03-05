@@ -81,7 +81,7 @@ namespace Olymp_Project.Services.VisitedLocations
             var lastVisitedLocation = animal.VisitedLocations
                 .OrderByDescending(l => l.VisitDateTime)
                 .FirstOrDefault();
-            if (lastVisitedLocation != null && lastVisitedLocation.Id == locationId)
+            if (lastVisitedLocation != null && lastVisitedLocation.LocationId == locationId)
             {
                 return new ServiceResponse<VisitedLocation>(HttpStatusCode.BadRequest);
             }
