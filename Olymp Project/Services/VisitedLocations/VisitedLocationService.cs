@@ -131,6 +131,13 @@ namespace Olymp_Project.Services.VisitedLocations
                 return new ServiceResponse<VisitedLocation>(HttpStatusCode.NotFound);
             }
 
+            var existingLocation = await _db.Locations
+                .FirstOrDefaultAsync(l => l.Id == request.LocationPointId);
+            if (existingLocation is null)
+            {
+                return new ServiceResponse<VisitedLocation>(HttpStatusCode.NotFound);
+            }
+
             // Объект с информацией о посещенной точке локации
             var visitedLocationToUpdate = await _db.VisitedLocations
                 .FirstOrDefaultAsync(l => l.Id == request.VisitedLocationPointId);
@@ -138,6 +145,16 @@ namespace Olymp_Project.Services.VisitedLocations
             {
                 return new ServiceResponse<VisitedLocation>(HttpStatusCode.NotFound);
             }
+
+            // У животного нет объекта с информацией о посещенной точке локации
+            // с visitedLocationPointId.
+            var isVisited = animal.VisitedLocations
+                .FirstOrDefault(v => v.LocationId == visitedLocationToUpdate.LocationId);
+            if (isVisited is null)
+            {
+                return new ServiceResponse<VisitedLocation>(HttpStatusCode.NotFound);
+            }
+
             if (visitedLocationToUpdate.LocationId == request.LocationPointId)
             {
                 return new ServiceResponse<VisitedLocation>(HttpStatusCode.BadRequest);
@@ -157,22 +174,6 @@ namespace Olymp_Project.Services.VisitedLocations
                  && nextLocation.LocationId == visitedLocationToUpdate.LocationId))
             {
                 return new ServiceResponse<VisitedLocation>(HttpStatusCode.BadRequest);
-            }
-
-            // У животного нет объекта с информацией о посещенной точке локации
-            // с visitedLocationPointId.
-            var isVisited = animal.VisitedLocations
-                .FirstOrDefault(v => v.LocationId == visitedLocationToUpdate.LocationId);
-            if (isVisited is null)
-            {
-                return new ServiceResponse<VisitedLocation>(HttpStatusCode.NotFound);
-            }
-
-            var existingLocation = await _db.Locations
-                .FirstOrDefaultAsync(l => l.Id == request.LocationPointId);
-            if (existingLocation is null)
-            {
-                return new ServiceResponse<VisitedLocation>(HttpStatusCode.NotFound);
             }
 
             try
@@ -227,8 +228,23 @@ namespace Olymp_Project.Services.VisitedLocations
 
             try
             {
-                // TODO: Optimize
                 _db.VisitedLocations.Remove(visitedLocationToDelete);
+                animal.VisitedLocations.Remove(visitedLocationToDelete);
+                
+                // TODO: Optimize
+                if (animal.VisitedLocations.Count > 0)
+                {
+                    var newFirstLocation = animal.VisitedLocations
+                        .OrderByDescending(vl => vl.VisitDateTime)
+                        .First();
+
+                    if (newFirstLocation.LocationId == animal.ChippingLocationId)
+                    {
+                        _db.VisitedLocations.Remove(newFirstLocation);
+                        animal.VisitedLocations.Remove(newFirstLocation);
+                    }
+                }
+
                 await _db.SaveChangesAsync();
                 return HttpStatusCode.OK;
             }

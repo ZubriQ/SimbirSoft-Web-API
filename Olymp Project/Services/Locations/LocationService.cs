@@ -114,8 +114,8 @@ namespace Olymp_Project.Services.Locations
             {
                 return HttpStatusCode.BadRequest;
             }
-
-            if (_db.Locations.Include(l => l.Animals).FirstOrDefault(l => l.Id == id)
+            
+            if (await _db.Locations.Include(l => l.Animals).FirstOrDefaultAsync(l => l.Id == id)
                 is not Location location)
             {
                 return HttpStatusCode.NotFound;
@@ -125,7 +125,7 @@ namespace Olymp_Project.Services.Locations
                 return HttpStatusCode.BadRequest;
             }
 
-            bool visitedLocations = _db.VisitedLocations.Any(vl => vl.LocationId ==  id);
+            bool visitedLocations = _db.VisitedLocations.Any(vl => vl.LocationId == id);
             if (visitedLocations)
             {
                 return HttpStatusCode.BadRequest;
@@ -133,10 +133,7 @@ namespace Olymp_Project.Services.Locations
 
             try
             {
-                //return await RemoveLocation(location);
-                _db.Locations.Remove(location);
-                await _db.SaveChangesAsync();
-                return HttpStatusCode.OK;
+                return await RemoveLocation(location);
             }
             catch (Exception)
             {

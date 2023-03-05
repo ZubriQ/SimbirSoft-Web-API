@@ -139,9 +139,8 @@ namespace Olymp_Project.Services.AnimalsKinds
                 return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }
 
-            // TODO: Add async?
-            var animalToUpdate = _db.Animals.Include(a => a.VisitedLocations).Include(a => a.Kinds)
-                                            .FirstOrDefault(a => a.Id == animalId);
+            var animalToUpdate = await _db.Animals.Include(a => a.VisitedLocations).Include(a => a.Kinds)
+                                                  .FirstOrDefaultAsync(a => a.Id == animalId);
             if (animalToUpdate is null)
             {
                 return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
@@ -152,7 +151,7 @@ namespace Olymp_Project.Services.AnimalsKinds
                 return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }
 
-            var kindExists = _db.Kinds.FirstOrDefault(k => k.Id == kindId);
+            var kindExists = await _db.Kinds.FirstOrDefaultAsync(k => k.Id == kindId);
             if (kindExists is null)
             {
                 return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
