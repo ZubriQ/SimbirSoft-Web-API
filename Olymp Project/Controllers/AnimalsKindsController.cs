@@ -85,7 +85,7 @@ namespace Olymp_Project.Controllers
             var response = await _service.RemoveAnimalKindAsync(animalId!.Value, kindId!.Value);
 
             var animalDto = _mapper.Map<AnimalResponseDto>(response.Data);
-            return ResponseHelper.GetActionResult(HttpStatusCode.OK, animalDto);
+            return ResponseHelper.GetActionResult(response.StatusCode, animalDto);
         }
     }
 }
