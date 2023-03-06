@@ -49,7 +49,7 @@ builder.Services.AddAuthentication(ApiAuthenticationScheme.Name)
 
 #endregion
 
-#region Configurating Database, AutoMapper and Services
+#region Configurating Database, AutoMapper, Services and WebHost port
 
 string connection;
 #if DEBUG
@@ -71,27 +71,32 @@ builder.Services.AddScoped<IAnimalService, AnimalService>();
 builder.Services.AddScoped<IAnimalKindService, AnimalKindService>();
 builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
 
+#if !DEBUG
+builder.WebHost.UseUrls("http://0.0.0.0:8080");
+#endif
+
 #endregion
 
 var app = builder.Build();
-
-// Create the db for testing.
-#if !DEBUG
-using (var scope = app.Services.CreateScope())
-    {
-        using (var context = scope.ServiceProvider.GetRequiredService<ChipizationDbContext>())
-        {
-            context.Database.EnsureDeleted();
-            context.Database.Migrate();
-        }
-    }
-#endif
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+else
+{
+    // Create a database for testing.
+    using (var scope = app.Services.CreateScope())
+    {
+        using (var context = scope.ServiceProvider.GetRequiredService<ChipizationDbContext>())
+        {
+            // TODO: Add the deletion?
+            //context.Database.EnsureDeleted();
+            context.Database.Migrate();
+        }
+    }
 }
 
 app.UseHttpsRedirection();

@@ -74,7 +74,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<VisitedLocationResponseDto>> UpdateVisitedLocation(
             [FromRoute] long? animalId,
-            [FromQuery] VisitedLocationRequestDto request)
+            [FromBody] VisitedLocationRequestDto request)
         {
             if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
             {

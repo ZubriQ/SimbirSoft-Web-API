@@ -12,7 +12,7 @@ services:
   webapi:
     image: olympproject:latest
     ports:
-      - "8080:80"
+      - "8080:8080"
     depends_on:
       - database
     environment:
@@ -26,5 +26,5 @@ services:
     depends_on:
       - webapi
     environment:
-      SERVER_URL: http://webapi:80
-      STAGE: 2
+      SERVER_URL: http://webapi:8080
+      STAGE: all
