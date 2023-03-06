@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -30,31 +29,41 @@ namespace Olymp_Project.Authentication
                 return AuthenticateResult.Fail("Authorization header not found.");
             }
 
-            var authHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
-            if (authHeader.Scheme != "Basic")
+            var authenticationHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
+            if (authenticationHeader.Scheme != "Basic")
             {
                 return AuthenticateResult.Fail("Authentication scheme should be Basic.");
             }
 
-            var credentialBytes = Convert.FromBase64String(authHeader.Parameter!);
-            var credentials = Encoding.UTF8.GetString(credentialBytes).Split(':', 2);
-            var email = credentials[0];
-            var password = credentials[1];
-
-            var account = await _userService.AuthenticateAsync(email, password);
-            if (account is null)
+            if (await AuthenticateAccountAsync(authenticationHeader.Parameter!) is not Account account)
             {
                 return AuthenticateResult.Fail("Invalid email or password.");
             }
 
+            return GetAuthenticateResult(account);
+        }
+
+        private async Task<Account?> AuthenticateAccountAsync(string? headerParameter)
+        {
+            var credentialBytes = Convert.FromBase64String(headerParameter!);
+            var credentials = Encoding.UTF8.GetString(credentialBytes).Split(':', 2);
+            var email = credentials[0];
+            var password = credentials[1];
+
+            return await _userService.AuthenticateAccountAsync(email, password);
+        }
+
+        private AuthenticateResult GetAuthenticateResult(Account account)
+        {
             var claims = new[]
-            {
+{
                 new Claim(ClaimTypes.NameIdentifier, account.Id.ToString()),
                 new Claim(ClaimTypes.Name, account.Email),
             };
             var identity = new ClaimsIdentity(claims, Scheme.Name);
             var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, Scheme.Name);
+
             return AuthenticateResult.Success(ticket);
         }
     }

@@ -28,9 +28,9 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<AccountResponseDto>> RegisterAccount(AccountRequestDto request)
+        public async Task<ActionResult<AccountResponseDto>> RegisterAccount([FromBody] AccountRequestDto request)
         {
-            if (User.Identity!.IsAuthenticated) // TODO: Middleware?
+            if (User.Identity!.IsAuthenticated)
             {
                 return Forbid();
             }

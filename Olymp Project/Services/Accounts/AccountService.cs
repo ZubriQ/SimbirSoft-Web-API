@@ -12,14 +12,14 @@ namespace Olymp_Project.Services.Accounts
             _db = db;
         }
 
-        public async Task<IServiceResponse<Account>> GetAccountAsync(int? id)
+        public async Task<IServiceResponse<Account>> GetAccountAsync(int? accountId)
         {
-            if (!IdValidator.IsValid(id))
+            if (!IdValidator.IsValid(accountId))
             {
                 return new ServiceResponse<Account>(HttpStatusCode.BadRequest);
             }
 
-            if (await _db.Accounts.FirstOrDefaultAsync(a => a.Id == id) is not Account account)
+            if (await _db.Accounts.FirstOrDefaultAsync(a => a.Id == accountId) is not Account account)
             {
                 return new ServiceResponse<Account>(HttpStatusCode.NotFound, null!);
             }
@@ -76,14 +76,14 @@ namespace Olymp_Project.Services.Accounts
         }
 
         public async Task<IServiceResponse<Account>> UpdateAccountAsync(
-            int? id, AccountRequestDto request, string? login)
+            int? accountId, AccountRequestDto request, string? login)
         {
-            if (!IdValidator.IsValid(id) || !AccountValidator.IsValid(request))
+            if (!IdValidator.IsValid(accountId) || !AccountValidator.IsValid(request))
             {
                 return new ServiceResponse<Account>(HttpStatusCode.BadRequest);
             }
 
-            if (await _db.Accounts.FindAsync(id) is not Account account)
+            if (await _db.Accounts.FindAsync(accountId) is not Account account)
             {
                 return new ServiceResponse<Account>(HttpStatusCode.Forbidden);
             }
@@ -121,23 +121,23 @@ namespace Olymp_Project.Services.Accounts
             account.Password = newData.Password!;
         }
 
-        public async Task<HttpStatusCode> RemoveAccountAsync(int? id, string? login)
+        public async Task<HttpStatusCode> RemoveAccountAsync(int? accountId, string? email)
         {
-            if (!IdValidator.IsValid(id))
+            if (!IdValidator.IsValid(accountId))
             {
                 return HttpStatusCode.BadRequest;
             }
 
-            if (await _db.Accounts.FirstOrDefaultAsync(a => a.Id == id) is not Account account)
+            if (await _db.Accounts.FirstOrDefaultAsync(a => a.Id == accountId) is not Account account)
             {
                 return HttpStatusCode.Forbidden;
             }
-            if (account.Email != login)
+            if (account.Email != email)
             {
                 return HttpStatusCode.Forbidden;
             }
 
-            if (await _db.Animals.FirstOrDefaultAsync(a => a.ChipperId == id) is Animal linkedAnimal)
+            if (await _db.Animals.FirstOrDefaultAsync(a => a.ChipperId == accountId) is Animal linkedAnimal)
             {
                 return HttpStatusCode.BadRequest;
             }

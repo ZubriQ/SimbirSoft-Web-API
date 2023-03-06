@@ -80,13 +80,6 @@ namespace Olymp_Project.Services.AnimalsKinds
                 return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
             }
 
-            //bool kindsExist = _db.Kinds.Any(k => k.Id == request.OldKindId)
-            //               && _db.Kinds.Any(k => k.Id == request.NewKindId);
-            //if (!kindsExist)
-            //{
-            //    return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
-            //}
-
             bool kindExistsInAnimal = animalToUpdate.Kinds.Any(k => k.Id == request.OldTypeId);
             if (!kindExistsInAnimal)
             {
@@ -156,8 +149,7 @@ namespace Olymp_Project.Services.AnimalsKinds
             {
                 return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
             }
-            // 1 - Тип животного с typeId не найден;
-            // 2 - У животного с animalId нет типа с typeId.
+
             bool kindExistsInAnimal = animalToUpdate.Kinds.Any(a => a.Id == kindId);
             if (!kindExistsInAnimal)
             {

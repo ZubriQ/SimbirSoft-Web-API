@@ -12,30 +12,30 @@ namespace Olymp_Project.Services.Locations
             _db = db;
         }
 
-        public async Task<IServiceResponse<Location>> GetLocationAsync(long? id)
+        public async Task<IServiceResponse<Location>> GetLocationAsync(long? locationId)
         {
-            if (!IdValidator.IsValid(id))
+            if (!IdValidator.IsValid(locationId))
             {
                 return new ServiceResponse<Location>(HttpStatusCode.BadRequest);
             }
 
             // TODO: Test it.
-            if (await _db.Locations.FindAsync(id) is not Location location)
+            if (await _db.Locations.FindAsync(locationId) is not Location location)
             {
                 return new ServiceResponse<Location>(HttpStatusCode.NotFound);
             }
             return new ServiceResponse<Location>(HttpStatusCode.OK, location);
         }
 
-        public async Task<IServiceResponse<Location>> InsertLocationAsync(LocationRequestDto location)
+        public async Task<IServiceResponse<Location>> InsertLocationAsync(LocationRequestDto request)
         {
-            if (!LocationDtoValidator.IsValid(location))
+            if (!LocationDtoValidator.IsValid(request))
             {
                 return new ServiceResponse<Location>(HttpStatusCode.BadRequest);
             }
 
             bool coordinatesAlreadyExist = await _db.Locations.AnyAsync(
-                l => (l.Latitude == location.Latitude) && (l.Longitude == location.Longitude));
+                l => (l.Latitude == request.Latitude) && (l.Longitude == request.Longitude));
             if (coordinatesAlreadyExist)
             {
                 return new ServiceResponse<Location>(HttpStatusCode.Conflict);
@@ -43,7 +43,7 @@ namespace Olymp_Project.Services.Locations
 
             try
             {
-                return await AddLocation(location);
+                return await AddLocation(request);
             }
             catch (Exception)
             {
@@ -51,12 +51,12 @@ namespace Olymp_Project.Services.Locations
             }
         }
 
-        private async Task<IServiceResponse<Location>> AddLocation(LocationRequestDto location)
+        private async Task<IServiceResponse<Location>> AddLocation(LocationRequestDto request)
         {
             var newLocation = new Location()
             {
-                Latitude = location.Latitude!.Value,
-                Longitude = location.Longitude!.Value
+                Latitude = request.Latitude!.Value,
+                Longitude = request.Longitude!.Value
             };
             await _db.Locations.AddAsync(newLocation);
             await _db.SaveChangesAsync();
@@ -64,14 +64,15 @@ namespace Olymp_Project.Services.Locations
         }
 
         public async Task<IServiceResponse<Location>> UpdateLocationAsync(
-            long? id, LocationRequestDto request)
+            long? locationId, 
+            LocationRequestDto request)
         {
-            if (!IdValidator.IsValid(id) || !LocationDtoValidator.IsValid(request))
+            if (!IdValidator.IsValid(locationId) || !LocationDtoValidator.IsValid(request))
             {
                 return new ServiceResponse<Location>(HttpStatusCode.BadRequest);
             }
 
-            if (await _db.Locations.FirstOrDefaultAsync(l => l.Id == id) is not Location location)
+            if (await _db.Locations.FirstOrDefaultAsync(l => l.Id == locationId) is not Location location)
             {
                 return new ServiceResponse<Location>(HttpStatusCode.NotFound);
             }
@@ -108,14 +109,14 @@ namespace Olymp_Project.Services.Locations
             destination.Longitude = source.Longitude!.Value;
         }
 
-        public async Task<HttpStatusCode> RemoveLocationAsync(long? id)
+        public async Task<HttpStatusCode> RemoveLocationAsync(long? locationId)
         {
-            if (!IdValidator.IsValid(id))
+            if (!IdValidator.IsValid(locationId))
             {
                 return HttpStatusCode.BadRequest;
             }
             
-            if (await _db.Locations.Include(l => l.Animals).FirstOrDefaultAsync(l => l.Id == id)
+            if (await _db.Locations.Include(l => l.Animals).FirstOrDefaultAsync(l => l.Id == locationId)
                 is not Location location)
             {
                 return HttpStatusCode.NotFound;
@@ -125,7 +126,7 @@ namespace Olymp_Project.Services.Locations
                 return HttpStatusCode.BadRequest;
             }
 
-            bool visitedLocations = _db.VisitedLocations.Any(vl => vl.LocationId == id);
+            bool visitedLocations = _db.VisitedLocations.Any(vl => vl.LocationId == locationId);
             if (visitedLocations)
             {
                 return HttpStatusCode.BadRequest;

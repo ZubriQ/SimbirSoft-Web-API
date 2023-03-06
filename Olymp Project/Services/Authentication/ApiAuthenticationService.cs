@@ -9,7 +9,7 @@
             _db = db;
         }
 
-        public async Task<Account?> AuthenticateAsync(string email, string password)
+        public async Task<Account?> AuthenticateAccountAsync(string email, string password)
         {
             if (await _db.Accounts.SingleOrDefaultAsync(x => x.Email == email) is not Account user)
             {

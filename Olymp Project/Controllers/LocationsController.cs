@@ -70,8 +70,8 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<LocationResponseDto>> UpdateLocation(
-            long? locationId,
-            LocationRequestDto request)
+            [FromRoute] long? locationId,
+            [FromBody] LocationRequestDto request)
         {
             if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
             {
@@ -91,7 +91,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> DeleteLocation(long? locationId)
+        public async Task<IActionResult> DeleteLocation([FromRoute] long? locationId)
         {
             if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
             {

@@ -12,14 +12,14 @@ namespace Olymp_Project.Services.Kinds
             _db = context;
         }
 
-        public async Task<IServiceResponse<Kind>> GetAnimalKindAsync(long? id)
+        public async Task<IServiceResponse<Kind>> GetAnimalKindAsync(long? kindId)
         {
-            if (!IdValidator.IsValid(id))
+            if (!IdValidator.IsValid(kindId))
             {
                 return new ServiceResponse<Kind>(HttpStatusCode.BadRequest);
             }
 
-            if (await _db.Kinds.FirstOrDefaultAsync(k => k.Id == id) is not Kind kind)
+            if (await _db.Kinds.FirstOrDefaultAsync(k => k.Id == kindId) is not Kind kind)
             {
                 return new ServiceResponse<Kind>(HttpStatusCode.NotFound);
             }
@@ -27,14 +27,14 @@ namespace Olymp_Project.Services.Kinds
             return new ServiceResponse<Kind>(HttpStatusCode.OK, kind);
         }
 
-        public async Task<IServiceResponse<Kind>> InsertAnimalKindAsync(string? type)
+        public async Task<IServiceResponse<Kind>> InsertAnimalKindAsync(string? name)
         {
-            if (string.IsNullOrWhiteSpace(type))
+            if (string.IsNullOrWhiteSpace(name))
             {
                 return new ServiceResponse<Kind>(HttpStatusCode.BadRequest);
             }
 
-            bool exists = await _db.Kinds.AnyAsync(k => k.Name == type);
+            bool exists = await _db.Kinds.AnyAsync(k => k.Name == name);
             if (exists)
             {
                 return new ServiceResponse<Kind>(HttpStatusCode.Conflict);
@@ -42,7 +42,7 @@ namespace Olymp_Project.Services.Kinds
 
             try
             {
-                return await AddNewKind(type);
+                return await AddNewKind(name);
             }
             catch (Exception)
             {
@@ -50,17 +50,17 @@ namespace Olymp_Project.Services.Kinds
             }
         }
 
-        private async Task<IServiceResponse<Kind>> AddNewKind(string type)
+        private async Task<IServiceResponse<Kind>> AddNewKind(string kind)
         {
-            Kind newKind = new Kind() { Name = type };
+            Kind newKind = new Kind() { Name = kind };
             await _db.Kinds.AddAsync(newKind);
             await _db.SaveChangesAsync();
             return new ServiceResponse<Kind>(HttpStatusCode.Created, newKind);
         }
 
-        public async Task<IServiceResponse<Kind>> UpdateAnimalKindAsync(long? id, string? newName)
+        public async Task<IServiceResponse<Kind>> UpdateAnimalKindAsync(long? kindId, string? newName)
         {
-            if (!IdValidator.IsValid(id) || string.IsNullOrWhiteSpace(newName))
+            if (!IdValidator.IsValid(kindId) || string.IsNullOrWhiteSpace(newName))
             {
                 return new ServiceResponse<Kind>(HttpStatusCode.BadRequest);
             }
@@ -71,7 +71,7 @@ namespace Olymp_Project.Services.Kinds
                 return new ServiceResponse<Kind>(HttpStatusCode.Conflict);
             }
 
-            if (await _db.Kinds.FirstOrDefaultAsync(k => k.Id == id) is not Kind kindToUpdate)
+            if (await _db.Kinds.FirstOrDefaultAsync(k => k.Id == kindId) is not Kind kindToUpdate)
             {
                 return new ServiceResponse<Kind>(HttpStatusCode.NotFound);
             }
@@ -94,14 +94,14 @@ namespace Olymp_Project.Services.Kinds
             return new ServiceResponse<Kind>(HttpStatusCode.OK, kind);
         }
 
-        public async Task<HttpStatusCode> RemoveAnimalKindAsync(long? id)
+        public async Task<HttpStatusCode> RemoveAnimalKindAsync(long? kindId)
         {
-            if (!IdValidator.IsValid(id))
+            if (!IdValidator.IsValid(kindId))
             {
                 return HttpStatusCode.BadRequest;
             }
 
-            if (await _db.Kinds.Include(k => k.Animals).FirstOrDefaultAsync(k => k.Id == id) 
+            if (await _db.Kinds.Include(k => k.Animals).FirstOrDefaultAsync(k => k.Id == kindId) 
                 is not Kind kind)
             {
                 return HttpStatusCode.NotFound;

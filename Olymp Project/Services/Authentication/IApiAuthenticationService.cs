@@ -2,6 +2,6 @@
 {
     public interface IApiAuthenticationService
     {
-        Task<Account?> AuthenticateAsync(string email, string password);
+        Task<Account?> AuthenticateAccountAsync(string email, string password);
     }
 }

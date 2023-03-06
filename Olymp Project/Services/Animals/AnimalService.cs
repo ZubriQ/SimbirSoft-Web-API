@@ -13,15 +13,15 @@ namespace Olymp_Project.Services.Animals
             _db = db;
         }
 
-        public async Task<IServiceResponse<Animal>> GetAnimalAsync(long? id)
+        public async Task<IServiceResponse<Animal>> GetAnimalAsync(long? animalId)
         {
-            if (!IdValidator.IsValid(id))
+            if (!IdValidator.IsValid(animalId))
             {
                 return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }
 
             var animal = await _db.Animals.Include(a => a.VisitedLocations).Include(a => a.Kinds)
-                .FirstOrDefaultAsync(a => a.Id == id);
+                .FirstOrDefaultAsync(a => a.Id == animalId);
             if (animal is null)
             {
                 return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
@@ -33,7 +33,6 @@ namespace Olymp_Project.Services.Animals
             AnimalQuery query, 
             Paging paging)
         {
-            // TODO: CHECK THE DATETIMES.
             if (!PagingValidator.IsValid(paging) || !AnimalValidator.IsQueryValid(query))
             {
                 return new CollectionServiceResponse<Animal>(HttpStatusCode.BadRequest);
