@@ -182,7 +182,7 @@ namespace Olymp_Project.Services.VisitedLocations
             VisitedLocation? prev = null, next = null;
 
             int index = locations.FindIndex(l => l.Id == visitedLocationToUpdate.Id);
-            if (index - 1 > - 1)
+            if (index > 0)
             {
                 prev = locations[index - 1];
             }
@@ -261,7 +261,7 @@ namespace Olymp_Project.Services.VisitedLocations
                 if (animal.VisitedLocations.Count > 0)
                 {
                     var newFirstLocation = animal.VisitedLocations
-                        .OrderByDescending(vl => vl.VisitDateTime)
+                        .OrderBy(vl => vl.VisitDateTime)
                         .First();
 
                     if (newFirstLocation.LocationId == animal.ChippingLocationId)
