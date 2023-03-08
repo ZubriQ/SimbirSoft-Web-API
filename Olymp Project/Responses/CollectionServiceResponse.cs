@@ -22,6 +22,9 @@
             StatusCode = statusCode;
         }
 
+        /// <summary>
+        /// Sets StatusCode to InternalServerError.
+        /// </summary>
         public CollectionServiceResponse()
         {
             StatusCode = HttpStatusCode.InternalServerError;

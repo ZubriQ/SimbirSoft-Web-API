@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   database:
-    image: mcr.microsoft.com/mssql/server:2019-latest
+    image: mcr.microsoft.com/mssql/server:2022-latest
     ports:
       - "1433:1433"
     environment:
@@ -11,6 +11,9 @@ services:
 
   webapi:
     image: olympproject:latest
+    build:
+      context: .
+      dockerfile: "Olymp Project/Dockerfile"
     ports:
       - "8080:8080"
     depends_on:

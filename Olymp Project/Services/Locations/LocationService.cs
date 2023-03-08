@@ -19,7 +19,6 @@ namespace Olymp_Project.Services.Locations
                 return new ServiceResponse<Location>(HttpStatusCode.BadRequest);
             }
 
-            // TODO: Test it.
             if (await _db.Locations.FindAsync(locationId) is not Location location)
             {
                 return new ServiceResponse<Location>(HttpStatusCode.NotFound);

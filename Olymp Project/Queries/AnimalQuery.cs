@@ -2,7 +2,7 @@
 {
     public class AnimalQuery
     {
-        public DateTime? StartDateTime { get; set; } // TODO: try to optimize
+        public DateTime? StartDateTime { get; set; }
         public DateTime? EndDateTime { get; set; }
         public int? ChipperId { get; set; }
         public long? ChippingLocationId { get; set; }

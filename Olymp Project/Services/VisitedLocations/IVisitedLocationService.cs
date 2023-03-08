@@ -17,6 +17,8 @@ namespace Olymp_Project.Services.VisitedLocations
             long? animalId,
             VisitedLocationRequestDto request);
 
-        Task<HttpStatusCode> RemoveVisitedLocationAsync(long? animalId, long? visitedLocationId);
+        Task<HttpStatusCode> RemoveVisitedLocationAsync(
+            long? animalId, 
+            long? visitedLocationId);
     }
 }

@@ -27,7 +27,6 @@ namespace Olymp_Project.Services.Registration
 
             try
             {
-                // TODO: Optimize?
                 Account newAccount = CreateAccount(request);
                 await _db.Accounts.AddAsync(newAccount);
                 await _db.SaveChangesAsync();

@@ -47,7 +47,7 @@ namespace Olymp_Project.Services.Animals
             AnimalQuery query, 
             Paging paging)
         {
-            if (!PagingValidator.IsValid(paging) || !AnimalValidator.IsQueryValid(query))
+            if (!PagingValidator.IsValid(paging) || !AnimalDtoValidator.IsQueryValid(query))
             {
                 return new CollectionServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }
@@ -137,7 +137,7 @@ namespace Olymp_Project.Services.Animals
 
         private HttpStatusCode ValidateInsertAnimal(Animal animal)
         {
-            if (!AnimalValidator.IsRequestValid(animal))
+            if (!AnimalDtoValidator.IsRequestValid(animal))
             {
                 return HttpStatusCode.BadRequest;
             }
@@ -217,7 +217,7 @@ namespace Olymp_Project.Services.Animals
 
         private async Task<(HttpStatusCode, Animal?)> ValidateUpdateAnimalAsync(long? animalId, PutAnimalDto request)
         {
-            if (!IdValidator.IsValid(animalId) || !AnimalValidator.IsRequestValid(request))
+            if (!IdValidator.IsValid(animalId) || !AnimalDtoValidator.IsRequestValid(request))
             {
                 return (HttpStatusCode.BadRequest, null);
             }

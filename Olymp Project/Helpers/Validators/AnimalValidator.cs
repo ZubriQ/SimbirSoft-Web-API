@@ -1,145 +1,73 @@
-﻿namespace Olymp_Project.Helpers.Validators
+﻿using Olymp_Project.Models;
+using Olymp_Project.Responses;
+
+namespace Olymp_Project.Helpers.Validators
 {
     public static class AnimalValidator
     {
-        #region Query validation
-
-        public static bool IsQueryValid(AnimalQuery query)
+        public static bool IsExistingAnimalValid(Animal animal, long locationId)
         {
-            return IsQueryLifeStatusValid(query.LifeStatus)
-                && IsQueryGenderValid(query.Gender)
-                && IsQueryChipperValid(query.ChipperId)
-                && IsQueryChippingLocationValid(query.ChippingLocationId);
-            // TODO: ALSO CHECK THE DATETIMES.
-        }
-
-        private static bool IsQueryLifeStatusValid(string? lifeStatus)
-        {
-            if (lifeStatus == null)
+            if (animal.LifeStatus == "DEAD")
             {
-                return true;
+                return false;
             }
-            else
-            {
-                return lifeStatus == "ALIVE" || lifeStatus == "DEAD";
-            }
-        }
-
-        private static bool IsQueryGenderValid(string? gender)
-        {
-            if (gender == null)
-            {
-                return true;
-            }
-            else
-            {
-                return gender == "MALE" || gender == "FEMALE" || gender == "OTHER";
-            }
-        }
-
-        private static bool IsQueryChipperValid(int? id)
-        {
-            if (!id.HasValue)
-            {
-                return true;
-            }
-            else
-            {
-                return id > 0;
-            }
-        }
-
-        private static bool IsQueryChippingLocationValid(long? id)
-        {
-            if (!id.HasValue)
-            {
-                return true;
-            }
-            else
-            {
-                return id > 0;
-            }
-        }
-
-        #endregion
-
-        #region POST request validation
-
-        public static bool IsRequestValid(Animal animal)
-        {
-            return IsAnimalKindsValid(animal)
-                && IsSizeValid(animal.Weight, animal.Length, animal.Height)
-                && IsGenderValid(animal.Gender)
-                && IsChippingValid(animal.ChipperId, animal.ChippingLocationId);
-        }
-
-        private static bool IsAnimalKindsValid(Animal animal)
-        {
-            if (animal.Kinds == null || animal.Kinds.Count == 0)
+            if (animal.ChippingLocationId == locationId && animal.VisitedLocations.Count == 0)
             {
                 return false;
             }
 
-            foreach (var kind in animal.Kinds)
+            var lastVisitedLocation = animal.VisitedLocations
+                .OrderByDescending(l => l.VisitDateTime)
+                .FirstOrDefault();
+            if (lastVisitedLocation is not null && lastVisitedLocation.LocationId == locationId)
             {
-                if (kind == null || kind.Id <= 0)
-                {
-                    return false;
-                }
+                return false;
             }
 
             return true;
         }
 
-        private static bool IsSizeValid(float? weight, float? length, float? height)
+        public static bool IsAdjacentLocationsValid(Animal animal, long locationPointId, long visitedLocationId)
         {
-            return weight.HasValue && weight > 0
-                && length.HasValue && length > 0
-                && height.HasValue && height > 0;
-        }
+            var locations = animal.VisitedLocations.OrderBy(al => al.VisitDateTime).ToList();
+            VisitedLocation? previousLocation = null, nextLocation = null;
 
-        private static bool IsGenderValid(string? gender)
-        {
-            if (gender == null)
+            int index = locations.FindIndex(l => l.Id == visitedLocationId);
+            if (index > 0)
+            {
+                previousLocation = locations[index - 1];
+            }
+            if (index + 1 < locations.Count)
+            {
+                nextLocation = locations[index + 1];
+            }
+
+            if (nextLocation is not null && nextLocation.LocationId == locationPointId)
             {
                 return false;
             }
-            else
-            {
-                return gender == "MALE" || gender == "FEMALE" || gender == "OTHER";
-            }
-        }
-
-        private static bool IsChippingValid(int? chipperId, long? chippingLocationId)
-        {
-            return chipperId.HasValue && chipperId > 0
-                && chippingLocationId.HasValue && chippingLocationId > 0;
-        }
-
-        #endregion
-
-        #region PUT request validation
-
-        public static bool IsRequestValid(PutAnimalDto request)
-        {
-            return IsSizeValid(request.Weight, request.Length, request.Height)
-                && IsGenderValid(request.Gender)
-                && IsLifeStatusValid(request.LifeStatus)
-                && IsChippingValid(request.ChipperId, request.ChippingLocationId);
-        }
-
-        private static bool IsLifeStatusValid(string? lifeStatus)
-        {
-            if (lifeStatus == null)
+            if (previousLocation is not null && previousLocation.LocationId == locationPointId)
             {
                 return false;
             }
-            else
-            {
-                return lifeStatus == "ALIVE" || lifeStatus == "DEAD";
-            }
+            return true;
         }
 
-        #endregion
+        public static bool IsVisitedLocationValid(
+            Animal animal, VisitedLocation visitedLocation, long locationPointId)
+        {
+            if (visitedLocation.LocationId == locationPointId)
+            {
+                return false;
+            }
+
+            if (visitedLocation == animal.VisitedLocations.Last() &&
+                animal.ChippingLocationId == locationPointId)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

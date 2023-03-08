@@ -51,13 +51,7 @@ builder.Services.AddAuthentication(ApiAuthenticationScheme.Name)
 
 #region Configurating Database, AutoMapper, Services and WebHost port
 
-string connection;
-#if DEBUG
-connection = builder.Configuration.GetConnectionString("Development");
-#else
-connection = builder.Configuration.GetConnectionString("Testing");
-#endif
-
+string connection = builder.Configuration.GetConnectionString("Testing");
 builder.Services.AddSqlServer<ChipizationDbContext>(connection);
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
@@ -71,31 +65,27 @@ builder.Services.AddScoped<IAnimalService, AnimalService>();
 builder.Services.AddScoped<IAnimalKindService, AnimalKindService>();
 builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
 
-#if !DEBUG
 builder.WebHost.UseUrls("http://0.0.0.0:8080");
-#endif
 
 #endregion
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
+
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-else
-{
-    // Create a database for testing.
-    using (var scope = app.Services.CreateScope())
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<ChipizationDbContext>();
+    if (context.Database.GetPendingMigrations().Any())
     {
-        using (var context = scope.ServiceProvider.GetRequiredService<ChipizationDbContext>())
-        {
-            // TODO: Add the deletion?
-            //context.Database.EnsureDeleted();
-            context.Database.Migrate();
-        }
+        context.Database.Migrate();
     }
 }
 
