@@ -1,7 +1,5 @@
 ﻿using Olymp_Project.Helpers.Validators;
-using Olymp_Project.Models;
 using Olymp_Project.Responses;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Olymp_Project.Services.VisitedLocations
 {
@@ -14,7 +12,7 @@ namespace Olymp_Project.Services.VisitedLocations
             _db = db;
         }
 
-        #region Get by search parameters
+        #region Get VisitedLocations by search parameters
 
         public async Task<IServiceResponse<ICollection<VisitedLocation>>> GetVisitedLocationsAsync(
             long? animalId,
@@ -225,26 +223,23 @@ namespace Olymp_Project.Services.VisitedLocations
         {
             _db.VisitedLocations.Remove(visitedLocationToDelete);
             animal.VisitedLocations.Remove(visitedLocationToDelete);
-
-            RemoveSecondVisitedLocation(animal);
+            RemoveVisitedLocationIfMatchesChippingLocation(animal);
 
             await _db.SaveChangesAsync();
             return HttpStatusCode.OK;
         }
 
-        private void RemoveSecondVisitedLocation(Animal animal)
+        private void RemoveVisitedLocationIfMatchesChippingLocation(Animal animal)
         {
-            if (animal.VisitedLocations.Count > 0)
-            {
-                var newFirstLocation = animal.VisitedLocations
-                    .OrderBy(vl => vl.VisitDateTime)
-                    .First();
+            var newFirstLocation = animal.VisitedLocations
+                .OrderBy(vl => vl.VisitDateTime)
+                .FirstOrDefault();
 
-                if (newFirstLocation.LocationId == animal.ChippingLocationId)
-                {
-                    _db.VisitedLocations.Remove(newFirstLocation);
-                    animal.VisitedLocations.Remove(newFirstLocation);
-                }
+            if (newFirstLocation is not null &&
+                newFirstLocation.LocationId == animal.ChippingLocationId)
+            {
+                _db.VisitedLocations.Remove(newFirstLocation);
+                animal.VisitedLocations.Remove(newFirstLocation);
             }
         }
 
