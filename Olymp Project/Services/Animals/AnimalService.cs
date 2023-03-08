@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Olymp_Project.Helpers.Validators;
+using Olymp_Project.Models;
 using Olymp_Project.Responses;
 
 namespace Olymp_Project.Services.Animals
@@ -13,6 +14,8 @@ namespace Olymp_Project.Services.Animals
             _db = db;
         }
 
+        #region Get Animal
+
         public async Task<IServiceResponse<Animal>> GetAnimalAsync(long? animalId)
         {
             if (!IdValidator.IsValid(animalId))
@@ -20,14 +23,25 @@ namespace Olymp_Project.Services.Animals
                 return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }
 
-            var animal = await _db.Animals.Include(a => a.VisitedLocations).Include(a => a.Kinds)
-                .FirstOrDefaultAsync(a => a.Id == animalId);
-            if (animal is null)
+            if (await GetAnimalById(animalId) is not Animal animal)
             {
                 return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
             }
+
             return new ServiceResponse<Animal>(HttpStatusCode.OK, animal);
         }
+
+        private async Task<Animal?> GetAnimalById(long? animalId)
+        {
+            return await _db.Animals
+                .Include(a => a.VisitedLocations)
+                .Include(a => a.Kinds)
+                .FirstOrDefaultAsync(a => a.Id == animalId);
+        }
+
+        #endregion
+
+        #region Get Animals with search parameters
 
         public async Task<IServiceResponse<ICollection<Animal>>> GetAnimalsAsync(
             AnimalQuery query, 
@@ -99,38 +113,16 @@ namespace Olymp_Project.Services.Animals
             return animals;
         }
 
+        #endregion
+
+        #region Insert Animal
+
         public async Task<IServiceResponse<Animal>> InsertAnimalAsync(Animal animal)
         {
-            if (!AnimalValidator.IsRequestValid(animal))
+            var statusCode = ValidateInsertAnimal(animal);
+            if (statusCode is not HttpStatusCode.OK)
             {
-                return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
-            }
-            // TODO: optimize ?
-            foreach (var kind in animal.Kinds)
-            {
-                bool kindExists = _db.Kinds.Any(k => k.Id == kind.Id);
-                if (!kindExists)
-                {
-                    return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
-                }
-            }
-
-            bool accountExists = _db.Accounts.Any(a => a.Id == animal.ChipperId);
-            if (!accountExists)
-            {
-                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
-            }
-
-            bool locationExists = _db.Locations.Any(l => l.Id == animal.ChippingLocationId);
-            if (!locationExists)
-            {
-                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
-            }
-
-            bool hasDuplicates = animal.Kinds.Count != animal.Kinds.Distinct().Count();
-            if (hasDuplicates)
-            {
-                return new ServiceResponse<Animal>(HttpStatusCode.Conflict);
+                return new ServiceResponse<Animal>(statusCode);
             }
 
             try
@@ -143,10 +135,43 @@ namespace Olymp_Project.Services.Animals
             }
         }
 
+        private HttpStatusCode ValidateInsertAnimal(Animal animal)
+        {
+            if (!AnimalValidator.IsRequestValid(animal))
+            {
+                return HttpStatusCode.BadRequest;
+            }
+
+            bool kindExistsInAnimal = animal.Kinds.All(kind => _db.Kinds.Any(k => k.Id == kind.Id));
+            if (!kindExistsInAnimal)
+            {
+                return HttpStatusCode.NotFound;
+            }
+
+            bool accountExists = _db.Accounts.Any(a => a.Id == animal.ChipperId);
+            if (!accountExists)
+            {
+                return HttpStatusCode.NotFound;
+            }
+
+            bool locationExists = _db.Locations.Any(l => l.Id == animal.ChippingLocationId);
+            if (!locationExists)
+            {
+                return HttpStatusCode.NotFound;
+            }
+
+            bool hasDuplicates = animal.Kinds.Count != animal.Kinds.Distinct().Count();
+            if (hasDuplicates)
+            {
+                return HttpStatusCode.Conflict;
+            }
+
+            return HttpStatusCode.OK;
+        }
+
         private async Task<IServiceResponse<Animal>> AddAnimal(Animal animal)
         {
             await InitializeKinds(animal);
-
             _db.Animals.Add(animal);
             await _db.SaveChangesAsync();
             return new ServiceResponse<Animal>(HttpStatusCode.Created, animal);
@@ -166,56 +191,68 @@ namespace Olymp_Project.Services.Animals
             animal.Kinds = kinds;
         }
 
-        public async Task<IServiceResponse<Animal>> UpdateAnimalAsync(long? id, PutAnimalDto request)
+        #endregion
+
+        #region Update Animal
+
+        public async Task<IServiceResponse<Animal>> UpdateAnimalAsync(long? animalId, PutAnimalDto request)
         {
-            #region Validation
-            if (!IdValidator.IsValid(id) || !AnimalValidator.IsRequestValid(request))
+            (var statusCode, var animalToUpdate) = await ValidateUpdateAnimalAsync(animalId, request);
+            if (statusCode is not HttpStatusCode.OK)
             {
-                return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
+                return new ServiceResponse<Animal>(statusCode);
             }
-
-            var animalToUpdate = await _db.Animals.Include(a => a.VisitedLocations).Include(a => a.Kinds)
-                .FirstOrDefaultAsync(a => a.Id == id);
-            if (animalToUpdate is null)
-            {
-                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
-            }
-
-            bool chipperExists = _db.Accounts.Any(a => a.Id == request.ChipperId);
-            if (!chipperExists)
-            {
-                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
-            }
-
-            bool locationExists = _db.Locations.Any(l => l.Id == request.ChippingLocationId);
-            if (!locationExists)
-            {
-                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
-            }
-
-            if (animalToUpdate.LifeStatus == "DEAD" && request.LifeStatus == "ALIVE")
-            {
-                return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
-            }
-
-            // Посещенная локация не должна быть равна первой посещенной точке
-            if (animalToUpdate.VisitedLocations.Any()
-                && animalToUpdate.VisitedLocations.First().LocationId == request.ChippingLocationId)
-            {
-                return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
-            }
-            #endregion
 
             try
             {
-                UpdateAnimal(animalToUpdate, request);
+                UpdateAnimal(animalToUpdate!, request);
                 await _db.SaveChangesAsync();
-                return new ServiceResponse<Animal>(HttpStatusCode.OK, animalToUpdate);
+                return new ServiceResponse<Animal>(HttpStatusCode.OK, animalToUpdate!);
             }
             catch (Exception)
             {
                 return new ServiceResponse<Animal>();
             }
+        }
+
+        private async Task<(HttpStatusCode, Animal?)> ValidateUpdateAnimalAsync(long? animalId, PutAnimalDto request)
+        {
+            if (!IdValidator.IsValid(animalId) || !AnimalValidator.IsRequestValid(request))
+            {
+                return (HttpStatusCode.BadRequest, null);
+            }
+
+            var animalToUpdate = await _db.Animals.Include(a => a.VisitedLocations).Include(a => a.Kinds)
+                .FirstOrDefaultAsync(a => a.Id == animalId);
+            if (animalToUpdate is null)
+            {
+                return (HttpStatusCode.NotFound, null);
+            }
+
+            bool chipperExists = _db.Accounts.Any(a => a.Id == request.ChipperId);
+            if (!chipperExists)
+            {
+                return (HttpStatusCode.NotFound, null);
+            }
+
+            bool locationExists = _db.Locations.Any(l => l.Id == request.ChippingLocationId);
+            if (!locationExists)
+            {
+                return (HttpStatusCode.NotFound, null);
+            }
+
+            if (animalToUpdate.LifeStatus == "DEAD" && request.LifeStatus == "ALIVE")
+            {
+                return (HttpStatusCode.BadRequest, null);
+            }
+
+            if (animalToUpdate.VisitedLocations.Any()
+                && animalToUpdate.VisitedLocations.First().LocationId == request.ChippingLocationId)
+            {
+                return (HttpStatusCode.BadRequest, null);
+            }
+
+            return (HttpStatusCode.OK, animalToUpdate);
         }
 
         private void UpdateAnimal(Animal animal, PutAnimalDto newData)
@@ -231,41 +268,59 @@ namespace Olymp_Project.Services.Animals
                 animal.DeathDateTime = DateTime.Now;
                 animal.LifeStatus = newData.LifeStatus!;
             }
-            
         }
 
-        public async Task<HttpStatusCode> RemoveAnimalAsync(long? id)
-        {
-            if (!IdValidator.IsValid(id))
-            {
-                return HttpStatusCode.BadRequest;
-            }
+        #endregion
 
-            var animal = await _db.Animals.Include(k => k.Kinds).Include(vl => vl.VisitedLocations)
-                .FirstOrDefaultAsync(a => a.Id == id);
-            if (animal is null)
+        #region Remove Animal
+
+        public async Task<HttpStatusCode> RemoveAnimalAsync(long? animalId)
+        {
+            (var statusCode, var animal) = await ValidateRemoving(animalId);
+            if (statusCode is not HttpStatusCode.OK)
             {
-                return HttpStatusCode.NotFound;
-            }
-            // TODO: Животное покинуло локацию чипирования, при этом
-            //       есть другие посещенные точки
-            // return HttpStatusCode.BadRequest;
-            // TODO: Works?
-            if (animal.VisitedLocations.Any(vl => vl.LocationId != animal.ChippingLocationId))
-            {
-                return HttpStatusCode.BadRequest;
+                return statusCode;
             }
 
             try
             {
-                _db.Animals.Remove(animal);
-                await _db.SaveChangesAsync();
-                return HttpStatusCode.OK;
+                return await RemoveAnimalAndSaveChanges(animal!);
             }
             catch (Exception)
             {
                 return HttpStatusCode.InternalServerError;
             }
         }
+
+        private async Task<(HttpStatusCode, Animal?)> ValidateRemoving(long? animalId)
+        {
+            if (!IdValidator.IsValid(animalId))
+            {
+                return (HttpStatusCode.BadRequest, null);
+            }
+
+            var animal = await _db.Animals.Include(k => k.Kinds).Include(vl => vl.VisitedLocations)
+                .FirstOrDefaultAsync(a => a.Id == animalId);
+            if (animal is null)
+            {
+                return (HttpStatusCode.NotFound, null);
+            }
+
+            if (animal.VisitedLocations.Any(vl => vl.LocationId != animal.ChippingLocationId))
+            {
+                return (HttpStatusCode.BadRequest, null);
+            }
+
+            return (HttpStatusCode.OK, animal);
+        }
+
+        private async Task<HttpStatusCode> RemoveAnimalAndSaveChanges(Animal animal)
+        {
+            _db.Animals.Remove(animal);
+            await _db.SaveChangesAsync();
+            return HttpStatusCode.OK;
+        }
+
+        #endregion
     }
 }
