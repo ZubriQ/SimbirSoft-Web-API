@@ -21,7 +21,7 @@ namespace Olymp_Project.Mapping
 
             // Animal mapping
             // Перенос необходимых идентификаторов из классов в массивы;
-            // а также преобразование дат в строки ISO-8601
+            // а также преобразование дат в формат ISO-8601
             CreateMap<Animal, AnimalResponseDto>()
                 .ForMember(d => d.VisitedLocations, o => o.MapFrom(s => s.VisitedLocations.Select(t => t.Id)))
                 .ForMember(d => d.AnimalTypes, o => o.MapFrom(s => s.Kinds.Select(t => t.Id)))

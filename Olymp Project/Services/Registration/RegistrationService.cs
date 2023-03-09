@@ -27,15 +27,20 @@ namespace Olymp_Project.Services.Registration
 
             try
             {
-                Account newAccount = CreateAccount(request);
-                await _db.Accounts.AddAsync(newAccount);
-                await _db.SaveChangesAsync();
-                return new ServiceResponse<Account>(HttpStatusCode.Created, newAccount);
+                return await InsertAccountAndSaveChangesAsync(request);
             }
             catch (Exception)
             {
                 return new ServiceResponse<Account>(HttpStatusCode.InternalServerError);
             }
+        }
+
+        private async Task<IServiceResponse<Account>> InsertAccountAndSaveChangesAsync(AccountRequestDto request)
+        {
+            Account newAccount = CreateAccount(request);
+            await _db.Accounts.AddAsync(newAccount);
+            await _db.SaveChangesAsync();
+            return new ServiceResponse<Account>(HttpStatusCode.Created, newAccount);
         }
 
         private Account CreateAccount(AccountRequestDto data)

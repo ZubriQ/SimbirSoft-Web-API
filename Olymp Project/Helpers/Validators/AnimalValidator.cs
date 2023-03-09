@@ -27,7 +27,8 @@ namespace Olymp_Project.Helpers.Validators
             return true;
         }
 
-        public static bool IsAdjacentLocationsValid(Animal animal, long locationPointId, long visitedLocationId)
+        public static bool IsAdjacentLocationsValid(
+            Animal animal, long locationPointId, long visitedLocationId)
         {
             var locations = animal.VisitedLocations.OrderBy(al => al.VisitDateTime).ToList();
             VisitedLocation? previousLocation = null, nextLocation = null;
