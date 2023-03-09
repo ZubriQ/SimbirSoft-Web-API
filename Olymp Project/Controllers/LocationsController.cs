@@ -36,7 +36,7 @@ namespace Olymp_Project.Controllers
                 return Unauthorized();
             }
 
-            var response = await _service.GetLocationAsync(locationId!.Value);
+            var response = await _service.GetLocationByIdAsync(locationId!.Value);
 
             var locationDto = _mapper.Map<LocationResponseDto>(response.Data);
             return ResponseHelper.GetActionResult(response.StatusCode, locationDto);
