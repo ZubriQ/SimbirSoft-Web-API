@@ -44,8 +44,8 @@ namespace Olymp_Project.Services.VisitedLocations
             IEnumerable<VisitedLocation> visitedLocations, DateTimeRangeQuery query, Paging paging)
         {
             visitedLocations = visitedLocations
-                .Where(v => query.StartDateTime == null || v.VisitDateTime >= query.StartDateTime)
-                .Where(v => query.EndDateTime == null || v.VisitDateTime <= query.EndDateTime)
+                .Where(v => query.StartDateTime is null || v.VisitDateTime >= query.StartDateTime)
+                .Where(v => query.EndDateTime is null || v.VisitDateTime <= query.EndDateTime)
                 .OrderBy(l => l.Id)
                 .Skip(paging.From!.Value)
                 .Take(paging.Size!.Value);

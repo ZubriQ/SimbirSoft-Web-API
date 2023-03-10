@@ -36,7 +36,7 @@ namespace Olymp_Project.Controllers
                 return Unauthorized();
             }
 
-            var response = await _service.GetAnimalKindAsync(kindId!.Value);
+            var response = await _service.GetAnimalKindByIdAsync(kindId!.Value);
 
             var kindDto = _mapper.Map<KindResponseDto>(response.Data);
             return ResponseHelper.GetActionResult(response.StatusCode, kindDto);

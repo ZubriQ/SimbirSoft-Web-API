@@ -12,7 +12,7 @@ namespace Olymp_Project.Services.Kinds
             _db = context;
         }
 
-        public async Task<IServiceResponse<Kind>> GetAnimalKindAsync(long? kindId)
+        public async Task<IServiceResponse<Kind>> GetAnimalKindByIdAsync(long? kindId)
         {
             if (!IdValidator.IsValid(kindId))
             {

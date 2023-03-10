@@ -14,9 +14,9 @@ namespace Olymp_Project.Services.Animals
             _db = db;
         }
 
-        #region Get Animal
+        #region Get Animal by id
 
-        public async Task<IServiceResponse<Animal>> GetAnimalAsync(long? animalId)
+        public async Task<IServiceResponse<Animal>> GetAnimalByIdAsync(long? animalId)
         {
             if (!IdValidator.IsValid(animalId))
             {
@@ -41,7 +41,7 @@ namespace Olymp_Project.Services.Animals
 
         #endregion
 
-        #region Get Animals with search parameters
+        #region Get Animals by search parameters
 
         public async Task<IServiceResponse<ICollection<Animal>>> GetAnimalsAsync(
             AnimalQuery query, 
@@ -115,7 +115,7 @@ namespace Olymp_Project.Services.Animals
 
         #endregion
 
-        #region Insert Animal
+        #region Insert
 
         public async Task<IServiceResponse<Animal>> InsertAnimalAsync(Animal animal)
         {
@@ -193,7 +193,7 @@ namespace Olymp_Project.Services.Animals
 
         #endregion
 
-        #region Update Animal
+        #region Update
 
         public async Task<IServiceResponse<Animal>> UpdateAnimalAsync(long? animalId, PutAnimalDto request)
         {
@@ -272,7 +272,7 @@ namespace Olymp_Project.Services.Animals
 
         #endregion
 
-        #region Remove Animal
+        #region Remove
 
         public async Task<HttpStatusCode> RemoveAnimalAsync(long? animalId)
         {

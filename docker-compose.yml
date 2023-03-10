@@ -1,5 +1,9 @@
 version: '3.9'
 
+networks:
+  webapi-network:
+    driver: bridge
+
 services:
   database:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -8,7 +12,15 @@ services:
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "AN1m4l1@Ch1Pp3r!"
-
+    networks:
+      - webapi-network
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep sqlservr"]
+      interval: 3s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+    
   webapi:
     image: olympproject:latest
     build:
@@ -16,10 +28,15 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - database
+    # Зависит от 'здоровья' бд
+      database:
+        condition: service_healthy
     environment:
       ConnectionStrings__Testing: "Server=database;Database=animal-chipization;User Id=sa;Password=AN1m4l1@Ch1Pp3r!;"
-
+    networks:
+      - webapi-network
+    restart: unless-stopped
+    
   tests:
     image: mrexpen/planet_olymp_phase1
     pull_policy: always
@@ -30,3 +47,6 @@ services:
     environment:
       SERVER_URL: http://webapi:8080
       STAGE: all
+    networks:
+      - webapi-network
+    restart: unless-stopped

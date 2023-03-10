@@ -20,11 +20,11 @@ namespace Olymp_Project.Services.Locations
             {
                 return new ServiceResponse<Location>(HttpStatusCode.BadRequest);
             }
-
             if (await _db.Locations.FindAsync(locationId) is not Location location)
             {
                 return new ServiceResponse<Location>(HttpStatusCode.NotFound);
             }
+
             return new ServiceResponse<Location>(HttpStatusCode.OK, location);
         }
 
@@ -55,8 +55,8 @@ namespace Olymp_Project.Services.Locations
 
         private async Task<bool> CoordinatesAlreadyExist(LocationRequestDto request)
         {
-            return await _db.Locations.AnyAsync(
-                l => (l.Latitude == request.Latitude) && (l.Longitude == request.Longitude));
+            return await _db.Locations
+                .AnyAsync(l => (l.Latitude == request.Latitude) && (l.Longitude == request.Longitude));
         }
 
         private async Task<IServiceResponse<Location>> AddLocation(LocationRequestDto request)
