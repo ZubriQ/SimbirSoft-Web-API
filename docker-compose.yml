@@ -6,7 +6,7 @@ networks:
 
 services:
   database:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: mcr.microsoft.com/mssql/server:2019-latest
     ports:
       - "1433:1433"
     environment:
@@ -25,16 +25,21 @@ services:
     image: olympproject:latest
     build:
       context: .
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    depends_on:
-    # Зависит от 'здоровья' бд
-      database:
-        condition: service_healthy
     environment:
       ConnectionStrings__Testing: "Server=database;Database=animal-chipization;User Id=sa;Password=AN1m4l1@Ch1Pp3r!;"
     networks:
       - webapi-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://webapi:8080/health || exit 1"]
+      interval: 3s
+      timeout: 5s
+      retries: 30
+    depends_on:
+      database:
+        condition: service_healthy
     restart: unless-stopped
     
   tests:
@@ -43,7 +48,8 @@ services:
     ports:
       - "8090:8080"
     depends_on:
-      - webapi
+      webapi:
+        condition: service_healthy
     environment:
       SERVER_URL: http://webapi:8080
       STAGE: all

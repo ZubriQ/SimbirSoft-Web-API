@@ -17,7 +17,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddHealthChecks();
+builder.Services
+    .AddHealthChecks()
+    .AddCheck<WebAPIHealthCheck>("WebAPI");
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
@@ -92,9 +94,9 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
-app.UseRouting();
+//app.UseRouting();
 
 app.UseAuthorization();
 
