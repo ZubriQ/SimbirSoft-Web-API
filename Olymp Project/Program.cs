@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.OpenApi.Models;
 using Olymp_Project.Authentication;
 using Olymp_Project.Services.Accounts;
