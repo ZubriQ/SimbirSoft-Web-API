@@ -4,7 +4,6 @@ namespace Olymp_Project.Services.Authentication
 {
     public static class ApiAuthentication
     {
-        // TODO: Somehow do it in the Middleware layer?
         public static async Task<bool> IsAuthorizationValid(HttpRequest request, HttpContext httpContext)
         {
             string header = request.Headers["Authorization"];

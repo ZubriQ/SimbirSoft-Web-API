@@ -80,7 +80,6 @@ namespace Olymp_Project.Controllers
             var response = await _service.InsertAnimalAsync(_mapper.Map<Animal>(request));
 
             var animalDto = _mapper.Map<AnimalResponseDto>(response.Data);
-            // Should returns "visitedLocations": [], which seems OK.
             return ResponseHelper.GetActionResult(response.StatusCode, animalDto, nameof(CreateAnimal));
         }
 

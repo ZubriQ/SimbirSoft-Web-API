@@ -46,7 +46,6 @@ namespace Olymp_Project.Services.Accounts
             }
         }
 
-        // TODO: Make this layer as a Service, and move the method into a Repository?
         private async Task<IQueryable<Account>> GetFilteredAccounts(AccountQuery filter, Paging paging)
         {
             IQueryable<Account> accounts = _db.Accounts.AsQueryable();
@@ -102,7 +101,6 @@ namespace Olymp_Project.Services.Accounts
             }
         }
 
-        // TODO: Make this layer as a Service, and move the method into a Repository?
         private async Task<IServiceResponse<Account>> UpdateAccountAndSaveChangesAsync(
             Account account, AccountRequestDto dto)
         {
@@ -152,7 +150,6 @@ namespace Olymp_Project.Services.Accounts
             }
         }
 
-        // TODO: repository layer?
         private async Task<HttpStatusCode> RemoveAccount(Account account)
         {
             _db.Accounts.Remove(account);
