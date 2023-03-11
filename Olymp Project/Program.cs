@@ -13,16 +13,12 @@ using Olymp_Project.Services.VisitedLocations;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 
-builder.Services
-    .AddHealthChecks()
-    .AddCheck<WebAPIHealthCheck>("WebAPI");
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
-#region Configurating SwaggerGen and Basic authentication
+#region Configurate SwaggerGen and Basic Authorization
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -32,8 +28,7 @@ builder.Services.AddSwaggerGen(options =>
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
         Scheme = "Basic",
-        In = ParameterLocation.Header,
-        Description = "Basic Authorization header using the Bearer scheme."
+        In = ParameterLocation.Header
     });
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -53,10 +48,21 @@ builder.Services.AddAuthentication(ApiAuthenticationScheme.Name)
 
 #endregion
 
-#region Configurating Database, AutoMapper, Services and WebHost port
+#region Configurate Database
 
-string connection = builder.Configuration.GetConnectionString("Testing");
+string connection;
+
+#if DEBUG
+connection = builder.Configuration.GetConnectionString("Development");
+#else
+connection = builder.Configuration.GetConnectionString("Testing");
+#endif
+
 builder.Services.AddSqlServer<ChipizationDbContext>(connection);
+
+#endregion
+
+#region Configurate AutoMapper, Services, Healthcheck and 8080 Port
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
@@ -68,6 +74,10 @@ builder.Services.AddScoped<IKindService, KindService>();
 builder.Services.AddScoped<IAnimalService, AnimalService>();
 builder.Services.AddScoped<IAnimalKindService, AnimalKindService>();
 builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
+
+builder.Services
+    .AddHealthChecks()
+    .AddCheck<WebAPIHealthCheck>("WebAPI");
 
 builder.WebHost.UseUrls("http://0.0.0.0:8080");
 
@@ -81,15 +91,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-using (var scope = app.Services.CreateScope())
+else
 {
-    var services = scope.ServiceProvider;
-
-    var context = services.GetRequiredService<ChipizationDbContext>();
-    if (context.Database.GetPendingMigrations().Any())
+    using (var scope = app.Services.CreateScope())
     {
-        context.Database.Migrate();
+        var services = scope.ServiceProvider;
+
+        var context = services.GetRequiredService<ChipizationDbContext>();
+        if (context.Database.GetPendingMigrations().Any())
+        {
+            context.Database.Migrate();
+        }
     }
 }
 

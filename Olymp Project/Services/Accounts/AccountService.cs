@@ -19,7 +19,7 @@ namespace Olymp_Project.Services.Accounts
                 return new ServiceResponse<Account>(HttpStatusCode.BadRequest);
             }
 
-            if (await _db.Accounts.FirstOrDefaultAsync(a => a.Id == accountId) is not Account account)
+            if (await _db.Accounts.FindAsync(accountId) is not Account account)
             {
                 return new ServiceResponse<Account>(HttpStatusCode.NotFound, null!);
             }
@@ -126,7 +126,7 @@ namespace Olymp_Project.Services.Accounts
                 return HttpStatusCode.BadRequest;
             }
 
-            if (await _db.Accounts.FirstOrDefaultAsync(a => a.Id == accountId) is not Account account)
+            if (await _db.Accounts.FindAsync(accountId) is not Account account)
             {
                 return HttpStatusCode.Forbidden;
             }

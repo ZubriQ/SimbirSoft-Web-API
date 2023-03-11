@@ -221,10 +221,8 @@ namespace Olymp_Project.Services.Animals
             {
                 return (HttpStatusCode.BadRequest, null);
             }
-
-            var animalToUpdate = await _db.Animals.Include(a => a.VisitedLocations).Include(a => a.Kinds)
-                .FirstOrDefaultAsync(a => a.Id == animalId);
-            if (animalToUpdate is null)
+            
+            if (await GetAnimalByIdAsync(animalId!.Value) is not Animal animalToUpdate)
             {
                 return (HttpStatusCode.NotFound, null);
             }
@@ -253,6 +251,35 @@ namespace Olymp_Project.Services.Animals
             }
 
             return (HttpStatusCode.OK, animalToUpdate);
+        }
+
+        //private async Task<(bool, Animal?)> ValidateUpdateRequest(long animalId, PutAnimalDto request)
+        //{
+        //    if (await GetAnimalByIdAsync(animalId) is not Animal animalToUpdate)
+        //    {
+        //        return false;
+        //    }
+
+        //    bool chipperExists = _db.Accounts.Any(a => a.Id == request.ChipperId);
+        //    if (!chipperExists)
+        //    {
+        //        return false;
+        //    }
+
+        //    bool locationExists = _db.Locations.Any(l => l.Id == request.ChippingLocationId);
+        //    if (!locationExists)
+        //    {
+        //        return false;
+        //    }
+        //    return true;
+        //}
+
+        private async Task<Animal?> GetAnimalByIdAsync(long id)
+        {
+            return await _db.Animals
+                .Include(a => a.VisitedLocations)
+                .Include(a => a.Kinds)
+                .FirstOrDefaultAsync(a => a.Id == id);
         }
 
         private void UpdateAnimal(Animal animal, PutAnimalDto newData)

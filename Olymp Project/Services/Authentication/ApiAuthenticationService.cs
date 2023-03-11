@@ -11,7 +11,7 @@
 
         public async Task<Account?> AuthenticateAccountAsync(string email, string password)
         {
-            if (await _db.Accounts.SingleOrDefaultAsync(x => x.Email == email) is not Account user)
+            if (await _db.Accounts.FirstOrDefaultAsync(x => x.Email == email) is not Account user)
             {
                 return Task.FromResult<Account>(null!).Result;
             }
