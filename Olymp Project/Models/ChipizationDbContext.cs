@@ -9,7 +9,6 @@ namespace Olymp_Project.Models
     {
         public ChipizationDbContext()
         {
-            //Database.EnsureCreated();
         }
 
         public ChipizationDbContext(DbContextOptions<ChipizationDbContext> options)

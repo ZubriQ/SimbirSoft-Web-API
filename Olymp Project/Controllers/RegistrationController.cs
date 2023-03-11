@@ -28,7 +28,8 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<AccountResponseDto>> RegisterAccount([FromBody] AccountRequestDto request)
+        public async Task<ActionResult<AccountResponseDto>> RegisterAccount(
+            [FromBody] AccountRequestDto request)
         {
             if (User.Identity!.IsAuthenticated)
             {
