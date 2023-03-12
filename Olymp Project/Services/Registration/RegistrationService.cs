@@ -19,8 +19,7 @@ namespace Olymp_Project.Services.Registration
                 return new ServiceResponse<Account>(HttpStatusCode.BadRequest);
             }
 
-            bool emailExists = await _db.Accounts.AnyAsync(a => a.Email == request.Email);
-            if (emailExists)
+            if (await EmailAlreadyExists(request.Email!))
             {
                 return new ServiceResponse<Account>(HttpStatusCode.Conflict);
             }
@@ -33,6 +32,11 @@ namespace Olymp_Project.Services.Registration
             {
                 return new ServiceResponse<Account>(HttpStatusCode.InternalServerError);
             }
+        }
+
+        private async Task<bool> EmailAlreadyExists(string email)
+        {
+            return await _db.Accounts.AnyAsync(a => a.Email == email);
         }
 
         private async Task<IServiceResponse<Account>> InsertAccountAndSaveChangesAsync(AccountRequestDto request)

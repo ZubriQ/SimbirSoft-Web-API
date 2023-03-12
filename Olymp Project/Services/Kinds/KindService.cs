@@ -101,8 +101,7 @@ namespace Olymp_Project.Services.Kinds
                 return HttpStatusCode.BadRequest;
             }
 
-            if (await _db.Kinds.Include(k => k.Animals).FirstOrDefaultAsync(k => k.Id == kindId) 
-                is not Kind kind)
+            if (await GetKindWithAnimalsAsync(kindId!.Value) is not Kind kind)
             {
                 return HttpStatusCode.NotFound;
             }
@@ -119,6 +118,13 @@ namespace Olymp_Project.Services.Kinds
             {
                 return HttpStatusCode.InternalServerError;
             }
+        }
+
+        private async Task<Kind?> GetKindWithAnimalsAsync(long kindId)
+        {
+            return await _db.Kinds
+                .Include(k => k.Animals)
+                .FirstOrDefaultAsync(k => k.Id == kindId);
         }
 
         private async Task<HttpStatusCode> RemoveKind(Kind kind)

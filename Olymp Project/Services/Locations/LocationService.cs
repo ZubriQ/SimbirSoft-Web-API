@@ -12,7 +12,7 @@ namespace Olymp_Project.Services.Locations
             _db = db;
         }
 
-        #region Get Location by id
+        #region Get by id
 
         public async Task<IServiceResponse<Location>> GetLocationByIdAsync(long? locationId)
         {

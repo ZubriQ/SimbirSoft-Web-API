@@ -13,7 +13,7 @@ namespace Olymp_Project.Services.VisitedLocations
             _db = db;
         }
 
-        #region Get VisitedLocations by search parameters
+        #region Get by search filter
 
         public async Task<IServiceResponse<ICollection<VisitedLocation>>> GetVisitedLocationsAsync(
             long? animalId,
