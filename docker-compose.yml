@@ -18,7 +18,7 @@ services:
       test: ["CMD-SHELL", "pgrep sqlservr"]
       interval: 3s
       timeout: 5s
-      retries: 50
+      retries: 100
     restart: unless-stopped
     
   webapi:
@@ -33,7 +33,7 @@ services:
       test: ["CMD-SHELL", "curl --fail http://webapi:8080/health || exit 1"]
       interval: 3s
       timeout: 5s
-      retries: 50
+      retries: 100
     depends_on:
       database:
         condition: service_healthy

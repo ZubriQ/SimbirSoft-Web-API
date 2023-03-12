@@ -42,8 +42,9 @@ namespace Olymp_Project.Services.Accounts
 
             try
             {
-                var accounts = GetAccountsWithFilter(query);
-                return new CollectionServiceResponse<Account>(HttpStatusCode.OK, GetPagedAccounts(accounts, paging));
+                var filteredAccounts = GetAccountsWithFilter(query);
+                var pagedAccounts = PaginateAccounts(filteredAccounts, paging);
+                return new CollectionServiceResponse<Account>(HttpStatusCode.OK, pagedAccounts);
             }
             catch (Exception)
             {
@@ -70,7 +71,7 @@ namespace Olymp_Project.Services.Accounts
                 (email == null || a.Email.ToLower().Contains(email)));
         }
 
-        private List<Account> GetPagedAccounts(IQueryable<Account> accounts, Paging paging)
+        private List<Account> PaginateAccounts(IQueryable<Account> accounts, Paging paging)
         {
             return accounts
                 .OrderBy(a => a.Id)

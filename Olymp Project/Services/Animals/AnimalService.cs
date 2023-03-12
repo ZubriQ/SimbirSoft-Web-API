@@ -50,8 +50,9 @@ namespace Olymp_Project.Services.Animals
 
             try
             {
-                var animals = GetAnimalsWithFilter(query);
-                return new CollectionServiceResponse<Animal>(HttpStatusCode.OK, GetPagedAnimals(animals, paging));
+                var filteredAnimals = GetAnimalsWithFilter(query);
+                var pagedAnimals = PaginateAnimals(filteredAnimals, paging);
+                return new CollectionServiceResponse<Animal>(HttpStatusCode.OK, pagedAnimals);
             }
             catch
             {
@@ -119,7 +120,7 @@ namespace Olymp_Project.Services.Animals
             return animals;
         }
 
-        private List<Animal> GetPagedAnimals(IQueryable<Animal> animals, Paging paging)
+        private List<Animal> PaginateAnimals(IQueryable<Animal> animals, Paging paging)
         {
             return animals
                 .OrderBy(a => a.Id)

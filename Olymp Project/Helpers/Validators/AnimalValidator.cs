@@ -24,7 +24,31 @@
             return true;
         }
 
-        public static bool IsAdjacentLocationsValid(
+        public static bool IsUpdateVisitedLocationRequestValid(
+            Animal animal, VisitedLocation visitedLocation, VisitedLocationRequestDto request)
+        {
+            return IsVisitedLocationValid(animal, visitedLocation, request.LocationPointId!.Value) &&
+                 IsAdjacentLocationsValid(animal, request.LocationPointId!.Value, visitedLocation.Id);
+        }
+
+        private static bool IsVisitedLocationValid(
+            Animal animal, VisitedLocation visitedLocation, long locationPointId)
+        {
+            if (visitedLocation.LocationId == locationPointId)
+            {
+                return false;
+            }
+
+            if (visitedLocation == animal.VisitedLocations.Last() &&
+                animal.ChippingLocationId == locationPointId)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool IsAdjacentLocationsValid(
             Animal animal, long locationPointId, long visitedLocationId)
         {
             var locations = animal.VisitedLocations.OrderBy(al => al.VisitDateTime).ToList();
@@ -48,23 +72,6 @@
             {
                 return false;
             }
-            return true;
-        }
-
-        public static bool IsVisitedLocationValid(
-            Animal animal, VisitedLocation visitedLocation, long locationPointId)
-        {
-            if (visitedLocation.LocationId == locationPointId)
-            {
-                return false;
-            }
-
-            if (visitedLocation == animal.VisitedLocations.Last() &&
-                animal.ChippingLocationId == locationPointId)
-            {
-                return false;
-            }
-
             return true;
         }
     }
