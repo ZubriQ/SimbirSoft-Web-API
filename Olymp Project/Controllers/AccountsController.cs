@@ -36,7 +36,7 @@ namespace Olymp_Project.Controllers
                 return Unauthorized();
             }
 
-            var response = await _service.GetAccountAsync(accountId!.Value);
+            var response = await _service.GetAccountByIdAsync(accountId!.Value);
 
             var accountDto = _mapper.Map<AccountResponseDto>(response.Data);
             return ResponseHelper.GetActionResult(response.StatusCode, accountDto);
@@ -57,7 +57,7 @@ namespace Olymp_Project.Controllers
                 return Unauthorized();
             }
 
-            var response = await _service.GetAccountsAsync(query, paging);
+            var response = _service.GetAccounts(query, paging);
 
             var accountsDto = response.Data!.Select(a => _mapper.Map<AccountResponseDto>(a));
             return ResponseHelper.GetActionResult(response.StatusCode, accountsDto);

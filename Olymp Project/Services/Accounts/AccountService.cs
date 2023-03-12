@@ -12,23 +12,27 @@ namespace Olymp_Project.Services.Accounts
             _db = db;
         }
 
-        public async Task<IServiceResponse<Account>> GetAccountAsync(int? accountId)
+        #region Get by id
+
+        public async Task<IServiceResponse<Account>> GetAccountByIdAsync(int? accountId)
         {
             if (!IdValidator.IsValid(accountId))
             {
                 return new ServiceResponse<Account>(HttpStatusCode.BadRequest);
             }
-
             if (await _db.Accounts.FindAsync(accountId) is not Account account)
             {
-                return new ServiceResponse<Account>(HttpStatusCode.NotFound, null!);
+                return new ServiceResponse<Account>(HttpStatusCode.NotFound);
             }
 
             return new ServiceResponse<Account>(HttpStatusCode.OK, account);
         }
 
-        public async Task<IServiceResponse<ICollection<Account>>> GetAccountsAsync(
-            AccountQuery query, Paging paging)
+        #endregion
+
+        #region Get by search filter
+
+        public IServiceResponse<ICollection<Account>> GetAccounts(AccountQuery query, Paging paging)
         {
             if (!PagingValidator.IsValid(paging))
             {
@@ -37,8 +41,8 @@ namespace Olymp_Project.Services.Accounts
 
             try
             {
-                var accounts = await GetFilteredAccounts(query, paging);
-                return new CollectionServiceResponse<Account>(HttpStatusCode.OK, accounts);
+                var accounts = GetFilteredAccountsFilter(query);
+                return new CollectionServiceResponse<Account>(HttpStatusCode.OK, GetPagedAccounts(accounts, paging));
             }
             catch (Exception)
             {
@@ -46,47 +50,48 @@ namespace Olymp_Project.Services.Accounts
             }
         }
 
-        private async Task<IQueryable<Account>> GetFilteredAccounts(AccountQuery filter, Paging paging)
+        private IQueryable<Account> GetFilteredAccountsFilter(AccountQuery filter)
         {
-            IQueryable<Account> accounts = _db.Accounts.AsQueryable();
+            string loweredFirstName = string.IsNullOrWhiteSpace(filter.FirstName) ? null! : filter.FirstName.ToLower();
+            string loweredLastName = string.IsNullOrWhiteSpace(filter.LastName) ? null! : filter.LastName.ToLower();
+            string loweredEmail = string.IsNullOrWhiteSpace(filter.Email) ? null! : filter.Email.ToLower();
 
-            if (!string.IsNullOrWhiteSpace(filter.FirstName))
-            {
-                string firstNameLower = filter.FirstName.ToLower();
-                accounts = accounts.Where(a => a.FirstName.ToLower().Contains(firstNameLower));
-            }
+            return GetFilteredAccounts(loweredFirstName, loweredLastName, loweredEmail);
+        }
 
-            if (!string.IsNullOrWhiteSpace(filter.LastName))
-            {
-                string lastNameLower = filter.LastName.ToLower();
-                accounts = accounts.Where(a => a.LastName.ToLower().Contains(lastNameLower));
-            }
+        private IQueryable<Account> GetFilteredAccounts(string? firstName, string? lastName, string? email)
+        {
+            return _db.Accounts
+                .AsQueryable()
+                .Where(a => 
+                (firstName == null || a.FirstName.ToLower().Contains(firstName)) && 
+                (lastName == null || a.LastName.ToLower().Contains(lastName)) && 
+                (email == null || a.Email.ToLower().Contains(email)));
+        }
 
-            if (!string.IsNullOrWhiteSpace(filter.Email))
-            {
-                string emailLower = filter.Email.ToLower();
-                accounts = accounts.Where(a => a.Email.ToLower().Contains(emailLower));
-            }
-
+        private List<Account> GetPagedAccounts(IQueryable<Account> accounts, Paging paging)
+        {
             return accounts
                 .OrderBy(a => a.Id)
                 .Skip(paging.From!.Value)
-                .Take(paging.Size!.Value);
+                .Take(paging.Size!.Value)
+                .ToList();
         }
 
+        #endregion
+
+        #region Update
+
         public async Task<IServiceResponse<Account>> UpdateAccountAsync(
-            int? accountId, AccountRequestDto request, string? login)
+            int? accountId, 
+            AccountRequestDto request, 
+            string? email)
         {
             if (!IdValidator.IsValid(accountId) || !AccountValidator.IsValid(request))
             {
                 return new ServiceResponse<Account>(HttpStatusCode.BadRequest);
             }
-
-            if (await _db.Accounts.FindAsync(accountId) is not Account account)
-            {
-                return new ServiceResponse<Account>(HttpStatusCode.Forbidden);
-            }
-            if (account.Email != login)
+            if (await _db.Accounts.FindAsync(accountId) is not Account account || account.Email != email)
             {
                 return new ServiceResponse<Account>(HttpStatusCode.Forbidden);
             }
@@ -102,7 +107,8 @@ namespace Olymp_Project.Services.Accounts
         }
 
         private async Task<IServiceResponse<Account>> UpdateAccountAndSaveChangesAsync(
-            Account account, AccountRequestDto dto)
+            Account account, 
+            AccountRequestDto dto)
         {
             AssignAccountData(account, dto);
             _db.Accounts.Attach(account);
@@ -119,25 +125,19 @@ namespace Olymp_Project.Services.Accounts
             account.Password = newData.Password!;
         }
 
+        #endregion
+
+        #region Remove
+
         public async Task<HttpStatusCode> RemoveAccountAsync(int? accountId, string? email)
         {
-            if (!IdValidator.IsValid(accountId))
+            if (!IdValidator.IsValid(accountId) || await _db.Animals.AnyAsync(a => a.ChipperId == accountId))
             {
                 return HttpStatusCode.BadRequest;
             }
-
-            if (await _db.Accounts.FindAsync(accountId) is not Account account)
+            if (await _db.Accounts.FindAsync(accountId) is not Account account || account.Email != email)
             {
                 return HttpStatusCode.Forbidden;
-            }
-            if (account.Email != email)
-            {
-                return HttpStatusCode.Forbidden;
-            }
-
-            if (await _db.Animals.FirstOrDefaultAsync(a => a.ChipperId == accountId) is Animal linkedAnimal)
-            {
-                return HttpStatusCode.BadRequest;
             }
 
             try
@@ -156,5 +156,7 @@ namespace Olymp_Project.Services.Accounts
             await _db.SaveChangesAsync();
             return HttpStatusCode.OK;
         }
+
+        #endregion
     }
 }

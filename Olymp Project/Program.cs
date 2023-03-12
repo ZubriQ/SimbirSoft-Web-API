@@ -50,7 +50,7 @@ builder.Services.AddAuthentication(ApiAuthenticationScheme.Name)
 
 #region Configurate Database
 
-string connection;
+string connection = string.Empty;
 
 #if DEBUG
 connection = builder.Configuration.GetConnectionString("Development");
