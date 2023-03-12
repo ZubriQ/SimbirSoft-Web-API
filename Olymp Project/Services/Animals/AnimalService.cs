@@ -39,7 +39,7 @@ namespace Olymp_Project.Services.Animals
 
         #endregion
 
-        #region Get by search filter
+        #region Get by search parameters
 
         public IServiceResponse<ICollection<Animal>> GetAnimals(AnimalQuery query, Paging paging)
         {

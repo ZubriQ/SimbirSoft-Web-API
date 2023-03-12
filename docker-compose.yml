@@ -19,7 +19,7 @@ services:
       interval: 3s
       timeout: 5s
       retries: 100
-    restart: unless-stopped
+    restart: always
     
   webapi:
     image: olympproject:latest
@@ -37,7 +37,7 @@ services:
     depends_on:
       database:
         condition: service_healthy
-    restart: unless-stopped
+    restart: always
     
   tests:
     image: mrexpen/planet_olymp_phase1
@@ -52,4 +52,4 @@ services:
       STAGE: all
     networks:
       - webapi-network
-    restart: unless-stopped
+    restart: always

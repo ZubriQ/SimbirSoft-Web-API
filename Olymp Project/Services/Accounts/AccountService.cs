@@ -31,7 +31,7 @@ namespace Olymp_Project.Services.Accounts
 
         #endregion
 
-        #region Get by search filter
+        #region Get by search parameters
 
         public IServiceResponse<ICollection<Account>> GetAccounts(AccountQuery query, Paging paging)
         {
