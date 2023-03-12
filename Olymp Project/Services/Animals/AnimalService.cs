@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Olymp_Project.Helpers.Validators;
-using Olymp_Project.Models;
+﻿using Olymp_Project.Helpers.Validators;
 using Olymp_Project.Responses;
 
 namespace Olymp_Project.Services.Animals
@@ -14,7 +12,7 @@ namespace Olymp_Project.Services.Animals
             _db = db;
         }
 
-        #region Get Animal by id
+        #region Get by id
 
         public async Task<IServiceResponse<Animal>> GetAnimalByIdAsync(long? animalId)
         {
@@ -23,7 +21,7 @@ namespace Olymp_Project.Services.Animals
                 return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }
 
-            if (await GetAnimalById(animalId) is not Animal animal)
+            if (await GetAnimalAsync(animalId) is not Animal animal)
             {
                 return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
             }
@@ -31,7 +29,7 @@ namespace Olymp_Project.Services.Animals
             return new ServiceResponse<Animal>(HttpStatusCode.OK, animal);
         }
 
-        private async Task<Animal?> GetAnimalById(long? animalId)
+        private async Task<Animal?> GetAnimalAsync(long? animalId)
         {
             return await _db.Animals
                 .Include(a => a.VisitedLocations)
@@ -41,11 +39,9 @@ namespace Olymp_Project.Services.Animals
 
         #endregion
 
-        #region Get Animals by search parameters
+        #region Get by search filter
 
-        public async Task<IServiceResponse<ICollection<Animal>>> GetAnimalsAsync(
-            AnimalQuery query, 
-            Paging paging)
+        public IServiceResponse<ICollection<Animal>> GetAnimals(AnimalQuery query, Paging paging)
         {
             if (!PagingValidator.IsValid(paging) || !AnimalDtoValidator.IsQueryValid(query))
             {
@@ -54,8 +50,8 @@ namespace Olymp_Project.Services.Animals
 
             try
             {
-                var filteredAnimals = GetFilteredAnimals(query, paging);
-                return new CollectionServiceResponse<Animal>(HttpStatusCode.OK, filteredAnimals);
+                var animals = GetAnimalsWithFilter(query);
+                return new CollectionServiceResponse<Animal>(HttpStatusCode.OK, GetPagedAnimals(animals, paging));
             }
             catch
             {
@@ -63,54 +59,73 @@ namespace Olymp_Project.Services.Animals
             }
         }
 
-        private IQueryable<Animal> GetFilteredAnimals(AnimalQuery query, Paging paging)
+        private IQueryable<Animal> GetAnimalsWithFilter(AnimalQuery query)
         {
-            var animals = _db.Animals
+            var animals = GetAnimalsAsQueryable();
+            animals = FilterByDateTime(animals, query.StartDateTime, query.EndDateTime);
+            animals = FilterByChipping(animals, query.ChipperId, query.ChippingLocationId);
+            animals = FilterByLifeStatusAndGender(animals, query.LifeStatus!, query.Gender!);
+
+            return animals;
+        }
+
+        private IQueryable<Animal> GetAnimalsAsQueryable()
+        {
+            return _db.Animals
                 .Include(a => a.VisitedLocations)
                 .Include(a => a.Kinds)
                 .AsQueryable();
+        }
 
-            animals = FilterAnimals(query, animals);
+        private IQueryable<Animal> FilterByDateTime(
+            IQueryable<Animal> animals, DateTime? startDateTime, DateTime? endDateTime)
+        {
+            if (startDateTime.HasValue)
+            {
+                animals = animals.Where(a => a.ChippingDateTime >= startDateTime.Value);
+            }
+            if (endDateTime.HasValue)
+            {
+                animals = animals.Where(a => a.ChippingDateTime <= endDateTime.Value);
+            }
+            return animals;
+        }
 
+        private IQueryable<Animal> FilterByChipping(
+            IQueryable<Animal> animals, int? chipperId, long? chippingLocationId)
+        {
+            if (chipperId.HasValue)
+            {
+                animals = animals.Where(a => a.ChipperId == chipperId.Value);
+            }
+            if (chippingLocationId.HasValue)
+            {
+                animals = animals.Where(a => a.ChippingLocationId == chippingLocationId.Value);
+            }
+            return animals;
+        }
+
+        private IQueryable<Animal> FilterByLifeStatusAndGender(
+            IQueryable<Animal> animals, string lifeStatus, string gender)
+        {
+            if (!string.IsNullOrWhiteSpace(lifeStatus))
+            {
+                animals = animals.Where(a => a.LifeStatus == lifeStatus);
+            }
+            if (!string.IsNullOrWhiteSpace(gender))
+            {
+                animals = animals.Where(a => a.Gender == gender);
+            }
+            return animals;
+        }
+
+        private List<Animal> GetPagedAnimals(IQueryable<Animal> animals, Paging paging)
+        {
             return animals
                 .OrderBy(a => a.Id)
                 .Skip(paging.From!.Value)
-                .Take(paging.Size!.Value);
-        }
-
-        private IQueryable<Animal> FilterAnimals(AnimalQuery query, IQueryable<Animal> animals)
-        {
-            if (query.StartDateTime.HasValue)
-            {
-                animals = animals.Where(a => a.ChippingDateTime >= query.StartDateTime);
-            }
-
-            if (query.EndDateTime.HasValue)
-            {
-                animals = animals.Where(a => a.ChippingDateTime <= query.EndDateTime);
-            }
-
-            if (query.ChipperId.HasValue)
-            {
-                animals = animals.Where(a => a.ChipperId == query.ChipperId.Value);
-            }
-
-            if (query.ChippingLocationId.HasValue)
-            {
-                animals = animals.Where(a => a.ChippingLocationId == query.ChippingLocationId.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.LifeStatus))
-            {
-                animals = animals.Where(a => a.LifeStatus == query.LifeStatus);
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.Gender))
-            {
-                animals = animals.Where(a => a.Gender == query.Gender);
-            }
-
-            return animals;
+                .Take(paging.Size!.Value)
+                .ToList();
         }
 
         #endregion
@@ -222,30 +237,14 @@ namespace Olymp_Project.Services.Animals
                 return (HttpStatusCode.BadRequest, null);
             }
             
-            if (await GetAnimalByIdAsync(animalId!.Value) is not Animal animalToUpdate)
+            if (await GetAnimalByIdAsync(animalId!.Value) is not Animal animalToUpdate ||
+                !AccountAndLocationExist(request.ChipperId!.Value, request.ChippingLocationId!.Value))
             {
                 return (HttpStatusCode.NotFound, null);
             }
 
-            bool chipperExists = _db.Accounts.Any(a => a.Id == request.ChipperId);
-            if (!chipperExists)
-            {
-                return (HttpStatusCode.NotFound, null);
-            }
-
-            bool locationExists = _db.Locations.Any(l => l.Id == request.ChippingLocationId);
-            if (!locationExists)
-            {
-                return (HttpStatusCode.NotFound, null);
-            }
-
-            if (animalToUpdate.LifeStatus == "DEAD" && request.LifeStatus == "ALIVE")
-            {
-                return (HttpStatusCode.BadRequest, null);
-            }
-
-            if (animalToUpdate.VisitedLocations.Any()
-                && animalToUpdate.VisitedLocations.First().LocationId == request.ChippingLocationId)
+            if (!IsLifeStatusValid(animalToUpdate, request) ||
+                !IsVisitedLocationsValid(animalToUpdate, request.ChippingLocationId.Value))
             {
                 return (HttpStatusCode.BadRequest, null);
             }
@@ -253,33 +252,29 @@ namespace Olymp_Project.Services.Animals
             return (HttpStatusCode.OK, animalToUpdate);
         }
 
-        //private async Task<(bool, Animal?)> ValidateUpdateRequest(long animalId, PutAnimalDto request)
-        //{
-        //    if (await GetAnimalByIdAsync(animalId) is not Animal animalToUpdate)
-        //    {
-        //        return false;
-        //    }
-
-        //    bool chipperExists = _db.Accounts.Any(a => a.Id == request.ChipperId);
-        //    if (!chipperExists)
-        //    {
-        //        return false;
-        //    }
-
-        //    bool locationExists = _db.Locations.Any(l => l.Id == request.ChippingLocationId);
-        //    if (!locationExists)
-        //    {
-        //        return false;
-        //    }
-        //    return true;
-        //}
-
         private async Task<Animal?> GetAnimalByIdAsync(long id)
         {
             return await _db.Animals
                 .Include(a => a.VisitedLocations)
                 .Include(a => a.Kinds)
                 .FirstOrDefaultAsync(a => a.Id == id);
+        }
+
+        private bool AccountAndLocationExist(int chipperId, long chippingLocationId)
+        {
+            return _db.Accounts.Any(a => a.Id == chipperId) &&
+                   _db.Locations.Any(l => l.Id == chippingLocationId);
+        }
+
+        private bool IsLifeStatusValid(Animal animal, PutAnimalDto request)
+        {
+            return animal.LifeStatus != "DEAD" || request.LifeStatus != "ALIVE";
+        }
+
+        private bool IsVisitedLocationsValid(Animal animal, long chippingLocationId)
+        {
+            return !animal.VisitedLocations.Any()
+                 || animal.VisitedLocations.First().LocationId != chippingLocationId;
         }
 
         private void UpdateAnimal(Animal animal, PutAnimalDto newData)
@@ -303,7 +298,7 @@ namespace Olymp_Project.Services.Animals
 
         public async Task<HttpStatusCode> RemoveAnimalAsync(long? animalId)
         {
-            (var statusCode, var animal) = await ValidateRemoving(animalId);
+            (var statusCode, var animal) = await ValidateRemoveRequest(animalId);
             if (statusCode is not HttpStatusCode.OK)
             {
                 return statusCode;
@@ -319,16 +314,14 @@ namespace Olymp_Project.Services.Animals
             }
         }
 
-        private async Task<(HttpStatusCode, Animal?)> ValidateRemoving(long? animalId)
+        private async Task<(HttpStatusCode, Animal?)> ValidateRemoveRequest(long? animalId)
         {
             if (!IdValidator.IsValid(animalId))
             {
                 return (HttpStatusCode.BadRequest, null);
             }
 
-            var animal = await _db.Animals.Include(k => k.Kinds).Include(vl => vl.VisitedLocations)
-                .FirstOrDefaultAsync(a => a.Id == animalId);
-            if (animal is null)
+            if (await GetAnimalAsync(animalId) is not Animal animal)
             {
                 return (HttpStatusCode.NotFound, null);
             }

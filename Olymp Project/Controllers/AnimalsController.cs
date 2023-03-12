@@ -57,7 +57,7 @@ namespace Olymp_Project.Controllers
                 return Unauthorized();
             }
 
-            var response = await _service.GetAnimalsAsync(query, paging);
+            var response = _service.GetAnimals(query, paging);
 
             var animalsDto = response.Data?.Select(a => _mapper.Map<AnimalResponseDto>(a));
             return ResponseHelper.GetActionResult(response.StatusCode, animalsDto);

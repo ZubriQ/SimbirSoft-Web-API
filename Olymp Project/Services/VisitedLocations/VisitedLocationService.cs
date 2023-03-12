@@ -29,7 +29,7 @@ namespace Olymp_Project.Services.VisitedLocations
                 return new CollectionServiceResponse<VisitedLocation>(HttpStatusCode.NotFound);
             }
 
-            var visitedLocations = FilterVisitedLocations(animal.VisitedLocations, query, paging);
+            var visitedLocations = FilterVisitedLocationsFilter(animal.VisitedLocations, query, paging);
             return new CollectionServiceResponse<VisitedLocation>(HttpStatusCode.OK, visitedLocations!);
         }
 
@@ -40,7 +40,7 @@ namespace Olymp_Project.Services.VisitedLocations
                 .FirstOrDefaultAsync(a => a.Id == animalId);
         }
 
-        private List<VisitedLocation> FilterVisitedLocations(
+        private List<VisitedLocation> FilterVisitedLocationsFilter(
             IEnumerable<VisitedLocation> visitedLocations, DateTimeRangeQuery query, Paging paging)
         {
             visitedLocations = visitedLocations

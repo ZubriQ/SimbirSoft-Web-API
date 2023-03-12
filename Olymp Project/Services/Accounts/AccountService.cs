@@ -42,7 +42,7 @@ namespace Olymp_Project.Services.Accounts
 
             try
             {
-                var accounts = GetFilteredAccountsFilter(query);
+                var accounts = GetAccountsWithFilter(query);
                 return new CollectionServiceResponse<Account>(HttpStatusCode.OK, GetPagedAccounts(accounts, paging));
             }
             catch (Exception)
@@ -51,7 +51,7 @@ namespace Olymp_Project.Services.Accounts
             }
         }
 
-        private IQueryable<Account> GetFilteredAccountsFilter(AccountQuery filter)
+        private IQueryable<Account> GetAccountsWithFilter(AccountQuery filter)
         {
             string loweredFirstName = string.IsNullOrWhiteSpace(filter.FirstName) ? null! : filter.FirstName.ToLower();
             string loweredLastName = string.IsNullOrWhiteSpace(filter.LastName) ? null! : filter.LastName.ToLower();
