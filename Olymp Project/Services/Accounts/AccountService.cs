@@ -20,6 +20,7 @@ namespace Olymp_Project.Services.Accounts
             {
                 return new ServiceResponse<Account>(HttpStatusCode.BadRequest);
             }
+
             if (await _db.Accounts.FindAsync(accountId) is not Account account)
             {
                 return new ServiceResponse<Account>(HttpStatusCode.NotFound);
@@ -131,11 +132,13 @@ namespace Olymp_Project.Services.Accounts
 
         public async Task<HttpStatusCode> RemoveAccountAsync(int? accountId, string? email)
         {
-            if (!IdValidator.IsValid(accountId) || await _db.Animals.AnyAsync(a => a.ChipperId == accountId))
+            if (!IdValidator.IsValid(accountId) || 
+                await _db.Animals.AnyAsync(a => a.ChipperId == accountId))
             {
                 return HttpStatusCode.BadRequest;
             }
-            if (await _db.Accounts.FindAsync(accountId) is not Account account || account.Email != email)
+            if (await _db.Accounts.FindAsync(accountId) is not Account account || 
+                account.Email != email)
             {
                 return HttpStatusCode.Forbidden;
             }
