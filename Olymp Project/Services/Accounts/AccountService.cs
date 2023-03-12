@@ -85,9 +85,7 @@ namespace Olymp_Project.Services.Accounts
         #region Update
 
         public async Task<IServiceResponse<Account>> UpdateAccountAsync(
-            int? accountId, 
-            AccountRequestDto request, 
-            string? email)
+            int? accountId, AccountRequestDto request, string? email)
         {
             if (!IdValidator.IsValid(accountId) || !AccountValidator.IsValid(request))
             {

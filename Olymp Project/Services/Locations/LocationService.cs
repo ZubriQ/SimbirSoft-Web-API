@@ -76,8 +76,7 @@ namespace Olymp_Project.Services.Locations
         #region Update
 
         public async Task<IServiceResponse<Location>> UpdateLocationAsync(
-            long? locationId, 
-            LocationRequestDto request)
+            long? locationId, LocationRequestDto request)
         {
             if (!IdValidator.IsValid(locationId) || !LocationDtoValidator.IsValid(request))
             {

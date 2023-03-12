@@ -12,12 +12,10 @@ namespace Olymp_Project.Services.VisitedLocations
             _db = db;
         }
 
-        #region Get by search filter
+        #region Get by search parameters
 
         public async Task<IServiceResponse<ICollection<VisitedLocation>>> GetVisitedLocationsAsync(
-            long? animalId,
-            DateTimeRangeQuery query,
-            Paging paging)
+            long? animalId, DateTimeRangeQuery query, Paging paging)
         {
             if (!IdValidator.IsValid(animalId) || !PagingValidator.IsValid(paging))
             {
@@ -70,8 +68,7 @@ namespace Olymp_Project.Services.VisitedLocations
         #region Insert
 
         public async Task<IServiceResponse<VisitedLocation>> InsertVisitedLocationAsync(
-            long? animalId, 
-            long? locationId)
+            long? animalId, long? locationId)
         {
             if (!IdValidator.IsValid(animalId, locationId))
             {
@@ -118,8 +115,7 @@ namespace Olymp_Project.Services.VisitedLocations
         #region Update
 
         public async Task<IServiceResponse<VisitedLocation>> UpdateVisitedLocationAsync(
-            long? animalId,
-            VisitedLocationRequestDto request)
+            long? animalId, VisitedLocationRequestDto request)
         {
             #region Request Validation
 
@@ -178,8 +174,7 @@ namespace Olymp_Project.Services.VisitedLocations
         #region Remove
 
         public async Task<HttpStatusCode> RemoveVisitedLocationAsync(
-            long? animalId,
-            long? visitedLocationId)
+            long? animalId, long? visitedLocationId)
         {
             if (!IdValidator.IsValid(animalId, visitedLocationId))
             {
