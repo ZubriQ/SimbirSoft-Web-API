@@ -39,7 +39,6 @@ namespace Olymp_Project.Services.VisitedLocations
             {
                 return new CollectionServiceResponse<VisitedLocation>();
             }
-            
         }
 
         private async Task<Animal?> GetAnimalByIdWithVisitedLocationsAsync(long animalId)
@@ -90,11 +89,6 @@ namespace Olymp_Project.Services.VisitedLocations
             {
                 return new ServiceResponse<VisitedLocation>(HttpStatusCode.BadRequest);
             }
-
-            //if ()
-            //{
-            //    return new ServiceResponse<VisitedLocation>(HttpStatusCode.NotFound);
-            //}
 
             try
             {
