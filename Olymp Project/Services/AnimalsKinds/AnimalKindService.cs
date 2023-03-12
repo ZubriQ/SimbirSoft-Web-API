@@ -1,5 +1,4 @@
 ﻿using Olymp_Project.Helpers.Validators;
-using Olymp_Project.Models;
 using Olymp_Project.Responses;
 
 namespace Olymp_Project.Services.AnimalsKinds
@@ -21,16 +20,8 @@ namespace Olymp_Project.Services.AnimalsKinds
                 return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }
 
-            var animalToUpdate = await _db.Animals
-                .Include(a => a.VisitedLocations).Include(a => a.Kinds)             
-                .FirstOrDefaultAsync(a => a.Id == animalId);
-            if (animalToUpdate is null)
-            {
-                return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
-            }
-
-            bool kindExists = await _db.Kinds.AnyAsync(k => k.Id == kindId);
-            if (!kindExists)
+            if (await GetAnimalByIdAsync(animalId!.Value) is not Animal animalToUpdate || 
+                !await _db.Kinds.AnyAsync(k => k.Id == kindId))
             {
                 return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
             }
@@ -43,7 +34,7 @@ namespace Olymp_Project.Services.AnimalsKinds
 
             try
             {
-                return await AddKindToAnimalAndSave(animalToUpdate, kindId!.Value);
+                return await AddKindToAnimalAndSaveChangesAsync(animalToUpdate, kindId!.Value);
             }
             catch (Exception)
             {
@@ -51,7 +42,15 @@ namespace Olymp_Project.Services.AnimalsKinds
             }
         }
 
-        private async Task<IServiceResponse<Animal>> AddKindToAnimalAndSave(
+        private async Task<Animal?> GetAnimalByIdAsync(long id)
+        {
+            return await _db.Animals
+                .Include(a => a.VisitedLocations)
+                .Include(a => a.Kinds)
+                .FirstOrDefaultAsync(a => a.Id == id);
+        }
+
+        private async Task<IServiceResponse<Animal>> AddKindToAnimalAndSaveChangesAsync(
             Animal animalToUpdate, long kindId)
         {
             var kindToAdd = await _db.Kinds.FindAsync(kindId);
