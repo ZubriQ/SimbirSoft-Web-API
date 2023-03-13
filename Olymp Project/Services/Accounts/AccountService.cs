@@ -107,8 +107,7 @@ namespace Olymp_Project.Services.Accounts
         }
 
         private async Task<IServiceResponse<Account>> UpdateAccountAndSaveChangesAsync(
-            Account account, 
-            AccountRequestDto dto)
+            Account account, AccountRequestDto dto)
         {
             AssignAccountData(account, dto);
             _db.Accounts.Attach(account);

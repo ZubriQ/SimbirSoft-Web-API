@@ -1,4 +1,6 @@
-﻿namespace Olymp_Project.Helpers.Validators
+﻿using Olymp_Project.Models;
+
+namespace Olymp_Project.Helpers.Validators
 {
     public static class AnimalDtoValidator
     {
@@ -18,10 +20,7 @@
             {
                 return true;
             }
-            else
-            {
-                return lifeStatus == "ALIVE" || lifeStatus == "DEAD";
-            }
+            return lifeStatus == "ALIVE" || lifeStatus == "DEAD";
         }
 
         private static bool IsQueryGenderValid(string? gender)
@@ -30,10 +29,7 @@
             {
                 return true;
             }
-            else
-            {
-                return gender == "MALE" || gender == "FEMALE" || gender == "OTHER";
-            }
+            return gender == "MALE" || gender == "FEMALE" || gender == "OTHER";
         }
 
         private static bool IsQueryChipperValid(int? id)
@@ -42,10 +38,7 @@
             {
                 return true;
             }
-            else
-            {
-                return id > 0;
-            }
+            return id > 0;
         }
 
         private static bool IsQueryChippingLocationValid(long? id)
@@ -54,10 +47,7 @@
             {
                 return true;
             }
-            else
-            {
-                return id > 0;
-            }
+            return id > 0;
         }
 
         #endregion
@@ -79,7 +69,12 @@
                 return false;
             }
 
-            foreach (var kind in animal.Kinds)
+            return CheckKinds(animal.Kinds);
+        }
+
+        private static bool CheckKinds(ICollection<Kind> kinds)
+        {
+            foreach (var kind in kinds)
             {
                 if (kind == null || kind.Id <= 0)
                 {
@@ -103,10 +98,7 @@
             {
                 return false;
             }
-            else
-            {
-                return gender == "MALE" || gender == "FEMALE" || gender == "OTHER";
-            }
+            return gender == "MALE" || gender == "FEMALE" || gender == "OTHER";
         }
 
         private static bool IsChippingValid(int? chipperId, long? chippingLocationId)
@@ -133,10 +125,7 @@
             {
                 return false;
             }
-            else
-            {
-                return lifeStatus == "ALIVE" || lifeStatus == "DEAD";
-            }
+            return lifeStatus == "ALIVE" || lifeStatus == "DEAD";
         }
 
         #endregion

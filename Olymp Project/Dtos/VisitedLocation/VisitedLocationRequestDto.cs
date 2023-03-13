@@ -8,7 +8,7 @@
         public long? VisitedLocationPointId { get; set; }
 
         /// <summary>
-        /// New location.
+        /// New locationId for concrete VisitedLocation.
         /// </summary>
         public long? LocationPointId { get; set; }
     }

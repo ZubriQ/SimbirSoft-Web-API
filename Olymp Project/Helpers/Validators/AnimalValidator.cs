@@ -4,23 +4,25 @@
     {
         public static bool IsExistingAnimalValid(Animal animal, long locationId)
         {
-            if (animal.LifeStatus == "DEAD")
-            {
-                return false;
-            }
-            if (animal.ChippingLocationId == locationId && animal.VisitedLocations.Count == 0)
+            if (animal.LifeStatus == "DEAD" ||
+                animal.ChippingLocationId == locationId && animal.VisitedLocations.Count == 0)
             {
                 return false;
             }
 
+            return IsFirstVisitedLocationValid(animal, locationId);
+        }
+
+        private static bool IsFirstVisitedLocationValid(Animal animal, long locationId)
+        {
             var lastVisitedLocation = animal.VisitedLocations
                 .OrderByDescending(l => l.VisitDateTime)
                 .FirstOrDefault();
+
             if (lastVisitedLocation is not null && lastVisitedLocation.LocationId == locationId)
             {
                 return false;
             }
-
             return true;
         }
 
@@ -51,7 +53,9 @@
         private static bool IsAdjacentLocationsValid(
             Animal animal, long locationPointId, long visitedLocationId)
         {
-            var locations = animal.VisitedLocations.OrderBy(al => al.VisitDateTime).ToList();
+            var locations = animal.VisitedLocations
+                .OrderBy(al => al.VisitDateTime)
+                .ToList();
             VisitedLocation? previousLocation = null, nextLocation = null;
 
             int index = locations.FindIndex(l => l.Id == visitedLocationId);

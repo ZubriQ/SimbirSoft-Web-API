@@ -11,12 +11,6 @@
             Data = data;
         }
 
-        public CollectionServiceResponse(HttpStatusCode statusCode, IQueryable<T> data)
-        {
-            StatusCode = statusCode;
-            Data = data.ToList();
-        }
-
         public CollectionServiceResponse(HttpStatusCode statusCode)
         {
             StatusCode = statusCode;
