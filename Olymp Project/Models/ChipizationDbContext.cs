@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
-
-namespace Olymp_Project.Models
+﻿namespace Olymp_Project.Models
 {
     public partial class ChipizationDbContext : DbContext
     {

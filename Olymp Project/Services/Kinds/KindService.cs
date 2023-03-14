@@ -95,7 +95,7 @@ namespace Olymp_Project.Services.Kinds
                 return new ServiceResponse<Kind>();
             }
         }
-        
+
         private async Task<IServiceResponse<Kind>> UpdateKind(Kind kind, string newName)
         {
             kind.Name = newName;

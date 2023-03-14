@@ -237,7 +237,7 @@ namespace Olymp_Project.Services.Animals
             {
                 return (HttpStatusCode.BadRequest, null);
             }
-            
+
             if (await GetAnimalByIdAsync(animalId!.Value) is not Animal animalToUpdate ||
                 !AccountAndLocationExist(request.ChipperId!.Value, request.ChippingLocationId!.Value))
             {

@@ -1,6 +1,4 @@
-﻿using Olymp_Project.Models;
-
-namespace Olymp_Project.Helpers.Validators
+﻿namespace Olymp_Project.Helpers.Validators
 {
     public static class AnimalDtoValidator
     {

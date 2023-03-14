@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Helpers;
 using Olymp_Project.Services.Accounts;
@@ -29,7 +28,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<AccountResponseDto>> GetAccount([FromRoute] int? accountId) 
+        public async Task<ActionResult<AccountResponseDto>> GetAccount([FromRoute] int? accountId)
         {
             if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
             {
@@ -72,7 +71,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AccountResponseDto>> UpdateAccount(
             [FromRoute] int? accountId,
-            [FromBody] AccountRequestDto request)  
+            [FromBody] AccountRequestDto request)
         {
             if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
             {

@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using Olymp_Project.Authentication;
 using Olymp_Project.Services.Accounts;
@@ -50,19 +52,31 @@ builder.Services.AddAuthentication(ApiAuthenticationScheme.Name)
 
 #region Configurate Database
 
-string connection = string.Empty;
+builder.Services
+    .AddHealthChecks()
+    .AddCheck("SQL Server Check", () =>
+    {
+        try
+        {
+            var connectionString = builder.Configuration.GetConnectionString("Testing");
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+            }
+            return HealthCheckResult.Healthy("SQL Server is healthy.");
+        }
+        catch (Exception)
+        {
+            return HealthCheckResult.Unhealthy("SQL Server is unhealthy.");
+        }
+    });
 
-#if DEBUG
-connection = builder.Configuration.GetConnectionString("Development");
-#else
-connection = builder.Configuration.GetConnectionString("Testing");
-#endif
-
+string connection = builder.Configuration.GetConnectionString("Testing");
 builder.Services.AddSqlServer<ChipizationDbContext>(connection);
 
 #endregion
 
-#region Configurate AutoMapper, Services, Healthcheck and 8080 Port
+#region Configurate AutoMapper, Services and 8080 Port
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
@@ -74,10 +88,6 @@ builder.Services.AddScoped<IKindService, KindService>();
 builder.Services.AddScoped<IAnimalService, AnimalService>();
 builder.Services.AddScoped<IAnimalKindService, AnimalKindService>();
 builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
-
-builder.Services
-    .AddHealthChecks()
-    .AddCheck<WebAPIHealthCheck>("WebAPI");
 
 builder.WebHost.UseUrls("http://0.0.0.0:8080");
 
@@ -111,6 +121,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHealthChecks("/health").RequireHost("*:8080");
+app.MapHealthChecks("/health");
 
 app.Run();

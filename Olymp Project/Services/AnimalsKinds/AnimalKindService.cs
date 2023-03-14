@@ -1,5 +1,4 @@
 ﻿using Olymp_Project.Helpers.Validators;
-using Olymp_Project.Models;
 using Olymp_Project.Responses;
 
 namespace Olymp_Project.Services.AnimalsKinds
@@ -23,7 +22,7 @@ namespace Olymp_Project.Services.AnimalsKinds
                 return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }
 
-            if (await GetAnimalByIdAsync(animalId!.Value) is not Animal animalToUpdate || 
+            if (await GetAnimalByIdAsync(animalId!.Value) is not Animal animalToUpdate ||
                 !await _db.Kinds.AnyAsync(k => k.Id == kindId))
             {
                 return new ServiceResponse<Animal>(HttpStatusCode.NotFound);

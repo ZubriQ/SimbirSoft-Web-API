@@ -172,7 +172,7 @@ namespace Olymp_Project.Services.Locations
                 .Include(l => l.Animals)
                 .FirstOrDefaultAsync(l => l.Id == id);
         }
-        
+
         private bool LocationHasAnimalsOrVisitedLocationWithId(Location location, long locationId)
         {
             bool visitedLocations = _db.VisitedLocations.Any(vl => vl.LocationId == locationId);

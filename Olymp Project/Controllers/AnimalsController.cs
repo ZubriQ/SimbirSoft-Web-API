@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Helpers;
 using Olymp_Project.Services.Animals;
@@ -90,7 +89,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AnimalResponseDto>> UpdateAnimal(
-            [FromRoute] long? animalId, 
+            [FromRoute] long? animalId,
             [FromBody] PutAnimalDto request)
         {
             if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))

@@ -19,12 +19,11 @@ RUN dotnet publish "Olymp Project.csproj" -c Release -o /app/publish /p:UseAppHo
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-HEALTHCHECK --interval=30s --timeout=5s \
-  CMD curl -f http://webapi:8080/health || exit 1
 
-# Add testing dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
   curl \
   && rm -rf /var/lib/apt/lists/*
+
+HEALTHCHECK --interval=5s --timeout=2s CMD curl --fail http://webapi || kill 1
 
 ENTRYPOINT ["dotnet", "Olymp Project.dll"]

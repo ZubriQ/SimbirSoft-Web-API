@@ -65,9 +65,9 @@ namespace Olymp_Project.Services.Accounts
         {
             return _db.Accounts
                 .AsQueryable()
-                .Where(a => 
-                (firstName == null || a.FirstName.ToLower().Contains(firstName)) && 
-                (lastName == null || a.LastName.ToLower().Contains(lastName)) && 
+                .Where(a =>
+                (firstName == null || a.FirstName.ToLower().Contains(firstName)) &&
+                (lastName == null || a.LastName.ToLower().Contains(lastName)) &&
                 (email == null || a.Email.ToLower().Contains(email)));
         }
 
@@ -130,12 +130,12 @@ namespace Olymp_Project.Services.Accounts
 
         public async Task<HttpStatusCode> RemoveAccountAsync(int? accountId, string? email)
         {
-            if (!IdValidator.IsValid(accountId) || 
+            if (!IdValidator.IsValid(accountId) ||
                 await _db.Animals.AnyAsync(a => a.ChipperId == accountId))
             {
                 return HttpStatusCode.BadRequest;
             }
-            if (await _db.Accounts.FindAsync(accountId) is not Account account || 
+            if (await _db.Accounts.FindAsync(accountId) is not Account account ||
                 account.Email != email)
             {
                 return HttpStatusCode.Forbidden;
