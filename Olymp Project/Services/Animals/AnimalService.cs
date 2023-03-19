@@ -253,8 +253,6 @@ namespace Olymp_Project.Services.Animals
             return (HttpStatusCode.OK, animalToUpdate);
         }
 
-        private async Task<Animal?> GetAnimalByIdAsync(long id)
-        {
             return await _db.Animals
                 .Include(a => a.VisitedLocations)
                 .Include(a => a.Kinds)
