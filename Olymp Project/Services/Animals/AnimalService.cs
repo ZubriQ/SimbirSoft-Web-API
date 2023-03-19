@@ -20,7 +20,7 @@ namespace Olymp_Project.Services.Animals
             {
                 return new ServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }
-
+            
             if (await GetAnimalAsync(animalId) is not Animal animal)
             {
                 return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
@@ -73,9 +73,22 @@ namespace Olymp_Project.Services.Animals
         private IQueryable<Animal> GetAnimalsAsQueryable()
         {
             return _db.Animals
-                .Include(a => a.VisitedLocations)
-                .Include(a => a.Kinds)
-                .AsQueryable();
+                .AsNoTracking()
+                .Select(a => new Animal()
+                {
+                    Kinds = a.Kinds.Select(k => new Kind() { Id = k.Id }).ToArray(),
+                    VisitedLocations = a.VisitedLocations.Select(vl => new VisitedLocation() { Id = vl.Id }).ToArray(),
+                    Id = a.Id,
+                    ChipperId = a.ChipperId,
+                    ChippingDateTime = a.ChippingDateTime,
+                    DeathDateTime = a.DeathDateTime,
+                    ChippingLocationId = a.ChippingLocationId,
+                    Gender = a.Gender,
+                    Height = a.Height,
+                    Length = a.Length,
+                    LifeStatus = a.LifeStatus,
+                    Weight = a.Weight
+                });
         }
 
         private IQueryable<Animal> FilterByDateTime(
@@ -195,7 +208,7 @@ namespace Olymp_Project.Services.Animals
 
         private async Task InitializeKinds(Animal animal)
         {
-            List<Kind> kinds = new List<Kind>();
+            List<Kind> kinds = new();
             foreach (var kind in animal.Kinds)
             {
                 var newKind = await _db.Kinds.FindAsync(kind.Id);
@@ -238,7 +251,7 @@ namespace Olymp_Project.Services.Animals
                 return (HttpStatusCode.BadRequest, null);
             }
 
-            if (await GetAnimalByIdAsync(animalId!.Value) is not Animal animalToUpdate ||
+            if (await GetAnimalAsync(animalId!.Value) is not Animal animalToUpdate ||
                 !AccountAndLocationExist(request.ChipperId!.Value, request.ChippingLocationId!.Value))
             {
                 return (HttpStatusCode.NotFound, null);
@@ -251,12 +264,6 @@ namespace Olymp_Project.Services.Animals
             }
 
             return (HttpStatusCode.OK, animalToUpdate);
-        }
-
-            return await _db.Animals
-                .Include(a => a.VisitedLocations)
-                .Include(a => a.Kinds)
-                .FirstOrDefaultAsync(a => a.Id == id);
         }
 
         private bool AccountAndLocationExist(int chipperId, long chippingLocationId)
@@ -297,7 +304,7 @@ namespace Olymp_Project.Services.Animals
 
         public async Task<HttpStatusCode> RemoveAnimalAsync(long? animalId)
         {
-            (var statusCode, var animal) = await ValidateRemoveRequest(animalId);
+            (var statusCode, var animal) = await ValidateRemoveRequestAsync(animalId);
             if (statusCode is not HttpStatusCode.OK)
             {
                 return statusCode;
@@ -305,7 +312,7 @@ namespace Olymp_Project.Services.Animals
 
             try
             {
-                return await RemoveAnimalAndSaveChanges(animal!);
+                return await RemoveAnimalAndSaveChangesAsync(animal!);
             }
             catch (Exception)
             {
@@ -313,7 +320,7 @@ namespace Olymp_Project.Services.Animals
             }
         }
 
-        private async Task<(HttpStatusCode, Animal?)> ValidateRemoveRequest(long? animalId)
+        private async Task<(HttpStatusCode, Animal?)> ValidateRemoveRequestAsync(long? animalId)
         {
             if (!IdValidator.IsValid(animalId))
             {
@@ -333,7 +340,7 @@ namespace Olymp_Project.Services.Animals
             return (HttpStatusCode.OK, animal);
         }
 
-        private async Task<HttpStatusCode> RemoveAnimalAndSaveChanges(Animal animal)
+        private async Task<HttpStatusCode> RemoveAnimalAndSaveChangesAsync(Animal animal)
         {
             _db.Animals.Remove(animal);
             await _db.SaveChangesAsync();

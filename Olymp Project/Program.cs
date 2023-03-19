@@ -58,7 +58,7 @@ builder.Services
     {
         try
         {
-            var connectionString = builder.Configuration.GetConnectionString("Testing");
+            var connectionString = builder.Configuration.GetConnectionString("Development");
             using (var connection = new SqlConnection(connectionString))
             {
                 connection.Open();
@@ -71,7 +71,7 @@ builder.Services
         }
     });
 
-string connection = builder.Configuration.GetConnectionString("Testing");
+string connection = builder.Configuration.GetConnectionString("Development");
 builder.Services.AddSqlServer<ChipizationDbContext>(connection);
 
 #endregion
