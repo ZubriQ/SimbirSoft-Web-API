@@ -52,26 +52,26 @@ builder.Services.AddAuthentication(ApiAuthenticationScheme.Name)
 
 #region Configurate Database
 
-builder.Services
-    .AddHealthChecks()
-    .AddCheck("SQL Server Check", () =>
-    {
-        try
-        {
-            var connectionString = builder.Configuration.GetConnectionString("Development");
-            using (var connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-            }
-            return HealthCheckResult.Healthy("SQL Server is healthy.");
-        }
-        catch (Exception)
-        {
-            return HealthCheckResult.Unhealthy("SQL Server is unhealthy.");
-        }
-    });
+//builder.Services
+//    .AddHealthChecks()
+//    .AddCheck("SQL Server Check", () =>
+//    {
+//        try
+//        {
+//            var connectionString = builder.Configuration.GetConnectionString("PostgreSQL");
+//            using (var connection = new SqlConnection(connectionString))
+//            {
+//                connection.Open();
+//            }
+//            return HealthCheckResult.Healthy("SQL Server is healthy.");
+//        }
+//        catch (Exception)
+//        {
+//            return HealthCheckResult.Unhealthy("SQL Server is unhealthy.");
+//        }
+//    });
 
-string connection = builder.Configuration.GetConnectionString("Development");
+string connection = builder.Configuration.GetConnectionString("PostgreSQL");
 builder.Services.AddSqlServer<ChipizationDbContext>(connection);
 
 #endregion
@@ -101,19 +101,23 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-else
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var services = scope.ServiceProvider;
 
-        var context = services.GetRequiredService<ChipizationDbContext>();
+#if DEBUG == false
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<ChipizationDbContext>();
+    if (context.Database.IsNpgsql())
+    {
         if (context.Database.GetPendingMigrations().Any())
         {
-            context.Database.Migrate();
+            //context.Database.Migrate();
+            context.Database.EnsureCreated();
         }
     }
 }
+#endif
 
 app.UseRouting();
 
@@ -121,6 +125,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHealthChecks("/health");
+//app.MapHealthChecks("/health");
 
 app.Run();

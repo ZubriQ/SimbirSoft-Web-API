@@ -15,7 +15,7 @@
         public string Gender { get; set; } = null!;
         public string LifeStatus { get; set; } = "ALIVE";
         public int ChipperId { get; set; }
-        public DateTime ChippingDateTime { get; set; } = DateTime.Now;
+        public DateTime ChippingDateTime { get; set; } = DateTime.UtcNow;
         public long ChippingLocationId { get; set; }
         public DateTime? DeathDateTime { get; set; } = null;
 

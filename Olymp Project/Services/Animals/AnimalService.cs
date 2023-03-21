@@ -293,7 +293,7 @@ namespace Olymp_Project.Services.Animals
             animal.ChippingLocationId = newData.ChippingLocationId!.Value;
             if (animal.LifeStatus == "ALIVE" && newData.LifeStatus == "DEAD")
             {
-                animal.DeathDateTime = DateTime.Now;
+                animal.DeathDateTime = DateTime.UtcNow;
                 animal.LifeStatus = newData.LifeStatus!;
             }
         }

@@ -103,7 +103,7 @@ namespace Olymp_Project.Services.VisitedLocations
             {
                 Animal = animal,
                 Location = location,
-                VisitDateTime = DateTime.Now
+                VisitDateTime = DateTime.UtcNow
             };
             _db.VisitedLocations.Add(visitedLocation);
             await _db.SaveChangesAsync();

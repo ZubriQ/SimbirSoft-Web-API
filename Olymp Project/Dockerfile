@@ -20,10 +20,4 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  curl \
-  && rm -rf /var/lib/apt/lists/*
-
-HEALTHCHECK --interval=5s --timeout=2s CMD curl --fail http://webapi || kill 1
-
 ENTRYPOINT ["dotnet", "Olymp Project.dll"]
