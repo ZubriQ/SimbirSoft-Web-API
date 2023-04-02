@@ -1,5 +1,6 @@
 ﻿global using Microsoft.EntityFrameworkCore;
 global using Olymp_Project.Dtos.Account;
+global using Olymp_Project.Dtos.Area;
 global using Olymp_Project.Dtos.Animal;
 global using Olymp_Project.Dtos.AnimalKind;
 global using Olymp_Project.Dtos.Kind;

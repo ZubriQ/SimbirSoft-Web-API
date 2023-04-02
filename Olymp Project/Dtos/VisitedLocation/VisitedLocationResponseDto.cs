@@ -1,9 +1,14 @@
-﻿namespace Olymp_Project.Dtos.VisitedLocation
+﻿using System.Text.Json.Serialization;
+
+namespace Olymp_Project.Dtos.VisitedLocation
 {
     public class VisitedLocationResponseDto
     {
         public long Id { get; set; }
-        public string DateTimeOfVisitLocationPoint { get; set; } = null!;
+
+        [JsonPropertyName("dateTimeOfVisitLocationPoint")]
+        public string VisitDateTime { get; set; } = null!;
+
         public long LocationPointId { get; set; }
     }
 }

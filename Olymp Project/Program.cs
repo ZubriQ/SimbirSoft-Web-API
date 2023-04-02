@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using Olymp_Project.Authentication;
 using Olymp_Project.Services.Accounts;
 using Olymp_Project.Services.Animals;
 using Olymp_Project.Services.AnimalsKinds;
+using Olymp_Project.Services.Areas;
 using Olymp_Project.Services.Kinds;
 using Olymp_Project.Services.Locations;
 using Olymp_Project.Services.Registration;
@@ -88,6 +90,7 @@ builder.Services.AddScoped<IKindService, KindService>();
 builder.Services.AddScoped<IAnimalService, AnimalService>();
 builder.Services.AddScoped<IAnimalKindService, AnimalKindService>();
 builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
+builder.Services.AddScoped<IAreaService, AreaService>();
 
 builder.WebHost.UseUrls("http://0.0.0.0:8080");
 
@@ -101,23 +104,22 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-#if DEBUG == false
-using (var scope = app.Services.CreateScope())
+else
 {
-    var services = scope.ServiceProvider;
-
-    var context = services.GetRequiredService<ChipizationDbContext>();
-    if (context.Database.IsNpgsql())
+    using (var scope = app.Services.CreateScope())
     {
-        if (context.Database.GetPendingMigrations().Any())
+        var services = scope.ServiceProvider;
+
+        var context = services.GetRequiredService<ChipizationDbContext>();
+        if (context.Database.IsNpgsql())
         {
-            //context.Database.Migrate();
-            context.Database.EnsureCreated();
+            if (context.Database.GetPendingMigrations().Any())
+            {
+                context.Database.EnsureCreated();
+            }
         }
     }
 }
-#endif
 
 app.UseRouting();
 

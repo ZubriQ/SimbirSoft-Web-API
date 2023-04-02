@@ -1,7 +1,10 @@
-﻿namespace Olymp_Project.Dtos.Kind
+﻿using System.Text.Json.Serialization;
+
+namespace Olymp_Project.Dtos.Kind
 {
     public class KindRequestDto
     {
-        public string? Type { get; set; }
+        [JsonPropertyName("type")]
+        public string? Name { get; set; }
     }
 }

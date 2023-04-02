@@ -14,14 +14,7 @@
 
         public static bool IsValid(params long?[] ids)
         {
-            for (int i = 0; i < ids.Length; i++)
-            {
-                if (!IsValid(ids[i]))
-                {
-                    return false;
-                }
-            }
-            return true;
+            return ids.All(id => IsValid(id));
         }
     }
 }

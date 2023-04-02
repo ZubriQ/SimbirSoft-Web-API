@@ -1,4 +1,6 @@
-﻿namespace Olymp_Project.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Olymp_Project.Models
 {
     public partial class Animal
     {
@@ -8,6 +10,7 @@
             Kinds = new HashSet<Kind>();
         }
 
+        [Key]
         public long Id { get; set; }
         public float Weight { get; set; }
         public float Length { get; set; }
@@ -21,8 +24,8 @@
 
         public virtual Account Chipper { get; set; } = null!;
         public virtual Location ChippingLocation { get; set; } = null!;
-        public virtual ICollection<VisitedLocation> VisitedLocations { get; set; }
 
+        public virtual ICollection<VisitedLocation> VisitedLocations { get; set; }
         public virtual ICollection<Kind> Kinds { get; set; }
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using NpgsqlTypes;
 using Olymp_Project.Models;
 
 #nullable disable
@@ -34,7 +35,7 @@ namespace Olymp_Project.Migrations
 
                     b.HasIndex("KindsId");
 
-                    b.ToTable("AnimalKind");
+                    b.ToTable("AnimalKind", (string)null);
                 });
 
             modelBuilder.Entity("Olymp_Project.Models.Account", b =>
@@ -61,9 +62,42 @@ namespace Olymp_Project.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Accounts");
+                    b.ToTable("Accounts", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Email = "admin@simbirsoft.com",
+                            FirstName = "adminFirstName",
+                            LastName = "adminLastName",
+                            Password = "qwerty123",
+                            Role = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Email = "chipper@simbirsoft.com",
+                            FirstName = "chipperFirstName",
+                            LastName = "chipperLastName",
+                            Password = "qwerty123",
+                            Role = "CHIPPER"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Email = "user@simbirsoft.com",
+                            FirstName = "userFirstName",
+                            LastName = "userLastName",
+                            Password = "qwerty123",
+                            Role = "USER"
+                        });
                 });
 
             modelBuilder.Entity("Olymp_Project.Models.Animal", b =>
@@ -109,7 +143,27 @@ namespace Olymp_Project.Migrations
 
                     b.HasIndex("ChippingLocationId");
 
-                    b.ToTable("Animals");
+                    b.ToTable("Animals", (string)null);
+                });
+
+            modelBuilder.Entity("Olymp_Project.Models.Area", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<NpgsqlPolygon>("Points")
+                        .HasColumnType("polygon");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Areas", (string)null);
                 });
 
             modelBuilder.Entity("Olymp_Project.Models.Kind", b =>
@@ -126,7 +180,7 @@ namespace Olymp_Project.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Kinds");
+                    b.ToTable("Kinds", (string)null);
                 });
 
             modelBuilder.Entity("Olymp_Project.Models.Location", b =>
@@ -145,7 +199,7 @@ namespace Olymp_Project.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Locations");
+                    b.ToTable("Locations", (string)null);
                 });
 
             modelBuilder.Entity("Olymp_Project.Models.VisitedLocation", b =>
@@ -171,7 +225,7 @@ namespace Olymp_Project.Migrations
 
                     b.HasIndex("LocationId");
 
-                    b.ToTable("VisitedLocations");
+                    b.ToTable("VisitedLocations", (string)null);
                 });
 
             modelBuilder.Entity("AnimalKind", b =>

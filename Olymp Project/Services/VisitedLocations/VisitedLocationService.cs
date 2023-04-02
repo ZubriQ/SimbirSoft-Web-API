@@ -48,9 +48,11 @@ namespace Olymp_Project.Services.VisitedLocations
         private IEnumerable<VisitedLocation> GetVisitedLocationsWithFilter(
             IEnumerable<VisitedLocation> visitedLocations, DateTimeRangeQuery query)
         {
+            var endDateTime = query.EndDateTime.HasValue ? 
+                new DateTime(query.EndDateTime.Value.Ticks).AddSeconds(1) : (DateTime?)null;
             return visitedLocations
                 .Where(v => query.StartDateTime is null || v.VisitDateTime >= query.StartDateTime)
-                .Where(v => query.EndDateTime is null || v.VisitDateTime <= query.EndDateTime);
+                .Where(v => endDateTime is null || v.VisitDateTime <= endDateTime.Value);
         }
 
         private List<VisitedLocation> PaginateVisitedLocations(
@@ -119,18 +121,18 @@ namespace Olymp_Project.Services.VisitedLocations
         {
             #region Request Validation
 
-            if (!IdValidator.IsValid(animalId, request.VisitedLocationPointId, request.LocationPointId))
+            if (!IdValidator.IsValid(animalId, request.VisitedLocationId, request.LocationId))
             {
                 return new ServiceResponse<VisitedLocation>(HttpStatusCode.BadRequest);
             }
 
             if (await GetAnimalByIdWithVisitedLocationsAsync(animalId!.Value) is not Animal animal ||
-                await _db.Locations.FirstOrDefaultAsync(l => l.Id == request.LocationPointId) is not Location location)
+                await _db.Locations.FirstOrDefaultAsync(l => l.Id == request.LocationId) is not Location location)
             {
                 return new ServiceResponse<VisitedLocation>(HttpStatusCode.NotFound);
             }
 
-            if (animal.VisitedLocations.FirstOrDefault(vl => vl.Id == request.VisitedLocationPointId)
+            if (animal.VisitedLocations.FirstOrDefault(vl => vl.Id == request.VisitedLocationId)
                 is not VisitedLocation visitedLocationToUpdate ||
                 !AnimalHasVisitedLocation(animal, visitedLocationToUpdate.LocationId))
             {

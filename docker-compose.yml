@@ -34,7 +34,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      ConnectionStrings__Testing: "Server=database;Database=animal-chipization;User Id=sa;Password=AN1m4l1@Ch1Pp3r!;"
+      ConnectionStrings__PostgreSQL: "Host=database;Port=5432;Database=animal-chipization;Username=zubriq;Password=zubriq"
     networks:
       - webapi-network
     #healthcheck:
@@ -49,7 +49,7 @@ services:
     restart: always
     
   tests:
-    image: mrexpen/planet_olymp_phase1
+    image: mrexpen/planet_olymp_phase2
     pull_policy: always
     ports:
       - "8090:8080"
@@ -59,7 +59,7 @@ services:
     #    condition: service_healthy
     environment:
       SERVER_URL: http://webapi:8080
-      STAGE: all
+      STAGE: 1
     networks:
       - webapi-network
     restart: always

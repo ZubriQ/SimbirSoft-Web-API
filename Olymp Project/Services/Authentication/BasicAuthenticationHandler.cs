@@ -59,6 +59,7 @@ namespace Olymp_Project.Authentication
 {
                 new Claim(ClaimTypes.NameIdentifier, account.Id.ToString()),
                 new Claim(ClaimTypes.Name, account.Email),
+                new Claim(ClaimTypes.Role, account.Role)
             };
             var identity = new ClaimsIdentity(claims, Scheme.Name);
             var principal = new ClaimsPrincipal(identity);

@@ -1,5 +1,6 @@
 ﻿using Olymp_Project.Helpers.Validators;
 using Olymp_Project.Responses;
+using System.Security.Claims;
 
 namespace Olymp_Project.Services.Accounts
 {
@@ -82,28 +83,113 @@ namespace Olymp_Project.Services.Accounts
 
         #endregion
 
-        #region Update
+        #region Insert
 
-        public async Task<IServiceResponse<Account>> UpdateAccountAsync(
-            int? accountId, AccountRequestDto request, string? email)
+        public async Task<IServiceResponse<Account>> InsertAccountAsync(AccountRequestDto request)
         {
-            if (!IdValidator.IsValid(accountId) || !AccountValidator.IsValid(request))
+            if (!AccountValidator.IsValid(request))
             {
                 return new ServiceResponse<Account>(HttpStatusCode.BadRequest);
             }
-            if (await _db.Accounts.FindAsync(accountId) is not Account account || account.Email != email)
+
+            // TODO: 403: У аккаунта нет роли "ADMIN"
+
+            bool alreadyExists = await _db.Accounts.AnyAsync(a => a.Email ==  request.Email);
+            if (alreadyExists)
             {
-                return new ServiceResponse<Account>(HttpStatusCode.Forbidden);
+                return new ServiceResponse<Account>(HttpStatusCode.Conflict);
             }
 
             try
             {
-                return await UpdateAccountAndSaveChangesAsync(account, request);
+                return await CreateAccountAnsSaveChangesAsync(request);
             }
             catch (Exception)
             {
                 return new ServiceResponse<Account>();
             }
+        }
+
+        private async Task<IServiceResponse<Account>> CreateAccountAnsSaveChangesAsync(AccountRequestDto request)
+        {
+            var newAccount = CreateAccount(request);
+            _db.Accounts.Add(newAccount);
+            await _db.SaveChangesAsync();
+            return new ServiceResponse<Account>(HttpStatusCode.Created, newAccount);
+        }
+
+        private Account CreateAccount(AccountRequestDto request)
+        {
+            var account = new Account()
+            {
+                FirstName = request.FirstName!,
+                LastName = request.LastName!,
+                Email = request.Email!,
+                Role = request.Role!,
+                Password = request.Password!
+            };
+            return account;
+        }
+
+        //private async Task<IServiceResponse<Account>> AddAnimal(Animal animal)
+        //{
+        //    _db.Accounts.Add(animal);
+        //    await _db.SaveChangesAsync();
+        //    return new ServiceResponse<Animal>(HttpStatusCode.Created, animal);
+        //}
+
+        #endregion
+
+        #region Update
+
+        public async Task<IServiceResponse<Account>> UpdateAccountAsync(
+            int? accountId, AccountRequestDto request, ClaimsIdentity? identity)
+        {
+            if (!IdValidator.IsValid(accountId) || !AccountValidator.IsValid(request))
+            {
+                return new ServiceResponse<Account>(HttpStatusCode.BadRequest);
+            }
+
+            var email = identity!.Name;
+            var role = identity.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+            // TODO: Optimize
+            if (await _db.Accounts.FindAsync(accountId) is not Account account)
+            {
+                if (role == "ADMIN")
+                {
+                    return new ServiceResponse<Account>(HttpStatusCode.NotFound);
+                }
+                else
+                {
+                    return new ServiceResponse<Account>(HttpStatusCode.Forbidden);
+                }
+            }
+
+            if (role == "ADMIN")
+            {
+                return await UpdateAccountAndSaveChangesAsync(account, request);
+            }
+            else if (account.Email != email)
+            {
+                return new ServiceResponse<Account>(HttpStatusCode.Forbidden);
+            }
+
+            return await UpdateAccountAndSaveChangesAsync(account, request);
+
+            //if (await _db.Accounts.FindAsync(accountId) is not Account account || account.Email != email)
+            //{
+            //    return new ServiceResponse<Account>(HttpStatusCode.Forbidden);
+            //}
+
+            //try
+            //{
+            //    return await UpdateAccountAndSaveChangesAsync(account, request);
+            //}
+            //catch (Exception)
+            //{
+            //    return new ServiceResponse<Account>();
+            //}
         }
 
         private async Task<IServiceResponse<Account>> UpdateAccountAndSaveChangesAsync(
@@ -122,28 +208,37 @@ namespace Olymp_Project.Services.Accounts
             account.LastName = newData.LastName!;
             account.Email = newData.Email!;
             account.Password = newData.Password!;
+            account.Role = newData.Role!;
         }
 
         #endregion
 
         #region Remove
 
-        public async Task<HttpStatusCode> RemoveAccountAsync(int? accountId, string? email)
+        public async Task<HttpStatusCode> RemoveAccountAsync(int? accountId, ClaimsIdentity? identity)
         {
             if (!IdValidator.IsValid(accountId) ||
                 await _db.Animals.AnyAsync(a => a.ChipperId == accountId))
             {
                 return HttpStatusCode.BadRequest;
             }
-            if (await _db.Accounts.FindAsync(accountId) is not Account account ||
-                account.Email != email)
+
+            var email = identity!.Name;
+            var role = identity.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+            Account? account = await _db.Accounts.FindAsync(accountId);
+            if (role == "ADMIN" && account is null)
+            {
+                return HttpStatusCode.NotFound;
+            }
+            else if ((role == "CHIPPER" || role == "USER") && account!.Email != email)
             {
                 return HttpStatusCode.Forbidden;
-            }
+            } 
 
             try
             {
-                return await RemoveAccount(account);
+                return await RemoveAccount(account!);
             }
             catch (Exception)
             {

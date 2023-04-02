@@ -29,8 +29,8 @@
         public static bool IsUpdateVisitedLocationRequestValid(
             Animal animal, VisitedLocation visitedLocation, VisitedLocationRequestDto request)
         {
-            return IsVisitedLocationValid(animal, visitedLocation, request.LocationPointId!.Value) &&
-                 IsAdjacentLocationsValid(animal, request.LocationPointId!.Value, visitedLocation.Id);
+            return IsVisitedLocationValid(animal, visitedLocation, request.LocationId!.Value) &&
+                 IsAdjacentLocationsValid(animal, request.LocationId!.Value, visitedLocation.Id);
         }
 
         private static bool IsVisitedLocationValid(

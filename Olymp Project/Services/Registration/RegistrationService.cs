@@ -12,7 +12,7 @@ namespace Olymp_Project.Services.Registration
             _db = db;
         }
 
-        public async Task<IServiceResponse<Account>> RegisterAccountAsync(AccountRequestDto request)
+        public async Task<IServiceResponse<Account>> RegisterAccountAsync(RegistrationRequestDto request)
         {
             if (!AccountValidator.IsValid(request))
             {
@@ -39,7 +39,8 @@ namespace Olymp_Project.Services.Registration
             return await _db.Accounts.AnyAsync(a => a.Email == email);
         }
 
-        private async Task<IServiceResponse<Account>> InsertAccountAndSaveChangesAsync(AccountRequestDto request)
+        private async Task<IServiceResponse<Account>> InsertAccountAndSaveChangesAsync(
+            RegistrationRequestDto request)
         {
             Account newAccount = CreateAccount(request);
             await _db.Accounts.AddAsync(newAccount);
@@ -47,7 +48,7 @@ namespace Olymp_Project.Services.Registration
             return new ServiceResponse<Account>(HttpStatusCode.Created, newAccount);
         }
 
-        private Account CreateAccount(AccountRequestDto data)
+        private Account CreateAccount(RegistrationRequestDto data)
         {
             Account newAccount = new Account()
             {

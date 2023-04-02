@@ -77,8 +77,8 @@ namespace Olymp_Project.Services.AnimalsKinds
                 return new ServiceResponse<Animal>(statusCode);
             }
 
-            if (animalToUpdate!.Kinds.FirstOrDefault(k => k.Id == request.OldTypeId) is not Kind oldKind ||
-                await _db.Kinds.FindAsync(request.NewTypeId!) is not Kind newKind)
+            if (animalToUpdate!.Kinds.FirstOrDefault(k => k.Id == request.OldKindId) is not Kind oldKind ||
+                await _db.Kinds.FindAsync(request.NewKindId!) is not Kind newKind)
             {
                 return new ServiceResponse<Animal>(HttpStatusCode.NotFound);
             }
@@ -96,18 +96,18 @@ namespace Olymp_Project.Services.AnimalsKinds
         private async Task<(HttpStatusCode, Animal?)> ValidateAnimalInUpdateAnimalKindRequest(
             long? animalId, PutAnimalKindDto request)
         {
-            if (!IdValidator.IsValid(animalId, request.OldTypeId, request.NewTypeId))
+            if (!IdValidator.IsValid(animalId, request.OldKindId, request.NewKindId))
             {
                 return (HttpStatusCode.BadRequest, null);
             }
 
             if (await GetAnimalByIdAsync(animalId!.Value) is not Animal animalToUpdate ||
-                !KindExistsInAnimal(animalToUpdate, request.OldTypeId!.Value))
+                !KindExistsInAnimal(animalToUpdate, request.OldKindId!.Value))
             {
                 return (HttpStatusCode.NotFound, null);
             }
 
-            if (AnimalAlreadyContainsKinds(animalToUpdate, request.NewTypeId!.Value, request.OldTypeId.Value))
+            if (AnimalAlreadyContainsKinds(animalToUpdate, request.NewKindId!.Value, request.OldKindId.Value))
             {
                 return (HttpStatusCode.Conflict, null);
             }

@@ -1,4 +1,6 @@
-﻿namespace Olymp_Project.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Olymp_Project.Models
 {
     public partial class Location
     {
@@ -8,6 +10,7 @@
             VisitedLocations = new HashSet<VisitedLocation>();
         }
 
+        [Key]
         public long Id { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }

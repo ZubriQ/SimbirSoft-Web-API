@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Helpers;
 using Olymp_Project.Services.Accounts;
 using Olymp_Project.Services.Authentication;
+using System.Security.Claims;
 
 namespace Olymp_Project.Controllers
 {
@@ -47,6 +48,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountResponseDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<AccountResponseDto>>> GetAccounts(
             [FromQuery] AccountQuery query,
             [FromQuery] Paging paging)
@@ -56,10 +58,36 @@ namespace Olymp_Project.Controllers
                 return Unauthorized();
             }
 
+            //var role = HttpContext.User.FindFirstValue(ClaimTypes.Role);
+            //if (role is not null && (role != "ADMIN"))
+            //{
+            //    return Forbid();
+            //}
+
             var response = _service.GetAccounts(query, paging);
 
             var accountsDto = response.Data!.Select(a => _mapper.Map<AccountResponseDto>(a));
             return ResponseHelper.GetActionResult(response.StatusCode, accountsDto);
+        }
+
+        [HttpPost]
+        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AccountResponseDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<AccountResponseDto>> CreateAccount([FromBody] AccountRequestDto request)
+        {
+            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            {
+                return Unauthorized();
+            }
+
+            var response = await _service.InsertAccountAsync(request);
+
+            var accountDto = _mapper.Map<AccountResponseDto>(response.Data);
+            return ResponseHelper.GetActionResult(response.StatusCode, accountDto, nameof(CreateAccount));
         }
 
         [HttpPut("{accountId:int}")]
@@ -78,7 +106,14 @@ namespace Olymp_Project.Controllers
                 return Unauthorized();
             }
 
-            var response = await _service.UpdateAccountAsync(accountId!.Value, request, User.Identity!.Name);
+            //var role = HttpContext.User.FindFirstValue(ClaimTypes.Role);
+            //if (role is not null && (role != ))
+            //{
+
+            //}
+
+            var response = await _service.UpdateAccountAsync(
+                accountId!.Value, request, User.Identity as ClaimsIdentity);
 
             var accountDto = _mapper.Map<AccountResponseDto>(response.Data);
             return ResponseHelper.GetActionResult(response.StatusCode, accountDto);
@@ -97,7 +132,8 @@ namespace Olymp_Project.Controllers
                 return Unauthorized();
             }
 
-            var statusCode = await _service.RemoveAccountAsync(accountId!.Value, User.Identity!.Name);
+            var statusCode = await _service.RemoveAccountAsync(
+                accountId!.Value, User.Identity as ClaimsIdentity);
             return ResponseHelper.GetActionResult(statusCode);
         }
     }

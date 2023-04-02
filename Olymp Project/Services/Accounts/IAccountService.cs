@@ -1,4 +1,5 @@
 ﻿using Olymp_Project.Responses;
+using System.Security.Claims;
 
 namespace Olymp_Project.Services.Accounts
 {
@@ -6,7 +7,9 @@ namespace Olymp_Project.Services.Accounts
     {
         Task<IServiceResponse<Account>> GetAccountByIdAsync(int? accountId);
         IServiceResponse<ICollection<Account>> GetAccounts(AccountQuery query, Paging paging);
-        Task<IServiceResponse<Account>> UpdateAccountAsync(int? accountId, AccountRequestDto request, string? email);
-        Task<HttpStatusCode> RemoveAccountAsync(int? accountId, string? login);
+        Task<IServiceResponse<Account>> InsertAccountAsync(AccountRequestDto account);
+        Task<IServiceResponse<Account>> UpdateAccountAsync(
+            int? accountId, AccountRequestDto request, ClaimsIdentity? identity);
+        Task<HttpStatusCode> RemoveAccountAsync(int? accountId, ClaimsIdentity? identity);
     }
 }

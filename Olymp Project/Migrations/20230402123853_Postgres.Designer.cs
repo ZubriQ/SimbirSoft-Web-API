@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using NpgsqlTypes;
 using Olymp_Project.Models;
 
 #nullable disable
@@ -12,8 +13,8 @@ using Olymp_Project.Models;
 namespace Olymp_Project.Migrations
 {
     [DbContext(typeof(ChipizationDbContext))]
-    [Migration("20230320202117_Second")]
-    partial class Second
+    [Migration("20230402123853_Postgres")]
+    partial class Postgres
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -63,9 +64,42 @@ namespace Olymp_Project.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.ToTable("Accounts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Email = "admin@simbirsoft.com",
+                            FirstName = "adminFirstName",
+                            LastName = "adminLastName",
+                            Password = "qwerty123",
+                            Role = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Email = "chipper@simbirsoft.com",
+                            FirstName = "chipperFirstName",
+                            LastName = "chipperLastName",
+                            Password = "qwerty123",
+                            Role = "CHIPPER"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Email = "user@simbirsoft.com",
+                            FirstName = "userFirstName",
+                            LastName = "userLastName",
+                            Password = "qwerty123",
+                            Role = "USER"
+                        });
                 });
 
             modelBuilder.Entity("Olymp_Project.Models.Animal", b =>
@@ -112,6 +146,26 @@ namespace Olymp_Project.Migrations
                     b.HasIndex("ChippingLocationId");
 
                     b.ToTable("Animals");
+                });
+
+            modelBuilder.Entity("Olymp_Project.Models.Area", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<NpgsqlPolygon>("Points")
+                        .HasColumnType("polygon");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Areas");
                 });
 
             modelBuilder.Entity("Olymp_Project.Models.Kind", b =>

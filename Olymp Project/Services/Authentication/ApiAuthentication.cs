@@ -10,10 +10,7 @@ namespace Olymp_Project.Services.Authentication
             if (header is not null && header.StartsWith("Basic"))
             {
                 var authResult = await httpContext.AuthenticateAsync(ApiAuthenticationScheme.Name);
-                if (!authResult.Succeeded)
-                {
-                    return false;
-                }
+                return authResult.Succeeded;
             }
             return true;
         }

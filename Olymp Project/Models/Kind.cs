@@ -1,4 +1,6 @@
-﻿namespace Olymp_Project.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Olymp_Project.Models
 {
     public partial class Kind
     {
@@ -7,6 +9,7 @@
             Animals = new HashSet<Animal>();
         }
 
+        [Key]
         public long Id { get; set; }
         public string Name { get; set; } = null!;
 

@@ -34,7 +34,7 @@ namespace Olymp_Project.Services.Locations
 
         public async Task<IServiceResponse<Location>> InsertLocationAsync(LocationRequestDto request)
         {
-            if (!LocationDtoValidator.IsValid(request))
+            if (!LocationPointValidator.IsValid(request))
             {
                 return new ServiceResponse<Location>(HttpStatusCode.BadRequest);
             }
@@ -78,7 +78,7 @@ namespace Olymp_Project.Services.Locations
         public async Task<IServiceResponse<Location>> UpdateLocationAsync(
             long? locationId, LocationRequestDto request)
         {
-            if (!IdValidator.IsValid(locationId) || !LocationDtoValidator.IsValid(request))
+            if (!IdValidator.IsValid(locationId) || !LocationPointValidator.IsValid(request))
             {
                 return new ServiceResponse<Location>(HttpStatusCode.BadRequest);
             }
