@@ -35,7 +35,7 @@ namespace Olymp_Project.Helpers
             }
         }
 
-        // TODO: remove?
+        // TODO: Optimize
         public static ActionResult GetTestActionResult(
             HttpStatusCode statusCode, object? value = null, string? actionName = "", string? errorMessage = "")
         {
