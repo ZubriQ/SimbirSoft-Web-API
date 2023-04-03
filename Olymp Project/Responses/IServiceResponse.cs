@@ -4,5 +4,6 @@
     {
         HttpStatusCode StatusCode { get; set; }
         T? Data { get; set; }
+        string? ErrorMessage { get; set; }
     }
 }

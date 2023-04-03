@@ -191,6 +191,20 @@ namespace Olymp_Project.Services.Areas
             return geometryFactory.CreatePolygon(coordinates);
         }
 
+        public static Area ToArea(AreaRequestDto request)
+        {
+            var npgsqlPoints = request.AreaPoints!
+                .Select(AreaPointHelper.ToNpgsqlPoint)
+                .ToArray();
+            var npgsqlPolygon = new NpgsqlPolygon(npgsqlPoints);
+
+            return new Area
+            {
+                Name = request.Name!,
+                Points = npgsqlPolygon
+            };
+        }
+
         //private bool PolygonIsInsideExistingPolygon(NpgsqlPolygon newPolygon)
         //{
         //    Polygon newPolygonGeometry = ToPolygonGeometry(newPolygon);
@@ -221,18 +235,79 @@ namespace Olymp_Project.Services.Areas
         //    return false;
         //}
 
-        public static Area ToArea(AreaRequestDto request)
-        {
-            var npgsqlPoints = request.AreaPoints!
-                .Select(AreaPointHelper.ToNpgsqlPoint)
-                .ToArray();
-            var npgsqlPolygon = new NpgsqlPolygon(npgsqlPoints);
+        #endregion
 
-            return new Area
+        #region Update
+
+        public async Task<IServiceResponse<Area>> UpdateAreaByIdAsync(long? areaId, AreaRequestDto request)
+        {
+            if (!IdValidator.IsValid(areaId) || !AreaValidator.IsValid(request))
             {
-                Name = request.Name!,
-                Points = npgsqlPolygon
-            };
+                return new ServiceResponse<Area>(HttpStatusCode.BadRequest);
+            }
+
+            if (await _db.Areas.FindAsync(areaId) is not Area existingArea)
+            {
+                return new ServiceResponse<Area>(HttpStatusCode.NotFound);
+            }
+
+            Area updatedArea = ToArea(request);
+
+            // Validate the updated area
+            //NpgsqlPolygon updatedPolygon = updatedArea.Points;
+            //if (PointsAreCollinear(updatedPolygon) ||
+            //    PolygonHasOverlappingEdges(updatedPolygon) ||
+            //    PolygonIntersectsExistingPolygon(updatedPolygon)) //||
+            //    //PolygonHasDuplicatePoints(updatedPolygon) || // You need to create this method
+            //    //NewPolygonBoundaryInsideExistingPolygonBoundary(updatedPolygon) || // You need to create this method
+            //    //ExistingPolygonBoundaryInsideNewPolygonBoundary(updatedPolygon) || // You need to create this method
+            //    //NewPolygonSharesPointsWithExistingAndIsInside(updatedPolygon, existingArea.Points)) // You need to create this method
+            //{
+            //    return new ServiceResponse<Area>(HttpStatusCode.BadRequest);
+            //}
+
+            // Update the area
+            existingArea.Name = updatedArea.Name;
+            existingArea.Points = updatedArea.Points;
+
+            try
+            {
+                await _db.SaveChangesAsync();
+                return new ServiceResponse<Area>(HttpStatusCode.OK, existingArea);
+            }
+            catch (Exception)
+            {
+                return new ServiceResponse<Area>();
+            }
+        }
+
+        #endregion
+
+        #region Delete
+
+        public async Task<HttpStatusCode> RemoveAreaByIdAsync(long? areaId)
+        {
+            if (!IdValidator.IsValid(areaId))
+            {
+                return HttpStatusCode.BadRequest;
+            }
+            // TODO: ADMIN
+
+            if (await _db.Areas.FindAsync(areaId!.Value) is not Area existingArea)
+            {
+                return HttpStatusCode.NotFound;
+            }
+
+            try
+            {
+                _db.Areas.Remove(existingArea);
+                await _db.SaveChangesAsync();
+                return HttpStatusCode.OK;
+            }
+            catch (Exception)
+            {
+                return HttpStatusCode.InternalServerError;
+            }
         }
 
         #endregion

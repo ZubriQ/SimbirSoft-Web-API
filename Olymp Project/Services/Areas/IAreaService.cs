@@ -6,5 +6,7 @@ namespace Olymp_Project.Services.Areas
     {
         Task<IServiceResponse<Area>> GetAreaByIdAsync(long? areaId);
         Task<IServiceResponse<Area>> InsertAreaAsync(AreaRequestDto request);
+        Task<IServiceResponse<Area>> UpdateAreaByIdAsync(long? areaId, AreaRequestDto request);
+        Task<HttpStatusCode> RemoveAreaByIdAsync(long? areaId);
     }
 }

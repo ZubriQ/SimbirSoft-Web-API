@@ -7,6 +7,7 @@ using Olymp_Project.Authentication;
 using Olymp_Project.Services.Accounts;
 using Olymp_Project.Services.Animals;
 using Olymp_Project.Services.AnimalsKinds;
+using Olymp_Project.Services.AreaAnalytics;
 using Olymp_Project.Services.Areas;
 using Olymp_Project.Services.Kinds;
 using Olymp_Project.Services.Locations;
@@ -91,6 +92,7 @@ builder.Services.AddScoped<IAnimalService, AnimalService>();
 builder.Services.AddScoped<IAnimalKindService, AnimalKindService>();
 builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
 builder.Services.AddScoped<IAreaService, AreaService>();
+builder.Services.AddScoped<IAreaAnalyticsService, AreaAnalyticsService>();
 
 builder.WebHost.UseUrls("http://0.0.0.0:8080");
 
@@ -120,6 +122,8 @@ else
         }
     }
 }
+
+
 
 app.UseRouting();
 

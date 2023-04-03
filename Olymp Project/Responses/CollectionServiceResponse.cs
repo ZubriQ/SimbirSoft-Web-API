@@ -4,6 +4,7 @@
     {
         public HttpStatusCode StatusCode { get; set; }
         public ICollection<T>? Data { get; set; } = new List<T>();
+        public string? ErrorMessage { get; set; }
 
         public CollectionServiceResponse(HttpStatusCode statusCode, ICollection<T> data)
         {
