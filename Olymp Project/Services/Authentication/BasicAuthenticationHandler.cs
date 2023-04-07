@@ -26,6 +26,7 @@ namespace Olymp_Project.Authentication
         {
             if (!Request.Headers.ContainsKey("Authorization"))
             {
+                Response.Headers.Add("WWW-Authenticate", "Basic");
                 return AuthenticateResult.Fail("Authorization header not found.");
             }
 
@@ -66,6 +67,12 @@ namespace Olymp_Project.Authentication
             var ticket = new AuthenticationTicket(principal, Scheme.Name);
 
             return AuthenticateResult.Success(ticket);
+        }
+
+        protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
+        {
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
         }
     }
 }
