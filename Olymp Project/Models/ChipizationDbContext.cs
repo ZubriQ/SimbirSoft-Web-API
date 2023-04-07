@@ -1,6 +1,4 @@
-﻿using NetTopologySuite.Geometries;
-
-namespace Olymp_Project.Models
+﻿namespace Olymp_Project.Models
 {
     public partial class ChipizationDbContext : DbContext
     {
@@ -9,6 +7,7 @@ namespace Olymp_Project.Models
         public ChipizationDbContext(IConfiguration configuration)
         {
             _configuration = configuration;
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         }
 
         public DbSet<Account> Accounts { get; set; } = null!;

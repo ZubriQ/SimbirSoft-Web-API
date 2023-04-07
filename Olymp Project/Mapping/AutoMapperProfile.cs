@@ -19,6 +19,9 @@ namespace Olymp_Project.Mapping
             CreateMap<Kind, KindResponseDto>()
                 .ForMember(d => d.Name, o => o.MapFrom(s => s.Name));
 
+            CreateMap<long, Kind>()
+                .ForMember(d => d.Id, o => o.MapFrom(s => s));
+
             // Animal mapping
             // Moving only ids to arrays and converting dates to ISO-8601
             CreateMap<Animal, AnimalResponseDto>()
@@ -27,9 +30,6 @@ namespace Olymp_Project.Mapping
                 .ForMember(d => d.ChippingDateTime, o => o.MapFrom(s => s.ChippingDateTime.ToISO8601()))
                 .ForMember(d => d.DeathDateTime, o => o.MapFrom(
                     s => s.DeathDateTime != null ? s.DeathDateTime.Value.ToISO8601() : null));
-
-            CreateMap<long, Kind>()
-                .ForMember(d => d.Id, o => o.MapFrom(s => s));
 
             CreateMap<PostAnimalDto, Animal>()
                 .ForMember(d => d.Kinds, o => o.MapFrom(s => s.AnimalKinds!.Select(id => new Kind { Id = id })));
@@ -41,8 +41,8 @@ namespace Olymp_Project.Mapping
 
             // Area mapping
             CreateMap<Area, AreaResponseDto>()
-                .ForMember(dest => dest.AreaPoints, 
-                    opt => opt.MapFrom(src => src.Points.Select(AreaPointHelper.ToAreaPointsDto).ToArray()));
+                .ForMember(d => d.AreaPoints, 
+                    o => o.MapFrom(s => s.Points.Select(AreaPointHelper.ToAreaPointsDto).ToArray()));
         }
     }
 }

@@ -17,25 +17,155 @@ namespace Olymp_Project.Services.AreaAnalytics
         public async Task<IServiceResponse<AreaAnalyticsResponseDto>> GetAnalyticsByAreaIdAsync(
             long? areaId, AreaAnalyticsQuery query)
         {
+            #region Validation
+
+            if (!IsRequestValid(areaId, query))
+            {
+                return new ServiceResponse<AreaAnalyticsResponseDto>(HttpStatusCode.BadRequest);
+            }
+            if (await _db.Areas.FindAsync(areaId) is not Area area)
+            {
+                return new ServiceResponse<AreaAnalyticsResponseDto>(HttpStatusCode.NotFound);
+            }
+
+            #endregion
+
             try
             {
-                if (!IsRequestValid(areaId, query))
+                // TODO: Optimize
+                // Find all the animal movements within the given area and the specified date range.
+                var startDate = query.StartDate!.Value.Date;
+                var endDate = query.EndDate!.Value.Date.AddDays(1); // Adding one day to make the endDate inclusive.
+
+                var polygon = area.Points.ToList();
+
+                // Count Total quantity of animals.
+                var animals = await _db.Animals
+                    .Include(animal => animal.Kinds)
+                    .Include(animal => animal.ChippingLocation)
+                    .Include(animal => animal.VisitedLocations)
+                        .ThenInclude(vl => vl.Location)
+                    .ToListAsync();
+
+                int totalQuantityAnimals = animals
+                    .Where(animal =>
+                        (animal.VisitedLocations.Count == 0 &&
+                         IsPointInPolygon(polygon, animal.ChippingLocation.Longitude, animal.ChippingLocation.Latitude) &&
+                         animal.ChippingDateTime >= startDate &&
+                         animal.ChippingDateTime < endDate) ||
+                        (animal.VisitedLocations.Any(vl =>
+                            IsPointInPolygon(polygon, vl.Location.Longitude, vl.Location.Latitude) &&
+                            vl.VisitDateTime >= startDate &&
+                            vl.VisitDateTime < endDate)))
+                    .Count();
+
+                // Count Total animals arrived.
+                var visitedLocations = await _db.VisitedLocations
+                    .Include(vl => vl.Animal)
+                    .Include(vl => vl.Location)
+                    .Where(vl =>
+                        vl.VisitDateTime >= startDate &&
+                        vl.VisitDateTime < endDate)
+                    .ToListAsync();
+
+                int totalAnimalsArrived = visitedLocations
+                    .Where(vl =>
+                        IsPointInPolygon(polygon, vl.Location.Longitude, vl.Location.Latitude) &&
+                        !IsPointInPolygon(polygon, vl.Animal.ChippingLocation.Longitude, vl.Animal.ChippingLocation.Latitude) &&
+                        (
+                            !vl.Animal.VisitedLocations.Any(pvl => pvl.VisitDateTime < startDate) ||
+                            !IsPointInPolygon(polygon,
+                                vl.Animal.VisitedLocations
+                                    .Where(pvl => pvl.VisitDateTime < startDate)
+                                    .OrderByDescending(pvl => pvl.VisitDateTime)
+                                    .First().Location.Longitude,
+                                vl.Animal.VisitedLocations
+                                    .Where(pvl => pvl.VisitDateTime < startDate)
+                                    .OrderByDescending(pvl => pvl.VisitDateTime)
+                                    .First().Location.Latitude
+                            )
+                        )
+                    )
+                    .Select(vl => vl.Animal)
+                    .Distinct()
+                    .Count();
+
+                // Count Total animals gone.
+                int totalAnimalsGone = visitedLocations
+                    .Where(vl =>
+                        !IsPointInPolygon(polygon, vl.Location.Longitude, vl.Location.Latitude) &&
+                        IsPointInPolygon(polygon, vl.Animal.ChippingLocation.Longitude, vl.Animal.ChippingLocation.Latitude) &&
+                        (
+                            !vl.Animal.VisitedLocations.Any(pvl => pvl.VisitDateTime < startDate) ||
+                            IsPointInPolygon(polygon,
+                                vl.Animal.VisitedLocations
+                                    .Where(pvl => pvl.VisitDateTime < startDate)
+                                    .OrderByDescending(pvl => pvl.VisitDateTime)
+                                    .First().Location.Longitude,
+                                vl.Animal.VisitedLocations
+                                    .Where(pvl => pvl.VisitDateTime < startDate)
+                                    .OrderByDescending(pvl => pvl.VisitDateTime)
+                                    .First().Location.Latitude
+                            )
+                        )
+                    )
+                    .Select(vl => vl.Animal)
+                    .Distinct()
+                    .Count();
+
+                // AnimalsAnalytics.
+                var animalKinds = animals.SelectMany(a => a.Kinds).Distinct();
+
+                var animalsAnalytics = animalKinds.Select(kind =>
                 {
-                    return new ServiceResponse<AreaAnalyticsResponseDto>(HttpStatusCode.BadRequest);
-                }
+                    // Quantity animals.
+                    int quantityAnimals = animals
+                        .Where(a => a.Kinds.Contains(kind) &&
+                            (
+                                (a.VisitedLocations.Count == 0 &&
+                                IsPointInPolygon(polygon, a.ChippingLocation.Longitude, a.ChippingLocation.Latitude) &&
+                                a.ChippingDateTime >= startDate &&
+                                a.ChippingDateTime < endDate) ||
+                                (a.VisitedLocations.Any(vl =>
+                                    IsPointInPolygon(polygon, vl.Location.Longitude, vl.Location.Latitude) &&
+                                    vl.VisitDateTime >= startDate &&
+                                    vl.VisitDateTime < endDate))
+                            ))
+                        .Count();
 
-                if (await _db.Areas.FindAsync(areaId) is not Area area)
+                    // Arrived animals.
+                    int animalsArrived = visitedLocations
+                        .Where(vl => vl.Animal.Kinds.Contains(kind) && AnimalArrivedInPolygon(polygon, vl, startDate))
+                        .Select(vl => vl.Animal)
+                        .Distinct()
+                        .Count();
+
+                    // Gone animals.
+                    int animalsGone = visitedLocations
+                        .Where(vl => vl.Animal.Kinds.Contains(kind) && AnimalLeftPolygon(polygon, vl, startDate))
+                        .Select(vl => vl.Animal)
+                        .Distinct()
+                        .Count();
+
+                    return new AnimalsAnalyticsDto
+                    {
+                        AnimalType = kind.Name,
+                        AnimalTypeId = kind.Id,
+                        QuantityAnimals = quantityAnimals,
+                        AnimalsArrived = animalsArrived,
+                        AnimalsGone = animalsGone
+                    };
+                }).Where(dto => dto.QuantityAnimals > 0)
+                    .ToArray();
+
+                var responseDto = new AreaAnalyticsResponseDto
                 {
-                    return new ServiceResponse<AreaAnalyticsResponseDto>(HttpStatusCode.NotFound);
-                }
-
-                var visitedLocationsInArea = await GetVisitedLocationsInArea(area, query);
-                var distinctAnimalsInArea = GetDistinctAnimalsInArea(visitedLocationsInArea);
-
-                AreaAnalyticsResponseDto analytics = await CalculateAreaAnalytics(
-                    distinctAnimalsInArea, query.StartDate!.Value, query.EndDate!.Value, area);
-
-                return new ServiceResponse<AreaAnalyticsResponseDto>(HttpStatusCode.OK, analytics);
+                    TotalQuantityAnimals = totalQuantityAnimals,
+                    TotalAnimalsArrived = totalAnimalsArrived,
+                    TotalAnimalsGone = totalAnimalsGone,
+                    AnimalsAnalytics = animalsAnalytics
+                };
+                return new ServiceResponse<AreaAnalyticsResponseDto>(HttpStatusCode.OK, responseDto);
             }
             catch (Exception ex)
             {
@@ -43,156 +173,68 @@ namespace Olymp_Project.Services.AreaAnalytics
             }
         }
 
+        private bool AnimalArrivedInPolygon(List<NpgsqlPoint> polygon, VisitedLocation vl, DateTime startDate)
+        {
+            bool isCurrentlyInPolygon = IsPointInPolygon(polygon, vl.Location.Longitude, vl.Location.Latitude);
+
+            var previousVisitedLocation = vl.Animal.VisitedLocations
+                .Where(pvl => pvl.VisitDateTime < startDate)
+                .OrderByDescending(pvl => pvl.VisitDateTime)
+                .FirstOrDefault();
+
+            bool wasOutsidePolygonBeforeStartDate = previousVisitedLocation == null || !IsPointInPolygon(
+                polygon,
+                previousVisitedLocation.Location.Longitude,
+                previousVisitedLocation.Location.Latitude
+            );
+
+            return isCurrentlyInPolygon && wasOutsidePolygonBeforeStartDate;
+        }
+
+        private bool AnimalLeftPolygon(List<NpgsqlPoint> polygon, VisitedLocation vl, DateTime startDate)
+        {
+            bool isCurrentlyOutsidePolygon = !IsPointInPolygon(polygon, vl.Location.Longitude, vl.Location.Latitude);
+
+            var previousVisitedLocation = vl.Animal.VisitedLocations
+                .Where(pvl => pvl.VisitDateTime < startDate)
+                .OrderByDescending(pvl => pvl.VisitDateTime)
+                .FirstOrDefault();
+
+            bool wasInsidePolygonBeforeStartDate = previousVisitedLocation == null || IsPointInPolygon(
+                polygon,
+                previousVisitedLocation.Location.Longitude,
+                previousVisitedLocation.Location.Latitude
+            );
+
+            return isCurrentlyOutsidePolygon && wasInsidePolygonBeforeStartDate;
+        }
+
         private bool IsRequestValid(long? areaId, AreaAnalyticsQuery query)
         {
             return IdValidator.IsValid(areaId) && AreaAnalyticsValidator.IsValid(query);
         }
 
-        private async Task<List<VisitedLocation>> GetVisitedLocationsInArea(Area area, AreaAnalyticsQuery query)
+        private bool IsPointInPolygon(List<NpgsqlPoint> polygon, double x, double y)
         {
-            var allAnimals = await _db.Animals
-                .Include(a => a.ChippingLocation)
-                .Include(a => a.VisitedLocations)
-                .ToListAsync();
+            bool isInside = false;
+            int j = polygon.Count - 1;
 
-            var visitedLocationsInArea = new List<VisitedLocation>();
-
-            foreach (var animal in allAnimals)
+            // Check if the point is on one of the vertices.
+            if (polygon.Any(vertex => vertex.X == x && vertex.Y == y))
             {
-                var visitedLocations = animal.VisitedLocations
-                    .Where(v => v.VisitDateTime.Date >= query.StartDate!.Value.Date && v.VisitDateTime.Date <= query.EndDate!.Value.Date)
-                    .ToList();
+                return true;
+            }
 
-                visitedLocationsInArea.AddRange(visitedLocations);
-
-                if (!visitedLocations.Any())
+            for (int i = 0; i < polygon.Count; i++)
+            {
+                if ((polygon[i].Y < y && polygon[j].Y >= y || polygon[j].Y < y && polygon[i].Y >= y) &&
+                    (polygon[i].X + (y - polygon[i].Y) / (polygon[j].Y - polygon[i].Y) * (polygon[j].X - polygon[i].X) < x))
                 {
-                    Location location = animal.ChippingLocation;
-
-                    if (location != null && area.Points.Contains(new NpgsqlPoint(location.Longitude, location.Latitude)))
-                    {
-                        visitedLocationsInArea.Add(new VisitedLocation
-                        {
-                            AnimalId = animal.Id,
-                            Animal = animal,
-                            LocationId = location.Id,
-                            Location = location,
-                            VisitDateTime = query.StartDate.Value
-                        });
-                    }
+                    isInside = !isInside;
                 }
+                j = i;
             }
-
-            return visitedLocationsInArea;
-        }
-
-
-        private List<long> GetDistinctAnimalsInArea(List<VisitedLocation> visitedLocationsInArea)
-        {
-            return visitedLocationsInArea
-                .Select(v => v.AnimalId)
-                .Distinct()
-                .ToList();
-        }
-
-        private async Task<AreaAnalyticsResponseDto> CalculateAreaAnalytics(
-            List<long> distinctAnimalsInArea, DateTime startDate, DateTime endDate, Area area)
-        {
-            var animals = await GetAnimalsWithDetails(distinctAnimalsInArea);
-            var animalGroups = GroupAnimalsByKind(animals, startDate, endDate, area);
-
-            AreaAnalyticsResponseDto analytics = new AreaAnalyticsResponseDto
-            {
-                TotalQuantityAnimals = animals.Count,
-                TotalAnimalsArrived = animalGroups.Sum(a => a.AnimalsArrived),
-                TotalAnimalsGone = animalGroups.Sum(a => a.AnimalsGone),
-                AnimalsAnalytics = animalGroups
-            };
-
-            return analytics;
-        }
-
-
-
-        private async Task<List<Animal>> GetAnimalsWithDetails(List<long> animalIds)
-        {
-            return await _db.Animals
-                .Where(a => animalIds.Contains(a.Id))
-                .Include(a => a.Kinds)
-                .Include(a => a.VisitedLocations)
-                .Include(a => a.ChippingLocation)
-                .ToListAsync();
-        }
-
-        private AnimalsAnalyticsDto[] GroupAnimalsByKind(List<Animal> animals, DateTime startDate, DateTime endDate, Area area)
-        {
-            return animals
-                .GroupBy(a => a.Kinds.FirstOrDefault()!.Id)
-                .Select(g => new AnimalsAnalyticsDto
-                {
-                    AnimalTypeId = g.Key,
-                    AnimalType = g.First().Kinds.FirstOrDefault()!.Name,
-                    QuantityAnimals = g.Count(),
-                    AnimalsArrived = CalculateAnimalsArrived(g, startDate, endDate, area),
-                    AnimalsGone = g.Count(a => a.DeathDateTime.HasValue && a.DeathDateTime.Value.Date >= startDate.Date && a.DeathDateTime.Value.Date <= endDate.Date)
-                })
-                .ToArray();
-        }
-
-        private int CalculateAnimalsArrived(IEnumerable<Animal> animals, DateTime startDate, DateTime endDate, Area area)
-        {
-            int animalsArrived = 0;
-
-            foreach (var animal in animals)
-            {
-                var visitedLocations = animal.VisitedLocations
-                    .Where(v => v.VisitDateTime.Date >= startDate.Date && v.VisitDateTime.Date <= endDate.Date)
-                    .ToList();
-
-                for (int i = 0; i < visitedLocations.Count; i++)
-                {
-                    var currentVisitedLocation = visitedLocations[i];
-
-                    if (currentVisitedLocation.Location == null)
-                    {
-                        continue;
-                    }
-
-                    var previousVisitedLocation = i > 0 ? visitedLocations[i - 1] : null;
-
-                    var currentLocation = new NpgsqlPoint(currentVisitedLocation.Location.Longitude, currentVisitedLocation.Location.Latitude);
-                    NpgsqlPoint? previousLocation = previousVisitedLocation != null && previousVisitedLocation.Location != null ? new NpgsqlPoint(previousVisitedLocation.Location.Longitude, previousVisitedLocation.Location.Latitude) : (NpgsqlPoint?)null;
-
-                    if (IsEnteringArea(currentLocation, previousLocation, area))
-                    {
-                        animalsArrived++;
-                    }
-                }
-
-                if (animal.ChippingDateTime.Date >= startDate.Date && animal.ChippingDateTime.Date <= endDate.Date && area.Points.Contains(new NpgsqlPoint(animal.ChippingLocation.Longitude, animal.ChippingLocation.Latitude)))
-                {
-                    animalsArrived++;
-                }
-            }
-
-            return animalsArrived;
-        }
-
-
-
-        private bool IsEnteringArea(NpgsqlPoint currentLocation, NpgsqlPoint? previousLocation, Area area)
-        {
-            var currentLocationInArea = area.Points.Contains(currentLocation);
-
-            if (!previousLocation.HasValue)
-            {
-                return currentLocationInArea;
-            }
-            else
-            {
-                var previousLocationInArea = area.Points.Contains(previousLocation.Value);
-                return currentLocationInArea && !previousLocationInArea;
-            }
+            return isInside;
         }
     }
 }

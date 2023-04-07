@@ -36,8 +36,8 @@ namespace Olymp_Project.Controllers
 
             var response = await _service.GetAnalyticsByAreaIdAsync(areaId!.Value, query);
             
-            //return ResponseHelper.GetActionResult(response.StatusCode, response.Data);
-            return ResponseHelper.GetTestActionResult(response.StatusCode, response.Data, errorMessage: response.ErrorMessage);
+            return ResponseHelper.GetActionResult(
+                response.StatusCode, response.Data);
         }
     }
 }

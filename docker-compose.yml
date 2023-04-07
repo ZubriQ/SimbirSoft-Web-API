@@ -59,7 +59,7 @@ services:
     #    condition: service_healthy
     environment:
       SERVER_URL: http://webapi:8080
-      STAGE: 2
+      STAGE: 3
     networks:
       - webapi-network
     restart: always

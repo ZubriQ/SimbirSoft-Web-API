@@ -30,6 +30,26 @@ namespace Olymp_Project.Services.Locations
 
         #endregion
 
+        #region Get by coordinates
+
+        public async Task<IServiceResponse<Location>> GetLocationIdByCoordinatesAsync(LocationRequestDto request)
+        {
+            if (!LocationPointValidator.IsValid(request))
+            {
+                return new ServiceResponse<Location>(HttpStatusCode.BadRequest);
+            }
+
+            if (await _db.Locations.FirstOrDefaultAsync(
+                l => l.Latitude == request.Latitude && l.Longitude == request.Longitude) is not Location location)
+            {
+                return new ServiceResponse<Location>(HttpStatusCode.NotFound);
+            }
+
+            return new ServiceResponse<Location>(HttpStatusCode.OK, location);
+        }
+
+        #endregion
+
         #region Insert
 
         public async Task<IServiceResponse<Location>> InsertLocationAsync(LocationRequestDto request)

@@ -123,8 +123,6 @@ else
     }
 }
 
-
-
 app.UseRouting();
 
 app.UseAuthorization();
