@@ -21,7 +21,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPost]
-        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

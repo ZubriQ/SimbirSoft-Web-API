@@ -23,7 +23,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("{accountId:int}")]
-        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -43,7 +43,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("search")]
-        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountResponseDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -71,7 +71,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPost]
-        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -91,7 +91,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPut("{accountId:int}")]
-        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -120,7 +120,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpDelete("{accountId:int}")]
-        [Authorize(AuthenticationSchemes = ApiAuthenticationScheme.Name)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

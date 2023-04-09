@@ -1,7 +1,7 @@
 ﻿namespace Olymp_Project.Utilities
 {
-    public static class ApiAuthenticationScheme
+    public static class Constants
     {
-        public const string Name = "BasicAuthentication";
+        public const string BasicAuthenticationScheme = "BasicAuthentication";
     }
 }

@@ -47,9 +47,9 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddAuthentication(ApiAuthenticationScheme.Name)
+builder.Services.AddAuthentication(Constants.BasicAuthenticationScheme)
     .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>(
-    ApiAuthenticationScheme.Name, null);
+    Constants.BasicAuthenticationScheme, null);
 
 #endregion
 

@@ -1,4 +1,5 @@
 ﻿using Geohash;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Olymp_Project.Helpers
@@ -7,6 +8,7 @@ namespace Olymp_Project.Helpers
     {
         private static readonly Geohasher _hasher = new();
         private static readonly int _precision = 12;
+        private static readonly MD5 _md5 = MD5.Create();
 
         public static string Encode(double latitude, double longitude)
         {
@@ -16,44 +18,22 @@ namespace Olymp_Project.Helpers
         public static string EncodeV2(double latitude, double longitude)
         {
             string originalHash = Encode(latitude, longitude);
-            byte[] hashBytes = Encoding.ASCII.GetBytes(originalHash);
+            byte[] hashBytes = Encoding.UTF8.GetBytes(originalHash);
             string base64Hash = Convert.ToBase64String(hashBytes);
 
             return base64Hash;
         }
 
-        private static readonly byte[] _xorKey = Encoding.ASCII.GetBytes("qwerty123");
-
         public static string EncodeV3(double latitude, double longitude)
         {
-            string base64Hash = EncodeV2(latitude, longitude);
-            byte[] hashBytes = Encoding.ASCII.GetBytes(base64Hash);
-
-            byte[] encryptedBytes = new byte[hashBytes.Length];
-            for (int i = 0; i < hashBytes.Length; i++)
+            var md5Hash = _md5.ComputeHash(Encoding.UTF8.GetBytes(Encode(latitude, longitude)));
+            byte[] resultHash = new byte[md5Hash.Length];
+            for (int i = 0; i < md5Hash.Length; i++)
             {
-                encryptedBytes[i] = (byte)(hashBytes[i] ^ _xorKey[i % _xorKey.Length]);
+                resultHash[i] = md5Hash[resultHash.Length - 1 - i];
             }
 
-            string encryptedHash = Convert.ToBase64String(encryptedBytes);
-            return encryptedHash;
+            return Convert.ToBase64String(resultHash);
         }
-
-        //private static readonly byte[] _xorKey = Encoding.ASCII.GetBytes("qwerty123");
-
-        //public static string EncodeV3(double latitude, double longitude)
-        //{
-        //    string base64Hash = EncodeV2(latitude, longitude);
-        //    byte[] hashBytes = Encoding.ASCII.GetBytes(base64Hash);
-
-        //    byte[] encryptedBytes = new byte[hashBytes.Length];
-        //    for (int i = 0; i < hashBytes.Length; i++)
-        //    {
-        //        encryptedBytes[i] = (byte)(hashBytes[i] ^ _xorKey[i % _xorKey.Length]);
-        //    }
-
-        //    string encryptedHash = Convert.ToBase64String(encryptedBytes);
-        //    return encryptedHash;
-        //}
     }
 }
