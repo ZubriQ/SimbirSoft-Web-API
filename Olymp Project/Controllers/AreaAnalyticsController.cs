@@ -7,7 +7,7 @@ using Olymp_Project.Services.Authentication;
 
 namespace Olymp_Project.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
     [Route("areas/{areaId}/analytics")]
     [ApiController]
     public class AreaAnalyticsController : ControllerBase
@@ -20,7 +20,6 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AreaResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
