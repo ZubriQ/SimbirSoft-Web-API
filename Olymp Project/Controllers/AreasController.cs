@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Helpers;
 using Olymp_Project.Services.Areas;
-using Olymp_Project.Services.Authentication;
 
 namespace Olymp_Project.Controllers
 {
