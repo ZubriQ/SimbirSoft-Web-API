@@ -113,6 +113,11 @@ namespace Olymp_Project.Services.Locations
                 return new ServiceResponse<Location>(HttpStatusCode.Conflict);
             }
 
+            if (await IsLocationInUse(locationId!.Value))
+            {
+                return new ServiceResponse<Location>(HttpStatusCode.BadRequest);
+            }
+
             try
             {
                 return await UpdateLocation(location, request);
@@ -129,12 +134,19 @@ namespace Olymp_Project.Services.Locations
                                                   && l.Longitude == request.Longitude);
         }
 
+        private async Task<bool> IsLocationInUse(long locationId)
+        {
+            return await _db.Animals.AnyAsync(a => a.ChippingLocationId == locationId) ||
+                   await _db.VisitedLocations.AnyAsync(vl => vl.LocationId == locationId);
+        }
+
         private async Task<IServiceResponse<Location>> UpdateLocation(
             Location location, LocationRequestDto newData)
         {
             AssignNewData(location, newData);
             _db.Entry(location).State = EntityState.Modified;
             await _db.SaveChangesAsync();
+
             return new ServiceResponse<Location>(HttpStatusCode.OK, location);
         }
 

@@ -15,31 +15,23 @@ namespace Olymp_Project.Controllers
     {
         private readonly ILocationService _service;
         private readonly IMapper _mapper;
-        private readonly Geohasher _hasher;
 
         public LocationsController(ILocationService service, IMapper mapper)
         {
             _service = service;
             _mapper = mapper;
-            _hasher = new Geohasher();
         }
 
         #region Default endpoints
 
         [HttpGet("{locationId:long}")]
         [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
-        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LocationResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<LocationResponseDto>> GetLocationById([FromRoute] long? locationId)
         {
-            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
-            {
-                return Unauthorized();
-            }
-
             var response = await _service.GetLocationByIdAsync(locationId!.Value);
 
             var locationDto = _mapper.Map<LocationResponseDto>(response.Data);
@@ -70,19 +62,15 @@ namespace Olymp_Project.Controllers
 
 
         [HttpPost]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN,CHIPPER")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(LocationResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<LocationResponseDto>> CreateLocation(
             [FromBody] LocationRequestDto request)
         {
-            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
-            {
-                return Unauthorized();
-            }
-
             var response = await _service.InsertLocationAsync(request);
 
             var dto = _mapper.Map<LocationResponseDto>(response.Data);
@@ -90,21 +78,17 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPut("{locationId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN,CHIPPER")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LocationResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<LocationResponseDto>> UpdateLocation(
             [FromRoute] long? locationId,
             [FromBody] LocationRequestDto request)
         {
-            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
-            {
-                return Unauthorized();
-            }
-
             var response = await _service.UpdateLocationAsync(locationId!.Value, request);
 
             var locationDto = _mapper.Map<LocationResponseDto>(response.Data);
@@ -112,7 +96,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpDelete("{locationId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -120,11 +104,6 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> DeleteLocation([FromRoute] long? locationId)
         {
-            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
-            {
-                return Unauthorized();
-            }
-
             var statusCode = await _service.RemoveLocationAsync(locationId!.Value);
             return ResponseHelper.GetActionResult(statusCode);
         }
