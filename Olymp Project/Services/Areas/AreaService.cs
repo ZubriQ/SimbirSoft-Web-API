@@ -1,6 +1,5 @@
 ﻿using NetTopologySuite.Geometries;
 using NpgsqlTypes;
-using Olymp_Project.Dtos.Area;
 using Olymp_Project.Helpers;
 using Olymp_Project.Helpers.Validators;
 using Olymp_Project.Responses;

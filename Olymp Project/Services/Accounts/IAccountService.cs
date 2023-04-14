@@ -1,5 +1,4 @@
 ﻿using Olymp_Project.Responses;
-using System.Security.Claims;
 
 namespace Olymp_Project.Services.Accounts
 {

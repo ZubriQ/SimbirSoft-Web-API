@@ -92,8 +92,6 @@ namespace Olymp_Project.Services.Accounts
                 return new ServiceResponse<Account>(HttpStatusCode.BadRequest);
             }
 
-            // TODO: 403: У аккаунта нет роли "ADMIN"
-
             bool alreadyExists = await _db.Accounts.AnyAsync(a => a.Email ==  request.Email);
             if (alreadyExists)
             {

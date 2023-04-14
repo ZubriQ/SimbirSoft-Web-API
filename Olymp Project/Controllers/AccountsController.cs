@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Helpers;
 using Olymp_Project.Services.Accounts;
-using Olymp_Project.Services.Authentication;
 using System.Security.Claims;
 
 namespace Olymp_Project.Controllers
