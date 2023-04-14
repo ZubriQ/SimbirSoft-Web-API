@@ -8,7 +8,7 @@ using Olymp_Project.Services.Authentication;
 
 namespace Olymp_Project.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
     [Route("areas")]
     [ApiController]
     public class AreasController : ControllerBase
@@ -24,18 +24,12 @@ namespace Olymp_Project.Controllers
 
         [HttpGet("{areaId:long}")]
         [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
-        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AreaResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AreaResponseDto>> GetArea([FromRoute] long? areaId)
         {
-            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
-            {
-                return Unauthorized();
-            }
-
             var response = await _service.GetAreaByIdAsync(areaId!.Value);
 
             var areaDto = _mapper.Map<AreaResponseDto>(response.Data);
@@ -43,7 +37,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPost]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AreaResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -51,11 +45,6 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AreaResponseDto>> CreateArea([FromBody] AreaRequestDto request)
         {
-            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
-            {
-                return Unauthorized();
-            }
-
             var response = await _service.InsertAreaAsync(request);
 
             var areaDto = _mapper.Map<AreaResponseDto>(response.Data);
@@ -63,20 +52,16 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPut("{areaId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AreaResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AreaResponseDto>> UpdateArea(
             [FromRoute] long? areaId,
             [FromBody] AreaRequestDto request)
         {
-            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
-            {
-                return Unauthorized();
-            }
-
             var response = await _service.UpdateAreaByIdAsync(areaId!.Value, request);
 
             var kindDto = _mapper.Map<AreaResponseDto>(response.Data);
@@ -85,7 +70,7 @@ namespace Olymp_Project.Controllers
 
 
         [HttpDelete("{areaId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -93,11 +78,6 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteKind([FromRoute] long? areaId)
         {
-            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
-            {
-                return Unauthorized();
-            }
-
             var statusCode = await _service.RemoveAreaByIdAsync(areaId!.Value);
             return ResponseHelper.GetActionResult(statusCode);
         }

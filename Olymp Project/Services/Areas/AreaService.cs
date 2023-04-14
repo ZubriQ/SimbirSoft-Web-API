@@ -68,18 +68,6 @@ namespace Olymp_Project.Services.Areas
                 return new ServiceResponse<Area>(HttpStatusCode.BadRequest);
             }
 
-            //if (PointsAreCollinear(area.Points) || PolygonHasOverlappingEdges(area.Points)
-            //    || PolygonIntersectsExistingPolygon(area.Points) || PolygonIsInsideExistingPolygon(area.Points)
-            //    || ExistingPolygonIsInsidePolygon(area.Points) || AreaHasDuplicatePoints(area.Points))
-            //{
-            //    return new ServiceResponse<Area>(HttpStatusCode.BadRequest);
-            //}
-
-            //if (await AreaNameExistsAsync(area.Name) || await AreaWithSamePointsExistsAsync(area.Points))
-            //{
-            //    return new ServiceResponse<Area>(HttpStatusCode.Conflict);
-            //}
-
             #endregion
 
             try
@@ -94,23 +82,6 @@ namespace Olymp_Project.Services.Areas
                 return new ServiceResponse<Area>();
             }
         }
-
-        //private async Task<bool> AreaNameExistsAsync(string name)
-        //{
-        //    return await _db.Areas.AnyAsync(a => a.Name == name);
-        //}
-
-        //private async Task<bool> AreaWithSamePointsExistsAsync(NpgsqlPolygon polygon)
-        //{
-        //    return await _db.Areas.AnyAsync(a => a.Points.Equals(polygon));
-        //}
-
-        //private bool AreaHasDuplicatePoints(NpgsqlPolygon polygon)
-        //{
-        //    return Enumerable.Range(0, polygon.Count)
-        //        .GroupBy(i => polygon[i])
-        //        .Any(g => g.Count() > 1);
-        //}
 
         private bool PointsAreCollinear(NpgsqlPolygon polygon)
         {
@@ -204,36 +175,6 @@ namespace Olymp_Project.Services.Areas
             };
         }
 
-        //private bool PolygonIsInsideExistingPolygon(NpgsqlPolygon newPolygon)
-        //{
-        //    Polygon newPolygonGeometry = ToPolygonGeometry(newPolygon);
-        //    foreach (var existingArea in _db.Areas)
-        //    {
-        //        Polygon existingPolygonGeometry = ToPolygonGeometry(existingArea.Points);
-        //        if (newPolygonGeometry.Within(existingPolygonGeometry))
-        //        {
-        //            return true;
-        //        }
-        //    }
-        //    return false;
-        //}
-
-
-
-        //private bool ExistingPolygonIsInsidePolygon(NpgsqlPolygon newPolygon)
-        //{
-        //    Polygon newPolygonGeometry = ToPolygonGeometry(newPolygon);
-        //    foreach (var existingArea in _db.Areas)
-        //    {
-        //        Polygon existingPolygonGeometry = ToPolygonGeometry(existingArea.Points);
-        //        if (existingPolygonGeometry.Within(newPolygonGeometry))
-        //        {
-        //            return true;
-        //        }
-        //    }
-        //    return false;
-        //}
-
         #endregion
 
         #region Update
@@ -290,7 +231,6 @@ namespace Olymp_Project.Services.Areas
             {
                 return HttpStatusCode.BadRequest;
             }
-            // TODO: ADMIN
 
             if (await _db.Areas.FindAsync(areaId!.Value) is not Area existingArea)
             {
@@ -299,14 +239,19 @@ namespace Olymp_Project.Services.Areas
 
             try
             {
-                _db.Areas.Remove(existingArea);
-                await _db.SaveChangesAsync();
-                return HttpStatusCode.OK;
+                return await RemoveAndSaveChangesAsync(existingArea);
             }
             catch (Exception)
             {
                 return HttpStatusCode.InternalServerError;
             }
+        }
+
+        private async Task<HttpStatusCode> RemoveAndSaveChangesAsync(Area area)
+        {
+            _db.Areas.Remove(area);
+            await _db.SaveChangesAsync();
+            return HttpStatusCode.OK;
         }
 
         #endregion
