@@ -22,7 +22,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("{animalId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AnimalResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -42,7 +42,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("search")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AnimalResponseDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -63,7 +63,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPost]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AnimalResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -83,7 +83,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPut("{animalId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AnimalResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -104,7 +104,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpDelete("{animalId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

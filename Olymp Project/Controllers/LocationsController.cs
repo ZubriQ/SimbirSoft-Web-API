@@ -27,7 +27,7 @@ namespace Olymp_Project.Controllers
         #region Default endpoints
 
         [HttpGet("{locationId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LocationResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -47,7 +47,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(long))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -70,7 +70,7 @@ namespace Olymp_Project.Controllers
 
 
         [HttpPost]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(LocationResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -90,7 +90,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPut("{locationId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LocationResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -112,7 +112,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpDelete("{locationId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -134,7 +134,7 @@ namespace Olymp_Project.Controllers
         #region Geohash endpoints
 
         [HttpGet("geohash")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -158,7 +158,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("geohashv2")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -182,7 +182,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("geohashv3")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

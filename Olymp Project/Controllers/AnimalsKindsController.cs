@@ -22,7 +22,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPost("{kindId}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AnimalResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -45,7 +45,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPut]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AnimalResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -67,7 +67,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpDelete("{kindId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AnimalResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

@@ -50,14 +50,26 @@ namespace Olymp_Project.Services.Registration
 
         private Account CreateAccount(RegistrationRequestDto data)
         {
-            Account newAccount = new Account()
+            return new Account()
             {
                 FirstName = data.FirstName!,
                 LastName = data.LastName!,
                 Email = data.Email!,
                 Password = data.Password!
             };
-            return newAccount;
+        }
+
+        public async Task<bool> ValidateAccountAsync(string email, string password)
+        {
+            if (!string.IsNullOrWhiteSpace(email) && !string.IsNullOrWhiteSpace(password))
+            {
+                var account = await _db.Accounts.FirstOrDefaultAsync(a => a.Email == email);
+                if (account is not null && account.Password == password)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

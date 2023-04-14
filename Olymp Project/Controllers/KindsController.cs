@@ -6,7 +6,7 @@ using Olymp_Project.Services.Kinds;
 
 namespace Olymp_Project.Controllers
 {
-    [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
     [Route("animals/types")]
     [ApiController]
     public class KindsController : ControllerBase
@@ -21,7 +21,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("{kindId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme), AllowAnonymous]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(KindResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -35,7 +35,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPost]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme, Roles = "ADMIN,CHIPPER")]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN,CHIPPER")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(KindResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -50,7 +50,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPut("{kindId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme, Roles = "ADMIN,CHIPPER")]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN,CHIPPER")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(KindResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -68,7 +68,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpDelete("{kindId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme, Roles = "ADMIN")]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

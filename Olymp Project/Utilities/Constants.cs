@@ -2,6 +2,6 @@
 {
     public static class Constants
     {
-        public const string BasicAuthenticationScheme = "BasicAuthentication";
+        public const string BasicAuthScheme = "BasicAuthentication";
     }
 }

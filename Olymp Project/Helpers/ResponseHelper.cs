@@ -25,7 +25,7 @@ namespace Olymp_Project.Helpers
                 case HttpStatusCode.Unauthorized:
                     return new UnauthorizedResult();
                 case HttpStatusCode.Forbidden:
-                    return new ForbidResult(Constants.BasicAuthenticationScheme);
+                    return new ForbidResult(Constants.BasicAuthScheme);
                 case HttpStatusCode.NotFound:
                     return new NotFoundResult();
                 case HttpStatusCode.Conflict:

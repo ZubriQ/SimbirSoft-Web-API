@@ -23,7 +23,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("{areaId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AreaResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -43,7 +43,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPost]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AreaResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -63,7 +63,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPut("{areaId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AreaResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -85,7 +85,7 @@ namespace Olymp_Project.Controllers
 
 
         [HttpDelete("{areaId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

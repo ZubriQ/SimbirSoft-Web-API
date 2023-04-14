@@ -20,7 +20,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AreaResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

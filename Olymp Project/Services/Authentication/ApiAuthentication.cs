@@ -11,7 +11,7 @@ namespace Olymp_Project.Services.Authentication
             string header = request.Headers["Authorization"];
             if (header is not null && header.StartsWith("Basic"))
             {
-                var authResult = await httpContext.AuthenticateAsync(Constants.BasicAuthenticationScheme);
+                var authResult = await httpContext.AuthenticateAsync(Constants.BasicAuthScheme);
                 return authResult.Succeeded;
             }
             return true;

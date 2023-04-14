@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace Olymp_Project.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
     [Route("accounts")]
     [ApiController]
     public class AccountsController : ControllerBase
@@ -23,28 +23,35 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("{accountId:int}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
-        [AllowAnonymous]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AccountResponseDto>> GetAccount([FromRoute] int? accountId)
         {
-            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if ((userRole == "USER" || userRole == "CHIPPER") && accountId!.Value.ToString() != userId)
             {
-                return Unauthorized();
+                return Forbid();
             }
 
             var response = await _service.GetAccountByIdAsync(accountId!.Value);
+
+            if (response.StatusCode == HttpStatusCode.NotFound && userRole == "ADMIN")
+            {
+                return NotFound();
+            }
 
             var accountDto = _mapper.Map<AccountResponseDto>(response.Data);
             return ResponseHelper.GetActionResult(response.StatusCode, accountDto);
         }
 
         [HttpGet("search")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
-        [AllowAnonymous]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountResponseDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -53,25 +60,14 @@ namespace Olymp_Project.Controllers
             [FromQuery] AccountQuery query,
             [FromQuery] Paging paging)
         {
-            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
-            {
-                return Unauthorized();
-            }
-
-            //var role = HttpContext.User.FindFirstValue(ClaimTypes.Role);
-            //if (role is not null && (role != "ADMIN"))
-            //{
-            //    return Forbid();
-            //}
-
             var response = _service.GetAccounts(query, paging);
-
+            // TODO: task
             var accountsDto = response.Data!.Select(a => _mapper.Map<AccountResponseDto>(a));
             return ResponseHelper.GetActionResult(response.StatusCode, accountsDto);
         }
 
         [HttpPost]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -79,11 +75,6 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AccountResponseDto>> CreateAccount([FromBody] AccountRequestDto request)
         {
-            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
-            {
-                return Unauthorized();
-            }
-
             var response = await _service.InsertAccountAsync(request);
 
             var accountDto = _mapper.Map<AccountResponseDto>(response.Data);
@@ -91,49 +82,58 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPut("{accountId:int}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AccountResponseDto>> UpdateAccount(
             [FromRoute] int? accountId,
             [FromBody] AccountRequestDto request)
         {
-            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if ((userRole == "USER" || userRole == "CHIPPER") && accountId.ToString() != userId)
             {
-                return Unauthorized();
+                return Forbid();
             }
 
-            //var role = HttpContext.User.FindFirstValue(ClaimTypes.Role);
-            //if (role is not null && (role != ))
-            //{
-
-            //}
-
-            var response = await _service.UpdateAccountAsync(
-                accountId!.Value, request, User.Identity as ClaimsIdentity);
+            var response = await _service.UpdateAccountAsync(accountId, request);
+            if (response.StatusCode == HttpStatusCode.NotFound && userRole == "ADMIN")
+            {
+                return NotFound();
+            }
 
             var accountDto = _mapper.Map<AccountResponseDto>(response.Data);
             return ResponseHelper.GetActionResult(response.StatusCode, accountDto);
         }
 
         [HttpDelete("{accountId:int}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteAccount([FromRoute] int? accountId)
         {
-            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if ((userRole == "USER" || userRole == "CHIPPER") && accountId.ToString() != userId)
             {
-                return Unauthorized();
+                return Forbid();
             }
 
-            var statusCode = await _service.RemoveAccountAsync(
-                accountId!.Value, User.Identity as ClaimsIdentity);
+            var statusCode = await _service.RemoveAccountAsync(accountId);
+            if (statusCode == HttpStatusCode.NotFound && userRole == "ADMIN")
+            {
+                return NotFound();
+            }
+
             return ResponseHelper.GetActionResult(statusCode);
         }
     }
