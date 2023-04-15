@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Helpers;
-using Olymp_Project.Services.Authentication;
 using Olymp_Project.Services.Locations;
 
 namespace Olymp_Project.Controllers
@@ -46,16 +45,12 @@ namespace Olymp_Project.Controllers
         public async Task<ActionResult<long>> GetLocationIdByCoordinates(
             [FromQuery] LocationRequestDto request)
         {
-            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
-            {
-                return Unauthorized();
-            }
-
             var response = await _service.GetLocationIdByCoordinatesAsync(request);
             if (response.StatusCode is HttpStatusCode.OK)
             {
                 return ResponseHelper.GetActionResult(HttpStatusCode.OK, response.Data!.Id);
-            }    
+            }
+
             return ResponseHelper.GetActionResult(response.StatusCode);
         }
 
@@ -120,11 +115,6 @@ namespace Olymp_Project.Controllers
         public async Task<ActionResult<string>> GetGeohashByCoordinates(
             [FromQuery] LocationRequestDto request)
         {
-            if (!ApiAuthentication.IsAuthorizationValid(Request, HttpContext).Result)
-            {
-                return Unauthorized();
-            }
-
             var response = await _service.GetLocationIdByCoordinatesAsync(request);
             if (response.StatusCode is not HttpStatusCode.OK)
             {
@@ -144,11 +134,6 @@ namespace Olymp_Project.Controllers
         public async Task<ActionResult<string>> GetGeohashByCoordinatesV2(
             [FromQuery] LocationRequestDto request)
         {
-            if (!ApiAuthentication.IsAuthorizationValid(Request, HttpContext).Result)
-            {
-                return Unauthorized();
-            }
-
             var response = await _service.GetLocationIdByCoordinatesAsync(request);
             if (response.StatusCode is not HttpStatusCode.OK)
             {
@@ -168,11 +153,6 @@ namespace Olymp_Project.Controllers
         public async Task<ActionResult<string>> GetGeohashByCoordinatesV3(
             [FromQuery] LocationRequestDto request)
         {
-            if (!ApiAuthentication.IsAuthorizationValid(Request, HttpContext).Result)
-            {
-                return Unauthorized();
-            }
-
             var response = await _service.GetLocationIdByCoordinatesAsync(request);
             if (response.StatusCode is not HttpStatusCode.OK)
             {

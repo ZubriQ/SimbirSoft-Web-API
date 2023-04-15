@@ -1,5 +1,4 @@
-﻿using Olymp_Project.Dtos.AreaAnalytics;
-using Olymp_Project.Responses;
+﻿using Olymp_Project.Responses;
 
 namespace Olymp_Project.Services.AreaAnalytics
 {

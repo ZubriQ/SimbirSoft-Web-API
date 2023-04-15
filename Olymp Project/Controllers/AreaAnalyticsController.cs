@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Olymp_Project.Helpers;
 using Olymp_Project.Services.AreaAnalytics;
-using Olymp_Project.Services.Authentication;
 
 namespace Olymp_Project.Controllers
 {
@@ -20,23 +19,16 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AreaResponseDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AreaAnalyticsResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<AreaResponseDto>> GetArea(
+        public async Task<ActionResult<AreaAnalyticsResponseDto>> GetAreaAnalytics(
             [FromRoute] long? areaId,
             [FromQuery] AreaAnalyticsQuery query)
         {
-            if (!await ApiAuthentication.IsAuthorizationValid(Request, HttpContext))
-            {
-                return Unauthorized();
-            }
-
             var response = await _service.GetAnalyticsByAreaIdAsync(areaId!.Value, query);
-            
-            return ResponseHelper.GetActionResult(
-                response.StatusCode, response.Data);
+            return ResponseHelper.GetActionResult(response.StatusCode, response.Data);
         }
     }
 }
