@@ -21,7 +21,14 @@ namespace Olymp_Project.Helpers
                 case HttpStatusCode.Created:
                     return new CreatedAtActionResult(actionName, null, null, value);
                 case HttpStatusCode.BadRequest:
-                    return new BadRequestResult();
+                    if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        return new ObjectResult(errorMessage) { StatusCode = 400 };
+                    }
+                    else
+                    {
+                        return new BadRequestResult();
+                    }
                 case HttpStatusCode.Unauthorized:
                     return new UnauthorizedResult();
                 case HttpStatusCode.Forbidden:

@@ -1,6 +1,6 @@
 ﻿namespace Olymp_Project.Helpers.Validators
 {
-    public static class AreaValidator
+    public static class AreaRequestValidator
     {
         public static bool IsValid(AreaRequestDto request)
         {
