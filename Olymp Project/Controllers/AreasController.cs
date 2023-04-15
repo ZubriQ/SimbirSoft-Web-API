@@ -68,7 +68,6 @@ namespace Olymp_Project.Controllers
             return ResponseHelper.GetActionResult(response.StatusCode, kindDto, errorMessage: response.ErrorMessage);
         }
 
-
         [HttpDelete("{areaId:long}")]
         [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = Constants.Admin)]
         [ProducesResponseType(StatusCodes.Status200OK)]

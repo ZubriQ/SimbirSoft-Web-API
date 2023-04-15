@@ -1,7 +1,7 @@
 ﻿using NetTopologySuite.Geometries;
 using NpgsqlTypes;
-using Olymp_Project.Helpers;
 using Olymp_Project.Helpers.Validators;
+using Olymp_Project.Mapping;
 using Olymp_Project.Responses;
 
 namespace Olymp_Project.Services.Areas
@@ -9,6 +9,7 @@ namespace Olymp_Project.Services.Areas
     public class AreaService : IAreaService
     {
         private readonly ChipizationDbContext _db;
+        private readonly AreaMapper _mapper = new();
 
         public AreaService(ChipizationDbContext db)
         {
@@ -43,37 +44,57 @@ namespace Olymp_Project.Services.Areas
                 return new ServiceResponse<Area>(HttpStatusCode.BadRequest);
             }
 
-            if (await _db.Areas.AnyAsync(a => a.Name == request.Name))
+            var area = _mapper.ToArea(request);
+
+            if (await IsAlreadyExists(area))
             {
                 return new ServiceResponse<Area>(HttpStatusCode.Conflict);
             }
 
-            Area area = ToArea(request);
+            if (!IsCreateAreaGeometryValid(area))
+            {
+                return new ServiceResponse<Area>(HttpStatusCode.BadRequest);
+            }
 
-            if (PointsAreCollinear(area.Points)) 
-                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PointsAreCollinear");
+            return await AddAreaToDatabase(area);
+        }
 
-            if (PolygonHasOverlappingEdges(area.Points))
-                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PolygonHasOverlappingEdges");
-
-            if (PolygonIntersectsExistingPolygon(area.Points))
-                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PolygonIntersectsExistingPolygon");
-
-            if (PolygonHasDuplicatePoints(area.Points))
-                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PolygonHasDuplicatePoints");
-
-            if (PolygonSharesPointsWithExistingPolygon(area.Points))
-                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PolygonSharesPointsWithExistingPolygon");
+        private async Task<bool> IsAlreadyExists(Area area)
+        {
+            if (await _db.Areas.AnyAsync(a => a.Name == area.Name))
+            {
+                return true;
+            }
 
             var existingAreas = _db.Areas.AsEnumerable();
             if (existingAreas.Any(a => ArePolygonsEqual(a.Points, area.Points)))
-                return new ServiceResponse<Area>(HttpStatusCode.Conflict, errorMessage: "ArePolygonsEqual");
+            {
+                return true;
+            }
 
+            return false;
+        }
+
+        private bool IsCreateAreaGeometryValid(Area area)
+        {
+            if (PointsAreCollinear(area.Points) ||
+                PolygonHasOverlappingEdges(area.Points) ||
+                PolygonIntersectsExistingPolygon(area.Points) ||
+                PolygonHasDuplicatePoints(area.Points) ||
+                PolygonSharesPointsWithExistingPolygon(area.Points))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task<ServiceResponse<Area>> AddAreaToDatabase(Area area)
+        {
             try
             {
                 _db.Areas.Add(area);
                 await _db.SaveChangesAsync();
-
                 return new ServiceResponse<Area>(HttpStatusCode.Created, area);
             }
             catch (Exception)
@@ -82,61 +103,60 @@ namespace Olymp_Project.Services.Areas
             }
         }
 
-        public static Area ToArea(AreaRequestDto request)
-        {
-            var npgsqlPoints = request.AreaPoints!
-                .Select(AreaPointHelper.ToNpgsqlPoint)
-                .ToArray();
-            var npgsqlPolygon = new NpgsqlPolygon(npgsqlPoints);
-
-            return new Area
-            {
-                Name = request.Name!,
-                Points = npgsqlPolygon
-            };
-        }
+        #region Geometry Validation
 
         private bool PointsAreCollinear(NpgsqlPolygon polygon)
         {
-            if (polygon.Count < 3)
+            int pointCount = polygon.Count;
+            if (pointCount < 3)
             {
                 return true;
             }
 
-            NpgsqlPoint firstPoint = polygon[0];
-            NpgsqlPoint secondPoint = polygon[1];
-
-            for (int i = 2; i < polygon.Count; i++)
+            for (int i = 0; i < pointCount - 2; i++)
             {
-                NpgsqlPoint thirdPoint = polygon[i];
-
-                // Calculate the cross product for consecutive points
-                double crossProduct = (secondPoint.X - firstPoint.X) * (thirdPoint.Y - firstPoint.Y) -
-                                      (secondPoint.Y - firstPoint.Y) * (thirdPoint.X - firstPoint.X);
+                NpgsqlPoint firstPoint = polygon[i];
+                NpgsqlPoint secondPoint = polygon[i + 1];
+                NpgsqlPoint thirdPoint = polygon[i + 2];
 
                 // If the cross product is not zero, points are not collinear
-                if (Math.Abs(crossProduct) > 1e-9)
+                if (!ArePointsCollinear(firstPoint, secondPoint, thirdPoint))
                 {
                     return false;
                 }
-
-                firstPoint = secondPoint;
-                secondPoint = thirdPoint;
             }
 
             return true;
         }
 
+        private bool ArePointsCollinear(NpgsqlPoint firstPoint, NpgsqlPoint secondPoint, NpgsqlPoint thirdPoint)
+        {
+            // Cross product for consecutive points
+            double crossProduct = (secondPoint.X - firstPoint.X) * (thirdPoint.Y - firstPoint.Y) -
+                                  (secondPoint.Y - firstPoint.Y) * (thirdPoint.X - firstPoint.X);
+
+            return Math.Abs(crossProduct) <= 1e-9;
+        }
+
         private bool PolygonHasOverlappingEdges(NpgsqlPolygon polygon)
         {
-            LineString? polygonBoundary = ToPolygonGeometry(polygon).Boundary as LineString;
+            LineString? polygonBoundary = _mapper.ToPolygonGeometry(polygon).Boundary as LineString;
             GeometryFactory geometryFactory = new GeometryFactory();
-            for (int i = 0; i < polygonBoundary!.NumPoints - 1; i++)
+            int numPoints = polygonBoundary!.NumPoints;
+
+            return CheckForOverlapping(polygonBoundary, geometryFactory, numPoints);
+        }
+
+        private bool CheckForOverlapping(LineString boundary, GeometryFactory factory, int numPoints)
+        {
+            for (int i = 0; i < numPoints - 1; i++)
             {
-                LineString lineSegment1 = geometryFactory.CreateLineString(new Coordinate[] { polygonBoundary.GetCoordinateN(i), polygonBoundary.GetCoordinateN(i + 1) });
-                for (int j = i + 1; j < polygonBoundary.NumPoints - 1; j++)
+                LineString lineSegment1 = CreateLineSegment(factory, boundary, i);
+
+                for (int j = i + 1; j < numPoints - 1; j++)
                 {
-                    LineString lineSegment2 = geometryFactory.CreateLineString(new Coordinate[] { polygonBoundary.GetCoordinateN(j), polygonBoundary.GetCoordinateN(j + 1) });
+                    LineString lineSegment2 = CreateLineSegment(factory, boundary, j);
+
                     if (lineSegment1.Intersects(lineSegment2) && !lineSegment1.Touches(lineSegment2))
                     {
                         return true;
@@ -146,9 +166,20 @@ namespace Olymp_Project.Services.Areas
             return false;
         }
 
+        private LineString CreateLineSegment(GeometryFactory factory, LineString polygonBoundary, int index)
+        {
+            Coordinate[] coordinates = new[]
+            {
+                polygonBoundary.GetCoordinateN(index),
+                polygonBoundary.GetCoordinateN(index + 1)
+            };
+            return factory.CreateLineString(coordinates);
+        }
+
+        // TODO: Test this method
         private bool PolygonIntersectsExistingPolygon(NpgsqlPolygon newPolygon, long? excludedAreaId = null)
         {
-            Polygon newPolygonGeometry = ToPolygonGeometry(newPolygon);
+            Polygon newPolygonGeometry = _mapper.ToPolygonGeometry(newPolygon);
             foreach (var existingArea in _db.Areas)
             {
                 if (excludedAreaId.HasValue && existingArea.Id == excludedAreaId.Value)
@@ -156,7 +187,7 @@ namespace Olymp_Project.Services.Areas
                     continue;
                 }
 
-                Polygon existingPolygonGeometry = ToPolygonGeometry(existingArea.Points);
+                Polygon existingPolygonGeometry = _mapper.ToPolygonGeometry(existingArea.Points);
                 if (newPolygonGeometry.Relate(existingPolygonGeometry, "T********"))
                 {
                     return true;
@@ -165,36 +196,16 @@ namespace Olymp_Project.Services.Areas
             return false;
         }
 
-        private Polygon ToPolygonGeometry(NpgsqlPolygon npgsqlPolygon)
-        {
-            var coordinates = new Coordinate[npgsqlPolygon.Count + 1];
-            for (int i = 0; i < npgsqlPolygon.Count; i++)
-            {
-                coordinates[i] = new Coordinate(npgsqlPolygon[i].X, npgsqlPolygon[i].Y);
-            }
-            coordinates[npgsqlPolygon.Count] = coordinates[0]; 
-
-            var geometryFactory = new GeometryFactory();
-            return geometryFactory.CreatePolygon(coordinates);
-        }
-
         private bool PolygonHasDuplicatePoints(NpgsqlPolygon polygon)
         {
-            var pointSet = new HashSet<NpgsqlPoint>();
-            foreach (var point in polygon)
-            {
-                if (pointSet.Contains(point))
-                {
-                    return true;
-                }
-                pointSet.Add(point);
-            }
-            return false;
+            var pointSet = new HashSet<NpgsqlPoint>(polygon);
+            return pointSet.Count < polygon.Count;
         }
 
+        // TODO: refactor if have time
         private bool PolygonSharesPointsWithExistingPolygon(NpgsqlPolygon newPolygon, long? excludedAreaId = null)
         {
-            Polygon currentPolygon = ToPolygonGeometry(newPolygon);
+            Polygon currentPolygon = _mapper.ToPolygonGeometry(newPolygon);
             var existingAreas = _db.Areas.AsEnumerable();
 
             foreach (var existingArea in existingAreas)
@@ -204,7 +215,7 @@ namespace Olymp_Project.Services.Areas
                     continue;
                 }
 
-                Polygon existingPolygon = ToPolygonGeometry(existingArea.Points);
+                Polygon existingPolygon = _mapper.ToPolygonGeometry(existingArea.Points);
                 if (currentPolygon.CoveredBy(existingPolygon) ||
                     existingPolygon.CoveredBy(currentPolygon))
                 {
@@ -221,50 +232,48 @@ namespace Olymp_Project.Services.Areas
                 return false;
             }
 
+            return PolygonsHaveMatchingVertices(polygon1, polygon2) ||
+                   PolygonsHaveMatchingVertices(polygon1, ReversePolygon(polygon2));
+        }
+
+        private bool PolygonsHaveMatchingVertices(NpgsqlPolygon polygon1, NpgsqlPolygon polygon2)
+        {
             for (int i = 0; i < polygon1.Count; i++)
             {
-                bool foundMatch = true;
-                for (int j = 0; j < polygon1.Count; j++)
-                {
-                    if (polygon1[(i + j) % polygon1.Count] != polygon2[j])
-                    {
-                        foundMatch = false;
-                        break;
-                    }
-                }
-
-                if (foundMatch)
+                if (VerticesMatch(polygon1, polygon2, i))
                 {
                     return true;
                 }
             }
-
-            // Check for reversed order
-            for (int i = 0; i < polygon1.Count; i++)
-            {
-                bool foundMatch = true;
-                for (int j = 0; j < polygon1.Count; j++)
-                {
-                    if (polygon1[(i + j) % polygon1.Count] != polygon2[polygon2.Count - 1 - j])
-                    {
-                        foundMatch = false;
-                        break;
-                    }
-                }
-
-                if (foundMatch)
-                {
-                    return true;
-                }
-            }
-
             return false;
         }
+
+        private bool VerticesMatch(NpgsqlPolygon polygon1, NpgsqlPolygon polygon2, int offset)
+        {
+            for (int j = 0; j < polygon1.Count; j++)
+            {
+                if (polygon1[(offset + j) % polygon1.Count] != polygon2[j])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private NpgsqlPolygon ReversePolygon(NpgsqlPolygon polygon)
+        {
+            var reversedPolygon = new NpgsqlPolygon(polygon);
+            reversedPolygon.Reverse();
+            return reversedPolygon;
+        }
+
+        #endregion
 
         #endregion
 
         #region Update
 
+        // TODO: refactor
         public async Task<IServiceResponse<Area>> UpdateAreaByIdAsync(long? areaId, AreaRequestDto request)
         {
             if (!IdValidator.IsValid(areaId) || !AreaRequestValidator.IsValid(request))
@@ -272,47 +281,41 @@ namespace Olymp_Project.Services.Areas
                 return new ServiceResponse<Area>(HttpStatusCode.BadRequest);
             }
 
-            if (await _db.Areas.FindAsync(areaId) is not Area existingArea)
+            if (await _db.Areas.FindAsync(areaId) is not Area updatedArea)
             {
                 return new ServiceResponse<Area>(HttpStatusCode.NotFound);
             }
 
-            Area updatedArea = ToArea(request);
+            var area = _mapper.ToArea(request);
 
             var existingAreas = _db.Areas.AsEnumerable();
             if (existingAreas.Any(a => ArePolygonsEqual(a.Points, updatedArea.Points) && a.Id != areaId!.Value))
-            {
                 return new ServiceResponse<Area>(HttpStatusCode.Conflict);
-            }
-
-            if (PolygonSharesPointsWithExistingPolygon(updatedArea.Points, areaId))
-            {
-                return new ServiceResponse<Area>(HttpStatusCode.BadRequest);
-            }
-
-            if (PointsAreCollinear(updatedArea.Points))
-                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PointsAreCollinear");
-
-            if (PolygonHasOverlappingEdges(updatedArea.Points))
-                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PolygonHasOverlappingEdges");
-
-            if (PolygonIntersectsExistingPolygon(updatedArea.Points, areaId))
-                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PolygonIntersectsExistingPolygon");
-
-            if (PolygonHasDuplicatePoints(updatedArea.Points))
-                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PolygonHasDuplicatePoints");
 
             if (await _db.Areas.AnyAsync(a => a.Name == request.Name))
                 return new ServiceResponse<Area>(HttpStatusCode.Conflict, errorMessage: "Name already exists");
 
-            // Update the area
-            existingArea.Name = updatedArea.Name;
-            existingArea.Points = updatedArea.Points;
+            if (PolygonSharesPointsWithExistingPolygon(area.Points, areaId)) // areaId
+                return new ServiceResponse<Area>(HttpStatusCode.BadRequest);
+
+            if (PointsAreCollinear(area.Points))
+                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PointsAreCollinear");
+
+            if (PolygonHasOverlappingEdges(area.Points))
+                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PolygonHasOverlappingEdges");
+
+            if (PolygonIntersectsExistingPolygon(area.Points, areaId)) // areaId
+                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PolygonIntersectsExistingPolygon");
+
+            if (PolygonHasDuplicatePoints(area.Points))
+                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PolygonHasDuplicatePoints");
 
             try
             {
+                updatedArea.Name = area.Name;
+                updatedArea.Points = area.Points;
                 await _db.SaveChangesAsync();
-                return new ServiceResponse<Area>(HttpStatusCode.OK, existingArea);
+                return new ServiceResponse<Area>(HttpStatusCode.OK, updatedArea);
             }
             catch (Exception)
             {

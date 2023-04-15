@@ -9,7 +9,12 @@
                 return false;
             }
 
-            return ValidatePoints(request.AreaPoints);
+            if (!ValidatePoints(request.AreaPoints))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private static bool ValidatePoints(AreaPointsDto[] areaPoints)
