@@ -56,7 +56,7 @@ namespace Olymp_Project.Controllers
 
 
         [HttpPost]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN,CHIPPER")]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = $"{Constants.Admin},{Constants.Chipper}")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(LocationResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -72,7 +72,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPut("{locationId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN,CHIPPER")]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = $"{Constants.Admin},{Constants.Chipper}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(LocationResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -90,7 +90,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpDelete("{locationId:long}")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN")]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = Constants.Admin)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

@@ -33,14 +33,14 @@ namespace Olymp_Project.Controllers
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if ((userRole == "USER" || userRole == "CHIPPER") && accountId!.Value.ToString() != userId)
+            if ((userRole == Constants.User || userRole == Constants.Chipper) && accountId!.Value.ToString() != userId)
             {
                 return Forbid();
             }
 
             var response = await _service.GetAccountByIdAsync(accountId!.Value);
 
-            if (response.StatusCode == HttpStatusCode.NotFound && userRole == "ADMIN")
+            if (response.StatusCode == HttpStatusCode.NotFound && userRole == Constants.Admin)
             {
                 return NotFound();
             }
@@ -50,7 +50,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpGet("search")]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN")]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = Constants.Admin)]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountResponseDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -66,7 +66,7 @@ namespace Olymp_Project.Controllers
         }
 
         [HttpPost]
-        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN")]
+        [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = Constants.Admin)]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(AccountResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -95,13 +95,13 @@ namespace Olymp_Project.Controllers
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if ((userRole == "USER" || userRole == "CHIPPER") && accountId.ToString() != userId)
+            if ((userRole == Constants.User || userRole == Constants.Chipper) && accountId.ToString() != userId)
             {
                 return Forbid();
             }
 
             var response = await _service.UpdateAccountAsync(accountId, request);
-            if (response.StatusCode == HttpStatusCode.NotFound && userRole == "ADMIN")
+            if (response.StatusCode == HttpStatusCode.NotFound && userRole == Constants.Admin)
             {
                 return NotFound();
             }
@@ -122,13 +122,13 @@ namespace Olymp_Project.Controllers
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if ((userRole == "USER" || userRole == "CHIPPER") && accountId.ToString() != userId)
+            if ((userRole == Constants.User || userRole == Constants.Chipper) && accountId.ToString() != userId)
             {
                 return Forbid();
             }
 
             var statusCode = await _service.RemoveAccountAsync(accountId);
-            if (statusCode == HttpStatusCode.NotFound && userRole == "ADMIN")
+            if (statusCode == HttpStatusCode.NotFound && userRole == Constants.Admin)
             {
                 return NotFound();
             }

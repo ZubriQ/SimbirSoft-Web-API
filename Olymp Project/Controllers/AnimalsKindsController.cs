@@ -6,7 +6,7 @@ using Olymp_Project.Services.AnimalsKinds;
 
 namespace Olymp_Project.Controllers
 {
-    [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = "ADMIN,CHIPPER")]
+    [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = $"{Constants.Admin},{Constants.Chipper}")]
     [Route("animals/{animalId:long}/types/")]
     [ApiController]
     public class AnimalsKindsController : ControllerBase
