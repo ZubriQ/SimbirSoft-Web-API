@@ -1,8 +1,9 @@
+#region Usings
+
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
+using Npgsql;
 using Olymp_Project.Authentication;
 using Olymp_Project.Services.Accounts;
 using Olymp_Project.Services.Animals;
@@ -14,6 +15,7 @@ using Olymp_Project.Services.Locations;
 using Olymp_Project.Services.Registration;
 using Olymp_Project.Services.VisitedLocations;
 
+#endregion
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,24 +57,24 @@ builder.Services.AddAuthentication(Constants.BasicAuthScheme)
 
 #region Configurate Database
 
-//builder.Services
-//    .AddHealthChecks()
-//    .AddCheck("SQL Server Check", () =>
-//    {
-//        try
-//        {
-//            var connectionString = builder.Configuration.GetConnectionString("PostgreSQL");
-//            using (var connection = new SqlConnection(connectionString))
-//            {
-//                connection.Open();
-//            }
-//            return HealthCheckResult.Healthy("SQL Server is healthy.");
-//        }
-//        catch (Exception)
-//        {
-//            return HealthCheckResult.Unhealthy("SQL Server is unhealthy.");
-//        }
-//    });
+builder.Services
+    .AddHealthChecks()
+    .AddCheck("PostgreSQL Check", () =>
+    {
+        try
+        {
+            var connectionString = builder.Configuration.GetConnectionString("PostgreSQL");
+            using (var connection = new NpgsqlConnection(connectionString))
+            {
+                connection.Open();
+            }
+            return HealthCheckResult.Healthy("PostgreSQL is healthy.");
+        }
+        catch (Exception)
+        {
+            return HealthCheckResult.Unhealthy("PostgreSQL is unhealthy.");
+        }
+    });
 
 string connection = builder.Configuration.GetConnectionString("PostgreSQL");
 builder.Services.AddSqlServer<ChipizationDbContext>(connection);
@@ -106,19 +108,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-else
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var services = scope.ServiceProvider;
 
-        var context = services.GetRequiredService<ChipizationDbContext>();
-        if (context.Database.IsNpgsql())
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<ChipizationDbContext>();
+    if (context.Database.IsNpgsql())
+    {
+        if (context.Database.GetPendingMigrations().Any())
         {
-            if (context.Database.GetPendingMigrations().Any())
-            {
-                context.Database.EnsureCreated();
-            }
+            context.Database.EnsureCreated();
         }
     }
 }
@@ -129,6 +129,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-//app.MapHealthChecks("/health");
+app.MapHealthChecks("/health");
 
 app.Run();
