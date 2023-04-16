@@ -46,28 +46,40 @@ namespace Olymp_Project.Services.Areas
 
             var area = _mapper.ToArea(request);
 
-            if (await IsAlreadyExists(area))
+            var validationResponse = await ValidateAreaAsync(area);
+            if (validationResponse is not HttpStatusCode.OK)
             {
-                return new ServiceResponse<Area>(HttpStatusCode.Conflict);
+                return new ServiceResponse<Area>(validationResponse);
             }
 
-            if (!IsCreateAreaGeometryValid(area))
-            {
-                return new ServiceResponse<Area>(HttpStatusCode.BadRequest);
-            }
-
-            return await AddAreaToDatabase(area);
+            return await AddAreaToDatabaseAsync(area);
         }
 
-        private async Task<bool> IsAlreadyExists(Area area)
+        private async Task<HttpStatusCode> ValidateAreaAsync(Area area, long? areaId = null)
         {
-            if (await _db.Areas.AnyAsync(a => a.Name == area.Name))
+            if (await IsAlreadyExists(area, areaId))
+            {
+                return HttpStatusCode.Conflict;
+            }
+
+            if (!IsAreaGeometryValid(area, areaId))
+            {
+                return HttpStatusCode.BadRequest;
+            }
+
+            return HttpStatusCode.OK;
+        }
+
+        private async Task<bool> IsAlreadyExists(Area area, long? areaId = null)
+        {
+            if (await _db.Areas.AnyAsync(a => a.Name == area.Name && (!areaId.HasValue || a.Id != areaId.Value)))
             {
                 return true;
             }
 
             var existingAreas = _db.Areas.AsEnumerable();
-            if (existingAreas.Any(a => ArePolygonsEqual(a.Points, area.Points)))
+            if (existingAreas
+                .Any(a => ArePolygonsEqual(a.Points, area.Points) && (!areaId.HasValue || a.Id != areaId.Value)))
             {
                 return true;
             }
@@ -75,13 +87,13 @@ namespace Olymp_Project.Services.Areas
             return false;
         }
 
-        private bool IsCreateAreaGeometryValid(Area area)
+        private bool IsAreaGeometryValid(Area area, long? areaId = null)
         {
             if (PointsAreCollinear(area.Points) ||
                 PolygonHasOverlappingEdges(area.Points) ||
-                PolygonIntersectsExistingPolygon(area.Points) ||
+                PolygonIntersectsExistingPolygon(area.Points, areaId) ||
                 PolygonHasDuplicatePoints(area.Points) ||
-                PolygonSharesPointsWithExistingPolygon(area.Points))
+                PolygonSharesPointsWithExistingPolygon(area.Points, areaId))
             {
                 return false;
             }
@@ -89,7 +101,7 @@ namespace Olymp_Project.Services.Areas
             return true;
         }
 
-        private async Task<ServiceResponse<Area>> AddAreaToDatabase(Area area)
+        private async Task<ServiceResponse<Area>> AddAreaToDatabaseAsync(Area area)
         {
             try
             {
@@ -273,7 +285,6 @@ namespace Olymp_Project.Services.Areas
 
         #region Update
 
-        // TODO: refactor
         public async Task<IServiceResponse<Area>> UpdateAreaByIdAsync(long? areaId, AreaRequestDto request)
         {
             if (!IdValidator.IsValid(areaId) || !AreaRequestValidator.IsValid(request))
@@ -281,41 +292,30 @@ namespace Olymp_Project.Services.Areas
                 return new ServiceResponse<Area>(HttpStatusCode.BadRequest);
             }
 
-            if (await _db.Areas.FindAsync(areaId) is not Area updatedArea)
+            if (await _db.Areas.FindAsync(areaId) is not Area areaToUpdate)
             {
                 return new ServiceResponse<Area>(HttpStatusCode.NotFound);
             }
 
             var area = _mapper.ToArea(request);
 
-            var existingAreas = _db.Areas.AsEnumerable();
-            if (existingAreas.Any(a => ArePolygonsEqual(a.Points, updatedArea.Points) && a.Id != areaId!.Value))
-                return new ServiceResponse<Area>(HttpStatusCode.Conflict);
+            var validationResponse = await ValidateAreaAsync(area, areaId);
+            if (validationResponse is not HttpStatusCode.OK)
+            {
+                return new ServiceResponse<Area>(validationResponse);
+            }
 
-            if (await _db.Areas.AnyAsync(a => a.Name == request.Name))
-                return new ServiceResponse<Area>(HttpStatusCode.Conflict, errorMessage: "Name already exists");
+            return await EditAreaInDatabaseAsync(areaToUpdate, area);
+        }
 
-            if (PolygonSharesPointsWithExistingPolygon(area.Points, areaId)) // areaId
-                return new ServiceResponse<Area>(HttpStatusCode.BadRequest);
-
-            if (PointsAreCollinear(area.Points))
-                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PointsAreCollinear");
-
-            if (PolygonHasOverlappingEdges(area.Points))
-                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PolygonHasOverlappingEdges");
-
-            if (PolygonIntersectsExistingPolygon(area.Points, areaId)) // areaId
-                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PolygonIntersectsExistingPolygon");
-
-            if (PolygonHasDuplicatePoints(area.Points))
-                return new ServiceResponse<Area>(HttpStatusCode.BadRequest, errorMessage: "PolygonHasDuplicatePoints");
-
+        private async Task<ServiceResponse<Area>> EditAreaInDatabaseAsync(Area areaToUpdate, Area area)
+        {
             try
             {
-                updatedArea.Name = area.Name;
-                updatedArea.Points = area.Points;
+                areaToUpdate.Name = area.Name;
+                areaToUpdate.Points = area.Points;
                 await _db.SaveChangesAsync();
-                return new ServiceResponse<Area>(HttpStatusCode.OK, updatedArea);
+                return new ServiceResponse<Area>(HttpStatusCode.OK, areaToUpdate);
             }
             catch (Exception)
             {
@@ -339,21 +339,21 @@ namespace Olymp_Project.Services.Areas
                 return HttpStatusCode.NotFound;
             }
 
+            return await RemoveAndSaveChangesAsync(existingArea);
+        }
+
+        private async Task<HttpStatusCode> RemoveAndSaveChangesAsync(Area area)
+        {
             try
             {
-                return await RemoveAndSaveChangesAsync(existingArea);
+                _db.Areas.Remove(area);
+                await _db.SaveChangesAsync();
+                return HttpStatusCode.OK;
             }
             catch (Exception)
             {
                 return HttpStatusCode.InternalServerError;
             }
-        }
-
-        private async Task<HttpStatusCode> RemoveAndSaveChangesAsync(Area area)
-        {
-            _db.Areas.Remove(area);
-            await _db.SaveChangesAsync();
-            return HttpStatusCode.OK;
         }
 
         #endregion
