@@ -49,7 +49,7 @@ services:
       - webapi
     environment:
       SERVER_URL: http://webapi:8080
-      STAGE: all
+      STAGE: 2
     networks:
       - webapi-network
     restart: always

@@ -5,6 +5,6 @@
         public long TotalQuantityAnimals { get; set; }
         public long TotalAnimalsArrived { get; set; }
         public long TotalAnimalsGone { get; set; }
-        public AnimalsAnalyticsDto[] AnimalsAnalytics { get; set; } = null!;
+        public List<AnimalsAnalyticsDto> AnimalsAnalytics { get; set; } = null!;
     }
 }

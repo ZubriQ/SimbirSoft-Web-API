@@ -28,7 +28,8 @@ namespace Olymp_Project.Controllers
             [FromQuery] AreaAnalyticsQuery query)
         {
             var response = await _service.GetAnalyticsByAreaIdAsync(areaId!.Value, query);
-            return ResponseHelper.GetActionResult(response.StatusCode, response.Data);
+            return ResponseHelper.GetActionResult(
+                response.StatusCode, response.Data, errorMessage: response.ErrorMessage);
         }
     }
 }

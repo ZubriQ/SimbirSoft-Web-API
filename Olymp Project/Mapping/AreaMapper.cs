@@ -1,22 +1,16 @@
 ﻿using NetTopologySuite.Geometries;
 using NpgsqlTypes;
-using Olymp_Project.Helpers;
 
 namespace Olymp_Project.Mapping
 {
     public class AreaMapper
     {
-        public Area ToArea(AreaRequestDto request)
+        public static AreaPointsDto ToAreaPointsDto(NpgsqlPoint point)
         {
-            var npgsqlPoints = request.AreaPoints!
-                .Select(AreaPointHelper.ToNpgsqlPoint)
-                .ToArray();
-            var npgsqlPolygon = new NpgsqlPolygon(npgsqlPoints);
-
-            return new Area
+            return new AreaPointsDto
             {
-                Name = request.Name!,
-                Points = npgsqlPolygon
+                Longitude = point.X,
+                Latitude = point.Y
             };
         }
 
@@ -31,6 +25,25 @@ namespace Olymp_Project.Mapping
 
             var geometryFactory = new GeometryFactory();
             return geometryFactory.CreatePolygon(coordinates);
+        }
+
+        public Area ToArea(AreaRequestDto request)
+        {
+            var npgsqlPoints = request.AreaPoints!
+                .Select(ToNpgsqlPoint)
+                .ToArray();
+            var npgsqlPolygon = new NpgsqlPolygon(npgsqlPoints);
+
+            return new Area
+            {
+                Name = request.Name!,
+                Points = npgsqlPolygon
+            };
+        }
+
+        private static NpgsqlPoint ToNpgsqlPoint(AreaPointsDto point)
+        {
+            return new NpgsqlPoint(point.Longitude!.Value, point.Latitude!.Value);
         }
     }
 }

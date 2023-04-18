@@ -14,7 +14,12 @@
                 return false;
             }
 
-            return IsStartDateLessThanEndDate(query.StartDate.Value, query.EndDate.Value);
+            if (query.StartDate.Value >= query.EndDate.Value)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private static bool IsValidDateFormat(DateTime date)
@@ -22,9 +27,9 @@
             return date.TimeOfDay == TimeSpan.Zero;
         }
 
-        private static bool IsStartDateLessThanEndDate(DateTime startDate, DateTime endDate)
-        {
-            return startDate < endDate;
-        }
+        //private static bool IsStartDateLessThanEndDate(DateTime startDate, DateTime endDate)
+        //{
+        //    return startDate <= endDate;
+        //}
     }
 }

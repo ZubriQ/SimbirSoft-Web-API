@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+  webapi:
+    image: olympproject:latest
+    ports:
+      - "8080:8080"
+    environment:
+      ConnectionStrings__PostgreSQL: "Host=host.docker.internal;Port=5432;Database=animal-chipization;Username=zubriq;Password=zubriq"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8080/health || exit 1"]
+      interval: 3s
+      timeout: 5s
+      retries: 100
+    restart: always
+
+  tests:
+    image: mrexpen/planet_olymp_phase2
+    pull_policy: always
+    ports:
+      - "8090:8080"
+    depends_on:
+      - webapi
+    environment:
+      SERVER_URL: http://webapi:8080
+      STAGE: all
+    restart: always

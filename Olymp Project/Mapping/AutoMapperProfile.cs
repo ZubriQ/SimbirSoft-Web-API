@@ -42,7 +42,7 @@ namespace Olymp_Project.Mapping
             // Area mapping
             CreateMap<Area, AreaResponseDto>()
                 .ForMember(d => d.AreaPoints, 
-                    o => o.MapFrom(s => s.Points.Select(AreaPointHelper.ToAreaPointsDto).ToArray()));
+                    o => o.MapFrom(s => s.Points.Select(AreaMapper.ToAreaPointsDto).ToArray()));
         }
     }
 }
