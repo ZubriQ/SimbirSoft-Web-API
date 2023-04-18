@@ -1,188 +1,56 @@
-﻿using NetTopologySuite.Geometries;
-using NpgsqlTypes;
+﻿using Olymp_Project.Helpers;
 using Olymp_Project.Helpers.Validators;
 using Olymp_Project.Responses;
-using Location = Olymp_Project.Models.Location;
 
 namespace Olymp_Project.Services.AreaAnalytics
 {
     public class AreaAnalyticsService : IAreaAnalyticsService
     {
         private readonly ChipizationDbContext _db;
-        private GeometryFactory _geometryFactory = new();
-        private DateTime _startDate;
-        private DateTime _endDate;
-        private List<NpgsqlPoint> _polygon;
+        private AreaAnalyzer _analyzer;
 
         public AreaAnalyticsService(ChipizationDbContext db)
         {
             _db = db;
+            _analyzer = new();
         }
 
         public async Task<IServiceResponse<AreaAnalyticsResponseDto>> GetAnalyticsByAreaIdAsync(
             long? areaId, AreaAnalyticsQuery query)
         {
-            try
+            if (!IsRequestValid(areaId, query))
             {
-                if (!IsRequestValid(areaId, query))
-                {
-                    return new ServiceResponse<AreaAnalyticsResponseDto>(HttpStatusCode.BadRequest);
-                }
-                if (await _db.Areas.FindAsync(areaId) is not Area area)
-                {
-                    return new ServiceResponse<AreaAnalyticsResponseDto>(HttpStatusCode.NotFound);
-                }
-                _startDate = query.StartDate!.Value.Date;
-                _endDate = query.EndDate!.Value.Date; // .AddDays(1); ?
-                _polygon = area.Points.ToList();
-                _polygon.Add(_polygon[0]);
-
-                var animals = await GetAllAnimalsAsync();
-                InitializeCompleteVisitedLocations(animals);
-                List<Animal> involvedAnimals = new List<Animal>();
-                long totalAnimalsArrived = 0;
-                long totalAnimalsGone = 0;
-                long totalQuantityAnimals = 0;
-
-                Dictionary<long, string> uniqueKinds = new Dictionary<long, string>();
-
-                // Kinds
-                Dictionary<long, int> kindCount = new Dictionary<long, int>();
-                Dictionary<long, (int arrived, int gone)> kindArrivedGone = new Dictionary<long, (int, int)>();
-
-                foreach (var animal in animals)
-                {
-                    var visitedLocations = new List<VisitedLocation> { new VisitedLocation { VisitDateTime = animal.ChippingDateTime, Location = animal.ChippingLocation } };
-                    visitedLocations.AddRange(animal.VisitedLocations
-                        .Where(vl => vl.VisitDateTime >= _startDate && vl.VisitDateTime <= _endDate)
-                        .OrderBy(vl => vl.VisitDateTime));
-
-                    AnimalStatus? status = null;
-
-                    bool isEarliestLocationInsideArea = IsLocationInsidePolygon(visitedLocations.First().Location);
-                    bool isLastLocationInsideArea = IsLocationInsidePolygon(visitedLocations.Last().Location);
-
-                    if (isEarliestLocationInsideArea && isLastLocationInsideArea)
-                    {
-                        status = AnimalStatus.Inside;
-                    }
-                    else if (!isEarliestLocationInsideArea && isLastLocationInsideArea)
-                    {
-                        status = AnimalStatus.Entered;
-                    }
-                    else if (isEarliestLocationInsideArea && !isLastLocationInsideArea)
-                    {
-                        status = AnimalStatus.Gone;
-                        totalAnimalsGone++;
-                    }
-
-                    if (status.HasValue && (status.Value == AnimalStatus.Entered || status.Value == AnimalStatus.Inside))
-                    {
-                        involvedAnimals.Add(animal);
-                        totalQuantityAnimals++; // Total quantity
-
-                        if (status.Value == AnimalStatus.Entered)
-                        {
-                            totalAnimalsArrived++;
-                        }
-
-                        // Also extract kinds
-                        foreach (var kind in animal.Kinds)
-                        {
-                            if (!uniqueKinds.ContainsKey(kind.Id))
-                            {
-                                uniqueKinds.Add(kind.Id, kind.Name);
-                                kindCount[kind.Id] = 0;
-                                kindArrivedGone[kind.Id] = (0, 0);
-                            }
-
-                            kindCount[kind.Id]++; // +
-
-                            if (status.HasValue && (status.Value == AnimalStatus.Entered || status.Value == AnimalStatus.Inside))
-                            {
-                                if (status.Value == AnimalStatus.Entered)
-                                {
-                                    kindArrivedGone[kind.Id] = (kindArrivedGone[kind.Id].arrived + 1, kindArrivedGone[kind.Id].gone);
-                                }
-                            }
-                            else if (isEarliestLocationInsideArea && !isLastLocationInsideArea)
-                            {
-                                kindArrivedGone[kind.Id] = (kindArrivedGone[kind.Id].arrived, kindArrivedGone[kind.Id].gone + 1);
-                            }
-                        }
-                    }
-                    else if (status.HasValue && status.Value == AnimalStatus.Gone)
-                    {
-                        // Also extract kinds
-                        foreach (var kind in animal.Kinds)
-                        {
-                            if (!uniqueKinds.ContainsKey(kind.Id))
-                            {
-                                uniqueKinds.Add(kind.Id, kind.Name);
-                                kindCount[kind.Id] = 0;
-                                kindArrivedGone[kind.Id] = (0, 0);
-                            }
-
-                            if (status.HasValue && (status.Value == AnimalStatus.Entered || status.Value == AnimalStatus.Inside))
-                            {
-                                if (status.Value == AnimalStatus.Entered)
-                                {
-                                    kindArrivedGone[kind.Id] = (kindArrivedGone[kind.Id].arrived + 1, kindArrivedGone[kind.Id].gone);
-                                }
-                            }
-                            else if (isEarliestLocationInsideArea && !isLastLocationInsideArea)
-                            {
-                                kindArrivedGone[kind.Id] = (kindArrivedGone[kind.Id].arrived, kindArrivedGone[kind.Id].gone + 1);
-                            }
-                        }
-                    }
-                }
-
-                var responseDto = new AreaAnalyticsResponseDto
-                {
-                    TotalQuantityAnimals = 0,
-                    TotalAnimalsArrived = 0,
-                    TotalAnimalsGone = 0,
-                    AnimalsAnalytics = new()
-                };
-                responseDto.TotalQuantityAnimals = totalQuantityAnimals;
-                responseDto.TotalAnimalsArrived = totalAnimalsArrived;
-                responseDto.TotalAnimalsGone = totalAnimalsGone;
-
-                // Code exracted kinds
-                foreach (var kind in uniqueKinds)
-                {
-                    responseDto.AnimalsAnalytics.Add(new AnimalsAnalyticsDto
-                    {
-                        AnimalKind = kind.Value,
-                        AnimalKindId = kind.Key,
-                        QuantityAnimals = kindCount[kind.Key],
-                        AnimalsArrived = kindArrivedGone[kind.Key].arrived,
-                        AnimalsGone = kindArrivedGone[kind.Key].gone
-                    });
-                }
-
-                return new ServiceResponse<AreaAnalyticsResponseDto>(HttpStatusCode.OK, responseDto);
+                return new ServiceResponse<AreaAnalyticsResponseDto>(HttpStatusCode.BadRequest);
             }
-            catch (Exception ex)
+
+            if (await _db.Areas.FindAsync(areaId) is not Area area)
             {
-                return new ServiceResponse<AreaAnalyticsResponseDto>(HttpStatusCode.InternalServerError, errorMessage: ex.Message);
+                return new ServiceResponse<AreaAnalyticsResponseDto>(HttpStatusCode.NotFound);
             }
+
+            return await GetAreaAnalytics(area, query);
         }
 
-        #region Methods
-
-        private bool IsLocationInsidePolygon(Location location)
-        {
-            return IsPointInPolygon(location.Longitude, location.Latitude);
-        }
-
-        #endregion
-
-        #region My Default Methods
         private bool IsRequestValid(long? areaId, AreaAnalyticsQuery query)
         {
             return IdValidator.IsValid(areaId) && AreaAnalyticsValidator.IsValid(query);
+        }
+
+        private async Task<IServiceResponse<AreaAnalyticsResponseDto>> GetAreaAnalytics(
+            Area area, AreaAnalyticsQuery query)
+        {
+            try
+            {
+                var animals = await GetAllAnimalsAsync();
+                InitializeCompleteVisitedLocations(animals);
+
+                var areaDataAnalysis = AnalyzeAreaData(area, query.StartDate!.Value, query.EndDate!.Value, animals);
+                return new ServiceResponse<AreaAnalyticsResponseDto>(HttpStatusCode.OK, areaDataAnalysis);
+            }
+            catch (Exception)
+            {
+                return new ServiceResponse<AreaAnalyticsResponseDto>();
+            }
         }
 
         private async Task<List<Animal>> GetAllAnimalsAsync()
@@ -210,28 +78,13 @@ namespace Olymp_Project.Services.AreaAnalytics
                 }
             }
         }
-        #endregion
 
-        #region Is Point In Polygon
-        private bool IsPointInPolygon(double x, double y)
+        private AreaAnalyticsResponseDto AnalyzeAreaData(
+            Area area, DateTime startDate, DateTime endDate, List<Animal> animals)
         {
-            var point = _geometryFactory.CreatePoint(new Coordinate(x, y));
-            var coordinates = _polygon.Select(p => new Coordinate(p.X, p.Y)).ToArray();
-            var linearRing = new LinearRing(coordinates);
-            var polygonShell = new Polygon(linearRing);
-            var polygonBoundary = (LineString)polygonShell.Boundary;
-
-            var distance = point.Distance(polygonBoundary);
-            var isInside = polygonShell.Contains(point) || Math.Abs(distance) < 1e-6;
-            return isInside;
+            _analyzer.SetInitialDates(startDate, endDate);
+            _analyzer.SetInitialData(area, animals);
+            return _analyzer.Analyze();
         }
-        #endregion
-    }
-
-    public enum AnimalStatus
-    {
-        Gone,
-        Entered,
-        Inside
     }
 }
