@@ -44,9 +44,14 @@ namespace Olymp_Project.Services.Areas
                 return new ServiceResponse<Area>(HttpStatusCode.BadRequest);
             }
 
+            if (await _db.Areas.AnyAsync(a => a.Name == request.Name))
+            {
+                return new ServiceResponse<Area>(HttpStatusCode.Conflict);
+            }
+
             var area = _mapper.ToArea(request);
 
-            var validationResponse = await ValidateAreaAsync(area);
+            var validationResponse = ValidateAreaAsync(area);
             if (validationResponse is not HttpStatusCode.OK)
             {
                 return new ServiceResponse<Area>(validationResponse);
@@ -55,28 +60,23 @@ namespace Olymp_Project.Services.Areas
             return await AddAreaToDatabaseAsync(area);
         }
 
-        private async Task<HttpStatusCode> ValidateAreaAsync(Area area, long? areaId = null)
+        private HttpStatusCode ValidateAreaAsync(Area area, long? areaId = null)
         {
-            if (await IsAlreadyExists(area, areaId))
-            {
-                return HttpStatusCode.Conflict;
-            }
-
             if (!IsAreaGeometryValid(area, areaId))
             {
                 return HttpStatusCode.BadRequest;
             }
 
+            if (IsPointsAlreadyExist(area, areaId))
+            {
+                return HttpStatusCode.Conflict;
+            }
+
             return HttpStatusCode.OK;
         }
 
-        private async Task<bool> IsAlreadyExists(Area area, long? areaId = null)
+        private bool IsPointsAlreadyExist(Area area, long? areaId = null)
         {
-            if (await _db.Areas.AnyAsync(a => a.Name == area.Name && (!areaId.HasValue || a.Id != areaId.Value)))
-            {
-                return true;
-            }
-
             var existingAreas = _db.Areas.AsEnumerable();
             if (existingAreas
                 .Any(a => ArePolygonsEqual(a.Points, area.Points) && (!areaId.HasValue || a.Id != areaId.Value)))
@@ -214,7 +214,7 @@ namespace Olymp_Project.Services.Areas
             return pointSet.Count < polygon.Count;
         }
 
-        // TODO: refactor if have time
+        // TODO: refactor
         private bool PolygonSharesPointsWithExistingPolygon(NpgsqlPolygon newPolygon, long? excludedAreaId = null)
         {
             Polygon currentPolygon = _mapper.ToPolygonGeometry(newPolygon);
@@ -291,15 +291,21 @@ namespace Olymp_Project.Services.Areas
             {
                 return new ServiceResponse<Area>(HttpStatusCode.BadRequest);
             }
-
+            
+            // Не сравнивать с собой
             if (await _db.Areas.FindAsync(areaId) is not Area areaToUpdate)
             {
                 return new ServiceResponse<Area>(HttpStatusCode.NotFound);
             }
 
+            if (await _db.Areas.AnyAsync(a => a.Name == request.Name && a.Id != areaToUpdate.Id))
+            {
+                return new ServiceResponse<Area>(HttpStatusCode.Conflict);
+            }
+
             var area = _mapper.ToArea(request);
 
-            var validationResponse = await ValidateAreaAsync(area, areaId);
+            var validationResponse = ValidateAreaAsync(area, areaId);
             if (validationResponse is not HttpStatusCode.OK)
             {
                 return new ServiceResponse<Area>(validationResponse);

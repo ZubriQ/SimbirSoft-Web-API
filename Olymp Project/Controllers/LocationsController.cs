@@ -54,7 +54,6 @@ namespace Olymp_Project.Controllers
             return ResponseHelper.GetActionResult(response.StatusCode);
         }
 
-
         [HttpPost]
         [Authorize(AuthenticationSchemes = Constants.BasicAuthScheme, Roles = $"{Constants.Admin},{Constants.Chipper}")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(LocationResponseDto))]

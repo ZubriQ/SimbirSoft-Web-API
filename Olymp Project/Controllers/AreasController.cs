@@ -47,7 +47,8 @@ namespace Olymp_Project.Controllers
             var response = await _service.InsertAreaAsync(request);
 
             var areaDto = _mapper.Map<AreaResponseDto>(response.Data);
-            return ResponseHelper.GetActionResult(response.StatusCode, areaDto, nameof(CreateArea));
+            return ResponseHelper.GetActionResult(response.StatusCode, areaDto, nameof(CreateArea), 
+                errorMessage: response.ErrorMessage);
         }
 
         [HttpPut("{areaId:long}")]
@@ -65,7 +66,7 @@ namespace Olymp_Project.Controllers
             var response = await _service.UpdateAreaByIdAsync(areaId!.Value, request);
 
             var kindDto = _mapper.Map<AreaResponseDto>(response.Data);
-            return ResponseHelper.GetActionResult(response.StatusCode, kindDto);
+            return ResponseHelper.GetActionResult(response.StatusCode, kindDto, errorMessage: response.ErrorMessage);
         }
 
         [HttpDelete("{areaId:long}")]
