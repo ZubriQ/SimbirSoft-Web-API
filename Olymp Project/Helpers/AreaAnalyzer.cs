@@ -1,17 +1,12 @@
-﻿using NetTopologySuite.Geometries;
-using NpgsqlTypes;
-using Location = Olymp_Project.Models.Location;
-
-namespace Olymp_Project.Helpers
+﻿namespace Olymp_Project.Helpers
 {
     public class AreaAnalyzer
     {
-        private GeometryFactory _geometryFactory;
+        private GeometryChecker? _geometryChecker;
 
         // Date range & initial data.
         private DateTime _startDate;
         private DateTime _endDate;
-        private List<NpgsqlPoint>? _polygon;
         private List<Animal> _animals;
 
         // AreaAnalyticsResponseDto filling.
@@ -26,7 +21,6 @@ namespace Olymp_Project.Helpers
 
         public AreaAnalyzer()
         {
-            _geometryFactory = new();
             _animals = new();
             _uniqueKinds = new();
             _kindCount = new();
@@ -41,8 +35,9 @@ namespace Olymp_Project.Helpers
 
         public void SetInitialData(Area area, List<Animal> animals)
         {
-            _polygon = area.Points.ToList();
-            _polygon.Add(_polygon[0]);
+            var closedPolygon = area.Points.ToList();
+            closedPolygon.Add(closedPolygon[0]);
+            _geometryChecker = new GeometryChecker(closedPolygon);
             _animals = animals;
         }
 
@@ -91,7 +86,8 @@ namespace Olymp_Project.Helpers
                     VisitDateTime = animal.ChippingDateTime,
                     Location = animal.ChippingLocation
                 }};
-            visitedLocations.AddRange(animal.VisitedLocations
+            visitedLocations
+                .AddRange(animal.VisitedLocations
                 .Where(vl => vl.VisitDateTime >= _startDate && vl.VisitDateTime <= _endDate)
                 .OrderBy(vl => vl.VisitDateTime));
 
@@ -100,8 +96,10 @@ namespace Olymp_Project.Helpers
 
         private AnimalStatus GetAnimalStatus(List<VisitedLocation> visitedLocations)
         {
-            var isEarliestLocationInsideArea = IsLocationInsidePolygon(visitedLocations.First().Location);
-            var isLastLocationInsideArea = IsLocationInsidePolygon(visitedLocations.Last().Location);
+            var isEarliestLocationInsideArea = _geometryChecker!
+                .IsLocationInsidePolygon(visitedLocations.First().Location);
+            var isLastLocationInsideArea = _geometryChecker
+                .IsLocationInsidePolygon(visitedLocations.Last().Location);
 
             if (isEarliestLocationInsideArea && isLastLocationInsideArea)
             {
@@ -182,26 +180,27 @@ namespace Olymp_Project.Helpers
             return responseDto;
         }
 
-        #region Geometry methods
+        //#region Geometry methods
 
-        private bool IsLocationInsidePolygon(Location location)
-        {
-            return IsPointInsidePolygon(location.Longitude, location.Latitude);
-        }
+        //private bool IsLocationInsidePolygon(Location location)
+        //{
+        //    return IsPointInsidePolygon(location.Longitude, location.Latitude);
+        //}
 
-        private bool IsPointInsidePolygon(double x, double y)
-        {
-            var point = _geometryFactory.CreatePoint(new Coordinate(x, y));
-            var coordinates = _polygon!.Select(p => new Coordinate(p.X, p.Y)).ToArray();
-            var linearRing = new LinearRing(coordinates);
-            var polygonShell = new Polygon(linearRing);
-            var polygonBoundary = (LineString)polygonShell.Boundary;
+        //private bool IsPointInsidePolygon(double x, double y)
+        //{
+        //    var coordinates = _polygon!.Select(p => new Coordinate(p.X, p.Y)).ToArray();
+        //    var linearRing = new LinearRing(coordinates);
+        //    var polygonShell = new Polygon(linearRing);
+        //    var polygonBoundary = (LineString)polygonShell.Boundary;
+            
+        //    var point = _geometryFactory.CreatePoint(new Coordinate(x, y));
+        //    var distance = point.Distance(polygonBoundary);
 
-            var distance = point.Distance(polygonBoundary);
-            var isInside = polygonShell.Contains(point) || Math.Abs(distance) < 1e-6;
-            return isInside;
-        }
+        //    var isInside = polygonShell.Contains(point) || Math.Abs(distance) < 1e-6;
+        //    return isInside;
+        //}
 
-        #endregion
+        //#endregion
     }
 }
