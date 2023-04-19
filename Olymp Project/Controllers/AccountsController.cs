@@ -33,7 +33,7 @@ namespace Olymp_Project.Controllers
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if ((userRole == Constants.User || userRole == Constants.Chipper) && accountId!.Value.ToString() != userId)
+            if ((userRole == Constants.User || userRole == Constants.Chipper) && accountId.ToString() != userId)
             {
                 return Forbid();
             }

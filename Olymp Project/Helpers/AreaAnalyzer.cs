@@ -54,7 +54,7 @@ namespace Olymp_Project.Helpers
                 TryExtractAnimalData(involvedAnimals, animal);
             }
 
-            return CreateAreaAnalyticsResponseDto(totalQuantityAnimals, totalAnimalsArrived, totalAnimalsGone);
+            return CreateAreaAnalyticsResponseDto();
         }
 
         private void TryExtractAnimalData(List<Animal> involvedAnimals, Animal animal)
@@ -157,8 +157,7 @@ namespace Olymp_Project.Helpers
             }
         }
 
-        private AreaAnalyticsResponseDto CreateAreaAnalyticsResponseDto(
-            long totalQuantityAnimals, long totalAnimalsArrived, long totalAnimalsGone)
+        private AreaAnalyticsResponseDto CreateAreaAnalyticsResponseDto()
         {
             var responseDto = new AreaAnalyticsResponseDto
             {
