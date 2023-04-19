@@ -305,16 +305,17 @@ namespace Olymp_Project.Services.Areas
                 return new ServiceResponse<Area>(validationResponse);
             }
 
-            return await EditAreaInDatabaseAsync(areaToUpdate, area);
+            return await UpdateAreaInDatabaseAsync(areaToUpdate, area);
         }
 
-        private async Task<ServiceResponse<Area>> EditAreaInDatabaseAsync(Area areaToUpdate, Area area)
+        private async Task<ServiceResponse<Area>> UpdateAreaInDatabaseAsync(Area areaToUpdate, Area area)
         {
             try
             {
                 areaToUpdate.Name = area.Name;
                 areaToUpdate.Points = area.Points;
                 await _db.SaveChangesAsync();
+                
                 return new ServiceResponse<Area>(HttpStatusCode.OK, areaToUpdate);
             }
             catch (Exception)
@@ -339,15 +340,16 @@ namespace Olymp_Project.Services.Areas
                 return HttpStatusCode.NotFound;
             }
 
-            return await RemoveAndSaveChangesAsync(existingArea);
+            return await RemoveAreaFromDatabaseAsync(existingArea);
         }
 
-        private async Task<HttpStatusCode> RemoveAndSaveChangesAsync(Area area)
+        private async Task<HttpStatusCode> RemoveAreaFromDatabaseAsync(Area area)
         {
             try
             {
                 _db.Areas.Remove(area);
                 await _db.SaveChangesAsync();
+
                 return HttpStatusCode.OK;
             }
             catch (Exception)

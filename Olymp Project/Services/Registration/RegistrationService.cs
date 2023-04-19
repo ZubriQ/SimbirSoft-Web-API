@@ -12,6 +12,8 @@ namespace Olymp_Project.Services.Registration
             _db = db;
         }
 
+        #region Register
+
         public async Task<IServiceResponse<Account>> RegisterAccountAsync(RegistrationRequestDto request)
         {
             if (!AccountValidator.IsValid(request))
@@ -24,14 +26,7 @@ namespace Olymp_Project.Services.Registration
                 return new ServiceResponse<Account>(HttpStatusCode.Conflict);
             }
 
-            try
-            {
-                return await InsertAccountAndSaveChangesAsync(request);
-            }
-            catch (Exception)
-            {
-                return new ServiceResponse<Account>(HttpStatusCode.InternalServerError);
-            }
+            return await AddAccountToDatabaseAsync(request);
         }
 
         private async Task<bool> EmailAlreadyExists(string email)
@@ -39,13 +34,21 @@ namespace Olymp_Project.Services.Registration
             return await _db.Accounts.AnyAsync(a => a.Email == email);
         }
 
-        private async Task<IServiceResponse<Account>> InsertAccountAndSaveChangesAsync(
+        private async Task<IServiceResponse<Account>> AddAccountToDatabaseAsync(
             RegistrationRequestDto request)
         {
-            Account newAccount = CreateAccount(request);
-            await _db.Accounts.AddAsync(newAccount);
-            await _db.SaveChangesAsync();
-            return new ServiceResponse<Account>(HttpStatusCode.Created, newAccount);
+            try
+            {
+                Account newAccount = CreateAccount(request);
+                await _db.Accounts.AddAsync(newAccount);
+                await _db.SaveChangesAsync();
+
+                return new ServiceResponse<Account>(HttpStatusCode.Created, newAccount);
+            }
+            catch (Exception)
+            {
+                return new ServiceResponse<Account>();
+            }
         }
 
         private Account CreateAccount(RegistrationRequestDto data)
@@ -71,5 +74,7 @@ namespace Olymp_Project.Services.Registration
             }
             return false;
         }
+
+        #endregion
     }
 }

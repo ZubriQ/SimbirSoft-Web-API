@@ -76,7 +76,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteKind([FromRoute] long? kindId)
         {
-            var statusCode = await _service.RemoveAnimalKindAsync(kindId!.Value);
+            var statusCode = await _service.RemoveAnimalKindByIdAsync(kindId!.Value);
             return ResponseHelper.GetActionResult(statusCode);
         }
     }

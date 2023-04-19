@@ -20,7 +20,7 @@ namespace Olymp_Project.Helpers.Validators
                 && !string.IsNullOrWhiteSpace(account.Password)
                 && !string.IsNullOrWhiteSpace(account.Email)
                 && new EmailAddressAttribute().IsValid(account.Email)
-                && (account.Role == "ADMIN" || account.Role == "CHIPPER" || account.Role == "USER");
+                && (account.Role == Constants.Admin || account.Role == Constants.Chipper || account.Role == Constants.User);
         }
     }
 }

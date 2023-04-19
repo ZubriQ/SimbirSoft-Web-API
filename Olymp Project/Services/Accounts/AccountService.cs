@@ -40,6 +40,11 @@ namespace Olymp_Project.Services.Accounts
                 return new CollectionServiceResponse<Account>(HttpStatusCode.BadRequest);
             }
 
+            return GetAccountsBySearchParameters(query, paging);
+        }
+
+        private IServiceResponse<ICollection<Account>> GetAccountsBySearchParameters(AccountQuery query, Paging paging)
+        {
             try
             {
                 var filteredAccounts = GetAccountsWithFilter(query);
@@ -66,9 +71,9 @@ namespace Olymp_Project.Services.Accounts
             return _db.Accounts
                 .AsQueryable()
                 .Where(a =>
-                (firstName == null || a.FirstName.ToLower().Contains(firstName)) &&
-                (lastName == null || a.LastName.ToLower().Contains(lastName)) &&
-                (email == null || a.Email.ToLower().Contains(email)));
+                    (firstName == null || a.FirstName.ToLower().Contains(firstName)) &&
+                    (lastName == null || a.LastName.ToLower().Contains(lastName)) &&
+                    (email == null || a.Email.ToLower().Contains(email)));
         }
 
         private List<Account> PaginateAccounts(IQueryable<Account> accounts, Paging paging)
@@ -97,23 +102,23 @@ namespace Olymp_Project.Services.Accounts
                 return new ServiceResponse<Account>(HttpStatusCode.Conflict);
             }
 
+            return await CreateAccountAnsSaveChangesAsync(request);
+        }
+
+        private async Task<IServiceResponse<Account>> CreateAccountAnsSaveChangesAsync(AccountRequestDto request)
+        {
             try
             {
-                return await CreateAccountAnsSaveChangesAsync(request);
+                var newAccount = CreateAccount(request);
+                _db.Accounts.Add(newAccount);
+                await _db.SaveChangesAsync();
+
+                return new ServiceResponse<Account>(HttpStatusCode.Created, newAccount);
             }
             catch (Exception)
             {
                 return new ServiceResponse<Account>();
             }
-        }
-
-        private async Task<IServiceResponse<Account>> CreateAccountAnsSaveChangesAsync(AccountRequestDto request)
-        {
-            var newAccount = CreateAccount(request);
-            _db.Accounts.Add(newAccount);
-            await _db.SaveChangesAsync();
-
-            return new ServiceResponse<Account>(HttpStatusCode.Created, newAccount);
         }
 
         private Account CreateAccount(AccountRequestDto request)
@@ -156,7 +161,7 @@ namespace Olymp_Project.Services.Accounts
             account.Email = request.Email!;
             account.Password = request.Password!;
             account.Role = request.Role!;
-            // TODO: in other method?
+
             _db.Accounts.Update(account);
             await _db.SaveChangesAsync();
 
@@ -180,21 +185,21 @@ namespace Olymp_Project.Services.Accounts
                 return HttpStatusCode.NotFound;
             }
 
+            return await RemoveAccountAndSaveChangesAsync(account);
+        }
+
+        private async Task<HttpStatusCode> RemoveAccountAndSaveChangesAsync(Account account)
+        {
             try
             {
-                return await RemoveAccount(account);
+                _db.Accounts.Remove(account);
+                await _db.SaveChangesAsync();
+                return HttpStatusCode.OK;
             }
             catch (Exception)
             {
                 return HttpStatusCode.InternalServerError;
             }
-        }
-
-        private async Task<HttpStatusCode> RemoveAccount(Account account)
-        {
-            _db.Accounts.Remove(account);
-            await _db.SaveChangesAsync();
-            return HttpStatusCode.OK;
         }
 
         #endregion

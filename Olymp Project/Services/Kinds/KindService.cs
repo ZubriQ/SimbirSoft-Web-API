@@ -108,7 +108,7 @@ namespace Olymp_Project.Services.Kinds
 
         #region Remove
 
-        public async Task<HttpStatusCode> RemoveAnimalKindAsync(long? kindId)
+        public async Task<HttpStatusCode> RemoveAnimalKindByIdAsync(long? kindId)
         {
             if (!IdValidator.IsValid(kindId))
             {
@@ -119,19 +119,13 @@ namespace Olymp_Project.Services.Kinds
             {
                 return HttpStatusCode.NotFound;
             }
+
             if (kind.Animals.Any())
             {
                 return HttpStatusCode.BadRequest;
             }
 
-            try
-            {
-                return await RemoveKind(kind);
-            }
-            catch (Exception)
-            {
-                return HttpStatusCode.InternalServerError;
-            }
+            return await RemoveKindFromDatabaseAsync(kind);
         }
 
         private async Task<Kind?> GetKindWithAnimalsAsync(long kindId)
@@ -141,11 +135,18 @@ namespace Olymp_Project.Services.Kinds
                 .FirstOrDefaultAsync(k => k.Id == kindId);
         }
 
-        private async Task<HttpStatusCode> RemoveKind(Kind kind)
+        private async Task<HttpStatusCode> RemoveKindFromDatabaseAsync(Kind kind)
         {
-            _db.Kinds.Remove(kind);
-            await _db.SaveChangesAsync();
-            return HttpStatusCode.OK;
+            try
+            {
+                _db.Kinds.Remove(kind);
+                await _db.SaveChangesAsync();
+                return HttpStatusCode.OK;
+            }
+            catch (Exception)
+            {
+                return HttpStatusCode.InternalServerError;
+            }
         }
 
         #endregion

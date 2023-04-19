@@ -26,10 +26,5 @@
         {
             return date.TimeOfDay == TimeSpan.Zero;
         }
-
-        //private static bool IsStartDateLessThanEndDate(DateTime startDate, DateTime endDate)
-        //{
-        //    return startDate <= endDate;
-        //}
     }
 }

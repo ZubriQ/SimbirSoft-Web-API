@@ -41,17 +41,24 @@ namespace Olymp_Project.Services.Animals
 
         #region Get by search parameters
 
-        public IServiceResponse<ICollection<Animal>> GetAnimals(AnimalQuery query, Paging paging)
+        public async Task<IServiceResponse<ICollection<Animal>>> GetAnimalsBySearchParameters(
+            AnimalQuery query, Paging paging)
         {
             if (!PagingValidator.IsValid(paging) || !AnimalDtoValidator.IsQueryValid(query))
             {
                 return new CollectionServiceResponse<Animal>(HttpStatusCode.BadRequest);
             }
 
+            return await GetAnimalsWithFilterAndPaging(query, paging);
+        }
+
+        private async Task<IServiceResponse<ICollection<Animal>>> GetAnimalsWithFilterAndPaging(
+            AnimalQuery query, Paging paging)
+        {
             try
             {
                 var filteredAnimals = GetAnimalsWithFilter(query);
-                var pagedAnimals = PaginateAnimals(filteredAnimals, paging);
+                var pagedAnimals = await PaginateAnimals(filteredAnimals, paging);
                 return new CollectionServiceResponse<Animal>(HttpStatusCode.OK, pagedAnimals);
             }
             catch
@@ -98,10 +105,12 @@ namespace Olymp_Project.Services.Animals
             {
                 animals = animals.Where(a => a.ChippingDateTime >= startDateTime.Value);
             }
+
             if (endDateTime.HasValue)
             {
                 animals = animals.Where(a => a.ChippingDateTime <= endDateTime.Value);
             }
+
             return animals;
         }
 
@@ -112,10 +121,12 @@ namespace Olymp_Project.Services.Animals
             {
                 animals = animals.Where(a => a.ChipperId == chipperId.Value);
             }
+
             if (chippingLocationId.HasValue)
             {
                 animals = animals.Where(a => a.ChippingLocationId == chippingLocationId.Value);
             }
+
             return animals;
         }
 
@@ -126,20 +137,22 @@ namespace Olymp_Project.Services.Animals
             {
                 animals = animals.Where(a => a.LifeStatus == lifeStatus);
             }
+
             if (!string.IsNullOrWhiteSpace(gender))
             {
                 animals = animals.Where(a => a.Gender == gender);
             }
+
             return animals;
         }
 
-        private List<Animal> PaginateAnimals(IQueryable<Animal> animals, Paging paging)
+        private Task<List<Animal>> PaginateAnimals(IQueryable<Animal> animals, Paging paging)
         {
             return animals
                 .OrderBy(a => a.Id)
                 .Skip(paging.From!.Value)
                 .Take(paging.Size!.Value)
-                .ToList();
+                .ToListAsync();
         }
 
         #endregion
@@ -154,14 +167,7 @@ namespace Olymp_Project.Services.Animals
                 return new ServiceResponse<Animal>(statusCode);
             }
 
-            try
-            {
-                return await AddAnimal(animal);
-            }
-            catch (Exception)
-            {
-                return new ServiceResponse<Animal>();
-            }
+            return await AddAnimalToDatabaseAsync(animal);
         }
 
         private HttpStatusCode ValidateInsertAnimal(Animal animal)
@@ -198,12 +204,19 @@ namespace Olymp_Project.Services.Animals
             return HttpStatusCode.OK;
         }
 
-        private async Task<IServiceResponse<Animal>> AddAnimal(Animal animal)
+        private async Task<IServiceResponse<Animal>> AddAnimalToDatabaseAsync(Animal animal)
         {
-            await InitializeKinds(animal);
-            _db.Animals.Add(animal);
-            await _db.SaveChangesAsync();
-            return new ServiceResponse<Animal>(HttpStatusCode.Created, animal);
+            try
+            {
+                await InitializeKinds(animal);
+                _db.Animals.Add(animal);
+                await _db.SaveChangesAsync();
+                return new ServiceResponse<Animal>(HttpStatusCode.Created, animal);
+            }
+            catch (Exception)
+            {
+                return new ServiceResponse<Animal>();
+            }
         }
 
         private async Task InitializeKinds(Animal animal)
@@ -232,16 +245,7 @@ namespace Olymp_Project.Services.Animals
                 return new ServiceResponse<Animal>(statusCode);
             }
 
-            try
-            {
-                UpdateAnimal(animalToUpdate!, request);
-                await _db.SaveChangesAsync();
-                return new ServiceResponse<Animal>(HttpStatusCode.OK, animalToUpdate!);
-            }
-            catch (Exception)
-            {
-                return new ServiceResponse<Animal>();
-            }
+            return await UpdateAnimalInDatabaseAsync(request, animalToUpdate!);
         }
 
         private async Task<(HttpStatusCode, Animal?)> ValidateUpdateAnimalAsync(long? animalId, PutAnimalDto request)
@@ -298,11 +302,25 @@ namespace Olymp_Project.Services.Animals
             }
         }
 
+        private async Task<IServiceResponse<Animal>> UpdateAnimalInDatabaseAsync(PutAnimalDto request, Animal animalToUpdate)
+        {
+            try
+            {
+                UpdateAnimal(animalToUpdate!, request);
+                await _db.SaveChangesAsync();
+                return new ServiceResponse<Animal>(HttpStatusCode.OK, animalToUpdate!);
+            }
+            catch (Exception)
+            {
+                return new ServiceResponse<Animal>();
+            }
+        }
+
         #endregion
 
         #region Remove
 
-        public async Task<HttpStatusCode> RemoveAnimalAsync(long? animalId)
+        public async Task<HttpStatusCode> RemoveAnimalByIdAsync(long? animalId)
         {
             (var statusCode, var animal) = await ValidateRemoveRequestAsync(animalId);
             if (statusCode is not HttpStatusCode.OK)
@@ -310,14 +328,7 @@ namespace Olymp_Project.Services.Animals
                 return statusCode;
             }
 
-            try
-            {
-                return await RemoveAnimalAndSaveChangesAsync(animal!);
-            }
-            catch (Exception)
-            {
-                return HttpStatusCode.InternalServerError;
-            }
+            return await RemoveAnimalFromDatabaseAsync(animal!);
         }
 
         private async Task<(HttpStatusCode, Animal?)> ValidateRemoveRequestAsync(long? animalId)
@@ -340,11 +351,19 @@ namespace Olymp_Project.Services.Animals
             return (HttpStatusCode.OK, animal);
         }
 
-        private async Task<HttpStatusCode> RemoveAnimalAndSaveChangesAsync(Animal animal)
+        private async Task<HttpStatusCode> RemoveAnimalFromDatabaseAsync(Animal animal)
         {
-            _db.Animals.Remove(animal);
-            await _db.SaveChangesAsync();
-            return HttpStatusCode.OK;
+            try
+            {
+                _db.Animals.Remove(animal);
+                await _db.SaveChangesAsync();
+
+                return HttpStatusCode.OK;
+            }
+            catch (Exception)
+            {
+                return HttpStatusCode.InternalServerError;
+            }
         }
 
         #endregion

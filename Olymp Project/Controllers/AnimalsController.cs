@@ -43,8 +43,8 @@ namespace Olymp_Project.Controllers
             [FromQuery] AnimalQuery query,
             [FromQuery] Paging paging)
         {
-            var response = _service.GetAnimals(query, paging);
-            // TODO: Async?
+            var response = await _service.GetAnimalsBySearchParameters(query, paging);
+
             var animalsDto = response.Data?.Select(a => _mapper.Map<AnimalResponseDto>(a));
             return ResponseHelper.GetActionResult(response.StatusCode, animalsDto);
         }
@@ -91,7 +91,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteAnimal([FromRoute] long? animalId)
         {
-            var statusCode = await _service.RemoveAnimalAsync(animalId!.Value);
+            var statusCode = await _service.RemoveAnimalByIdAsync(animalId!.Value);
             return ResponseHelper.GetActionResult(statusCode);
         }
     }

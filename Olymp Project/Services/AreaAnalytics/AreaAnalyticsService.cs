@@ -42,9 +42,9 @@ namespace Olymp_Project.Services.AreaAnalytics
             try
             {
                 var animals = await GetAllAnimalsAsync();
-                InitializeCompleteVisitedLocations(animals);
+                InitializeCompleteAndFilteredVisitedLocations(animals, query.StartDate!.Value, query.EndDate!.Value);
 
-                var areaDataAnalysis = AnalyzeAreaData(area, query.StartDate!.Value, query.EndDate!.Value, animals);
+                var areaDataAnalysis = AnalyzeAreaData(area, animals);
                 return new ServiceResponse<AreaAnalyticsResponseDto>(HttpStatusCode.OK, areaDataAnalysis);
             }
             catch (Exception)
@@ -64,25 +64,28 @@ namespace Olymp_Project.Services.AreaAnalytics
                 .ToListAsync();
         }
 
-        private void InitializeCompleteVisitedLocations(List<Animal> animals)
+        private void InitializeCompleteAndFilteredVisitedLocations(
+            List<Animal> animals, DateTime startDate, DateTime endDate)
         {
             foreach (var animal in animals)
             {
-                if (animal.VisitedLocations.Count == 0)
+                animal.VisitedLocations.Add(new VisitedLocation()
                 {
-                    animal.VisitedLocations.Add(new VisitedLocation()
-                    {
-                        VisitDateTime = animal.ChippingDateTime,
-                        Location = animal.ChippingLocation
-                    });
-                }
+                    VisitDateTime = animal.ChippingDateTime,
+                    Location = animal.ChippingLocation
+                });
+
+                var filteredVisitedLocations = animal.VisitedLocations
+                    .Where(vl => vl.VisitDateTime >= startDate && vl.VisitDateTime <= endDate)
+                    .OrderBy(vl => vl.VisitDateTime)
+                    .ToArray();
+
+                animal.VisitedLocations = filteredVisitedLocations;
             }
         }
 
-        private AreaAnalyticsResponseDto AnalyzeAreaData(
-            Area area, DateTime startDate, DateTime endDate, List<Animal> animals)
+        private AreaAnalyticsResponseDto AnalyzeAreaData(Area area, List<Animal> animals)
         {
-            _analyzer.SetDateRange(startDate, endDate);
             _analyzer.SetInitialData(area, animals);
             return _analyzer.Analyze();
         }

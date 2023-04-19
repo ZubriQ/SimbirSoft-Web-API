@@ -63,14 +63,7 @@ namespace Olymp_Project.Services.Locations
                 return new ServiceResponse<Location>(HttpStatusCode.Conflict);
             }
 
-            try
-            {
-                return await AddLocation(request);
-            }
-            catch (Exception)
-            {
-                return new ServiceResponse<Location>();
-            }
+            return await AddLocationToDatabaseAsync(request);
         }
 
         private async Task<bool> CoordinatesAlreadyExist(LocationRequestDto request)
@@ -79,16 +72,24 @@ namespace Olymp_Project.Services.Locations
                 .AnyAsync(l => (l.Latitude == request.Latitude) && (l.Longitude == request.Longitude));
         }
 
-        private async Task<IServiceResponse<Location>> AddLocation(LocationRequestDto request)
+        private async Task<IServiceResponse<Location>> AddLocationToDatabaseAsync(LocationRequestDto request)
         {
-            var newLocation = new Location()
+            try
             {
-                Latitude = request.Latitude!.Value,
-                Longitude = request.Longitude!.Value
-            };
-            await _db.Locations.AddAsync(newLocation);
-            await _db.SaveChangesAsync();
-            return new ServiceResponse<Location>(HttpStatusCode.Created, newLocation);
+                var newLocation = new Location()
+                {
+                    Latitude = request.Latitude!.Value,
+                    Longitude = request.Longitude!.Value
+                };
+                await _db.Locations.AddAsync(newLocation);
+                await _db.SaveChangesAsync();
+
+                return new ServiceResponse<Location>(HttpStatusCode.Created, newLocation);
+            }
+            catch (Exception)
+            {
+                return new ServiceResponse<Location>();
+            }
         }
 
         #endregion
@@ -118,14 +119,8 @@ namespace Olymp_Project.Services.Locations
                 return new ServiceResponse<Location>(HttpStatusCode.BadRequest);
             }
 
-            try
-            {
-                return await UpdateLocation(location, request);
-            }
-            catch (Exception)
-            {
-                return new ServiceResponse<Location>();
-            }
+            return await UpdateLocationInDatabaseAsync(location, request);
+
         }
 
         private async Task<bool> LocationAlreadyExist(LocationRequestDto request)
@@ -140,20 +135,22 @@ namespace Olymp_Project.Services.Locations
                    await _db.VisitedLocations.AnyAsync(vl => vl.LocationId == locationId);
         }
 
-        private async Task<IServiceResponse<Location>> UpdateLocation(
+        private async Task<IServiceResponse<Location>> UpdateLocationInDatabaseAsync(
             Location location, LocationRequestDto newData)
         {
-            AssignNewData(location, newData);
-            _db.Entry(location).State = EntityState.Modified;
-            await _db.SaveChangesAsync();
+            try
+            {
+                location.Latitude = newData.Latitude!.Value;
+                location.Longitude = newData.Longitude!.Value;
+                _db.Entry(location).State = EntityState.Modified;
+                await _db.SaveChangesAsync();
 
-            return new ServiceResponse<Location>(HttpStatusCode.OK, location);
-        }
-
-        private void AssignNewData(Location destination, LocationRequestDto source)
-        {
-            destination.Latitude = source.Latitude!.Value;
-            destination.Longitude = source.Longitude!.Value;
+                return new ServiceResponse<Location>(HttpStatusCode.OK, location);
+            }
+            catch (Exception)
+            {
+                return new ServiceResponse<Location>();
+            }
         }
 
         #endregion
@@ -168,14 +165,7 @@ namespace Olymp_Project.Services.Locations
                 return statusCode;
             }
 
-            try
-            {
-                return await RemoveLocation(location!);
-            }
-            catch (Exception)
-            {
-                return HttpStatusCode.InternalServerError;
-            }
+            return await RemoveLocationFromDatabaseAsync(location!);
         }
 
         private async Task<(HttpStatusCode, Location?)> ValidateRemoveRequest(long? locationId)
@@ -216,11 +206,18 @@ namespace Olymp_Project.Services.Locations
             return false;
         }
 
-        private async Task<HttpStatusCode> RemoveLocation(Location location)
+        private async Task<HttpStatusCode> RemoveLocationFromDatabaseAsync(Location location)
         {
-            _db.Locations.Remove(location);
-            await _db.SaveChangesAsync();
-            return HttpStatusCode.OK;
+            try
+            {
+                _db.Locations.Remove(location);
+                await _db.SaveChangesAsync();
+                return HttpStatusCode.OK;
+            }
+            catch (Exception)
+            {
+                return HttpStatusCode.InternalServerError;
+            }
         }
 
         #endregion

@@ -21,15 +21,23 @@ namespace Olymp_Project.Services.VisitedLocations
             {
                 return new CollectionServiceResponse<VisitedLocation>(HttpStatusCode.BadRequest);
             }
+
             if (await GetAnimalByIdWithVisitedLocationsAsync(animalId!.Value) is not Animal animal)
             {
                 return new CollectionServiceResponse<VisitedLocation>(HttpStatusCode.NotFound);
             }
 
+            return GetFilteredVisitedLocations(query, paging, animal);
+        }
+
+        private IServiceResponse<ICollection<VisitedLocation>> GetFilteredVisitedLocations(
+            DateTimeRangeQuery query, Paging paging, Animal animal)
+        {
             try
             {
                 var filteredVisitedLocations = GetVisitedLocationsWithFilter(animal.VisitedLocations, query);
                 var paginatedVisitedLocations = PaginateVisitedLocations(filteredVisitedLocations, paging);
+
                 return new CollectionServiceResponse<VisitedLocation>(HttpStatusCode.OK, paginatedVisitedLocations);
             }
             catch (Exception)
@@ -50,6 +58,7 @@ namespace Olymp_Project.Services.VisitedLocations
         {
             var endDateTime = query.EndDateTime.HasValue ? 
                 new DateTime(query.EndDateTime.Value.Ticks).AddSeconds(1) : (DateTime?)null;
+
             return visitedLocations
                 .Where(v => query.StartDateTime is null || v.VisitDateTime >= query.StartDateTime)
                 .Where(v => endDateTime is null || v.VisitDateTime <= endDateTime.Value);
@@ -88,28 +97,29 @@ namespace Olymp_Project.Services.VisitedLocations
                 return new ServiceResponse<VisitedLocation>(HttpStatusCode.BadRequest);
             }
 
+            return await AddVisitedLocationToDatabaseAsync(animal, location);
+        }
+
+        private async Task<IServiceResponse<VisitedLocation>> AddVisitedLocationToDatabaseAsync(
+            Animal animal, Location location)
+        {
             try
             {
-                return await AddVisitedLocationAsync(animal, location);
+                VisitedLocation visitedLocation = new()
+                {
+                    Animal = animal,
+                    Location = location,
+                    VisitDateTime = DateTime.UtcNow
+                };
+                _db.VisitedLocations.Add(visitedLocation);
+                await _db.SaveChangesAsync();
+
+                return new ServiceResponse<VisitedLocation>(HttpStatusCode.Created, visitedLocation);
             }
             catch (Exception)
             {
                 return new ServiceResponse<VisitedLocation>();
             }
-        }
-
-        private async Task<IServiceResponse<VisitedLocation>> AddVisitedLocationAsync(
-            Animal animal, Location location)
-        {
-            VisitedLocation visitedLocation = new()
-            {
-                Animal = animal,
-                Location = location,
-                VisitDateTime = DateTime.UtcNow
-            };
-            _db.VisitedLocations.Add(visitedLocation);
-            await _db.SaveChangesAsync();
-            return new ServiceResponse<VisitedLocation>(HttpStatusCode.Created, visitedLocation);
         }
 
         #endregion
@@ -146,14 +156,7 @@ namespace Olymp_Project.Services.VisitedLocations
 
             #endregion
 
-            try
-            {
-                return await UpdateVisitedLocation(visitedLocationToUpdate!, location!);
-            }
-            catch (Exception)
-            {
-                return new ServiceResponse<VisitedLocation>();
-            }
+            return await UpdateVisitedLocationInDatabaseAsync(visitedLocationToUpdate!, location!);
         }
 
         private bool AnimalHasVisitedLocation(Animal animal, long visitedLocationId)
@@ -161,14 +164,22 @@ namespace Olymp_Project.Services.VisitedLocations
             return animal.VisitedLocations.Any(vl => vl.LocationId == visitedLocationId);
         }
 
-        private async Task<IServiceResponse<VisitedLocation>> UpdateVisitedLocation(
+        private async Task<IServiceResponse<VisitedLocation>> UpdateVisitedLocationInDatabaseAsync(
             VisitedLocation visitedLocation, Location location)
         {
-            visitedLocation.Location = location;
-            _db.VisitedLocations.Attach(visitedLocation);
-            _db.Entry(visitedLocation).State = EntityState.Modified;
-            await _db.SaveChangesAsync();
-            return new ServiceResponse<VisitedLocation>(HttpStatusCode.OK, visitedLocation);
+            try
+            {
+                visitedLocation.Location = location;
+                _db.VisitedLocations.Attach(visitedLocation);
+                _db.Entry(visitedLocation).State = EntityState.Modified;
+                await _db.SaveChangesAsync();
+
+                return new ServiceResponse<VisitedLocation>(HttpStatusCode.OK, visitedLocation);
+            }
+            catch (Exception)
+            {
+                return new ServiceResponse<VisitedLocation>();
+            }
         }
 
         #endregion
@@ -191,14 +202,7 @@ namespace Olymp_Project.Services.VisitedLocations
                 return HttpStatusCode.NotFound;
             }
 
-            try
-            {
-                return await RemoveVisitedLocationAsync(animal, visitedLocationToDelete);
-            }
-            catch (Exception)
-            {
-                return HttpStatusCode.InternalServerError;
-            }
+            return await RemoveVisitedLocationFromDatabaseAsync(animal, visitedLocationToDelete);
         }
 
         private async Task<bool> VisitedLocationExists(long visitedLocationId)
@@ -206,15 +210,22 @@ namespace Olymp_Project.Services.VisitedLocations
             return await _db.VisitedLocations.AnyAsync(vl => vl.Id == visitedLocationId);
         }
 
-        private async Task<HttpStatusCode> RemoveVisitedLocationAsync(
+        private async Task<HttpStatusCode> RemoveVisitedLocationFromDatabaseAsync(
             Animal animal, VisitedLocation visitedLocationToDelete)
         {
-            _db.VisitedLocations.Remove(visitedLocationToDelete);
-            animal.VisitedLocations.Remove(visitedLocationToDelete);
-            RemoveVisitedLocationIfMatchesChippingLocation(animal);
+            try
+            {
+                _db.VisitedLocations.Remove(visitedLocationToDelete);
+                animal.VisitedLocations.Remove(visitedLocationToDelete);
+                RemoveVisitedLocationIfMatchesChippingLocation(animal);
+                await _db.SaveChangesAsync();
 
-            await _db.SaveChangesAsync();
-            return HttpStatusCode.OK;
+                return HttpStatusCode.OK;
+            }
+            catch (Exception)
+            {
+                return HttpStatusCode.InternalServerError;
+            }
         }
 
         private void RemoveVisitedLocationIfMatchesChippingLocation(Animal animal)

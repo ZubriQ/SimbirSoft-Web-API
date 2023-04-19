@@ -4,9 +4,7 @@
     {
         private GeometryChecker? _geometryChecker;
 
-        // Date range & initial data.
-        private DateTime _startDate;
-        private DateTime _endDate;
+        // Initial data.
         private List<Animal> _animals;
 
         // AreaAnalyticsResponseDto filling.
@@ -25,12 +23,6 @@
             _uniqueKinds = new();
             _kindCount = new();
             _kindArrivedGone = new();
-        }
-
-        public void SetDateRange(DateTime startDate, DateTime endDate) 
-        {
-            _startDate = startDate.Date;
-            _endDate = endDate.Date;
         }
 
         public void SetInitialData(Area area, List<Animal> animals)
@@ -54,8 +46,7 @@
 
         private void TryExtractAnimalData(List<Animal> involvedAnimals, Animal animal)
         {
-            var visitedLocations = GetVisitedLocations(animal);
-            var status = GetAnimalStatus(visitedLocations);
+            var status = GetAnimalStatusByVisitedLocations(animal.VisitedLocations.ToList());
 
             if (status == AnimalStatus.Arrived || status == AnimalStatus.Inside)
             {
@@ -79,22 +70,7 @@
             }
         }
 
-        private List<VisitedLocation> GetVisitedLocations(Animal animal)
-        {
-            var visitedLocations = new List<VisitedLocation> { new VisitedLocation
-                {
-                    VisitDateTime = animal.ChippingDateTime,
-                    Location = animal.ChippingLocation
-                }};
-            visitedLocations
-                .AddRange(animal.VisitedLocations
-                .Where(vl => vl.VisitDateTime >= _startDate && vl.VisitDateTime <= _endDate)
-                .OrderBy(vl => vl.VisitDateTime));
-
-            return visitedLocations;
-        }
-
-        private AnimalStatus GetAnimalStatus(List<VisitedLocation> visitedLocations)
+        private AnimalStatus GetAnimalStatusByVisitedLocations(List<VisitedLocation> visitedLocations)
         {
             var isEarliestLocationInsideArea = _geometryChecker!
                 .IsLocationInsidePolygon(visitedLocations.First().Location);
