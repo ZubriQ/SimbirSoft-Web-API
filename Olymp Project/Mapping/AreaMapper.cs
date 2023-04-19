@@ -5,14 +5,7 @@ namespace Olymp_Project.Mapping
 {
     public class AreaMapper
     {
-        public static AreaPointsDto ToAreaPointsDto(NpgsqlPoint point)
-        {
-            return new AreaPointsDto
-            {
-                Longitude = point.X,
-                Latitude = point.Y
-            };
-        }
+        private GeometryFactory _geometryFactory = new();
 
         public Polygon ToPolygonGeometry(NpgsqlPolygon npgsqlPolygon)
         {
@@ -23,8 +16,7 @@ namespace Olymp_Project.Mapping
             }
             coordinates[npgsqlPolygon.Count] = coordinates[0];
 
-            var geometryFactory = new GeometryFactory();
-            return geometryFactory.CreatePolygon(coordinates);
+            return _geometryFactory.CreatePolygon(coordinates);
         }
 
         public Area ToArea(AreaRequestDto request)
@@ -38,6 +30,15 @@ namespace Olymp_Project.Mapping
             {
                 Name = request.Name!,
                 Points = npgsqlPolygon
+            };
+        }
+
+        public static AreaPointsDto ToAreaPointsDto(NpgsqlPoint point)
+        {
+            return new AreaPointsDto
+            {
+                Longitude = point.X,
+                Latitude = point.Y
             };
         }
 
