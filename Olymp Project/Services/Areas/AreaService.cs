@@ -292,7 +292,6 @@ namespace Olymp_Project.Services.Areas
                 return new ServiceResponse<Area>(HttpStatusCode.BadRequest);
             }
             
-            // Не сравнивать с собой
             if (await _db.Areas.FindAsync(areaId) is not Area areaToUpdate)
             {
                 return new ServiceResponse<Area>(HttpStatusCode.NotFound);
