@@ -4,7 +4,7 @@
     {
         None,
         Inside,
-        Entered,
+        Arrived,
         Gone
     }
 }

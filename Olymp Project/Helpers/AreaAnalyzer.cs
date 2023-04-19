@@ -15,9 +15,9 @@ namespace Olymp_Project.Helpers
         private List<Animal> _animals;
 
         // AreaAnalyticsResponseDto filling.
-        long totalAnimalsArrived = 0;
-        long totalAnimalsGone = 0;
-        long totalQuantityAnimals = 0;
+        private long totalAnimalsArrived = 0;
+        private long totalAnimalsGone = 0;
+        private long totalQuantityAnimals = 0;
 
         // AnimalsAnalyticsDto[] filling.
         private Dictionary<long, string> _uniqueKinds;
@@ -62,12 +62,12 @@ namespace Olymp_Project.Helpers
             var visitedLocations = GetVisitedLocations(animal);
             var status = GetAnimalStatus(visitedLocations);
 
-            if (status == AnimalStatus.Entered || status == AnimalStatus.Inside)
+            if (status == AnimalStatus.Arrived || status == AnimalStatus.Inside)
             {
                 involvedAnimals.Add(animal);
                 totalQuantityAnimals++;
 
-                if (status == AnimalStatus.Entered)
+                if (status == AnimalStatus.Arrived)
                 {
                     totalAnimalsArrived++;
                 }
@@ -109,7 +109,7 @@ namespace Olymp_Project.Helpers
             }    
             if (!isEarliestLocationInsideArea && isLastLocationInsideArea)
             {
-                return AnimalStatus.Entered;
+                return AnimalStatus.Arrived;
             }
             if (isEarliestLocationInsideArea && !isLastLocationInsideArea)
             {
@@ -119,12 +119,12 @@ namespace Olymp_Project.Helpers
             return AnimalStatus.None;
         }
 
-        private void ExtractAnimalKindsInfo(Animal animal, AnimalStatus? status)
+        private void ExtractAnimalKindsInfo(Animal animal, AnimalStatus status)
         {
             foreach (var kind in animal.Kinds)
             {
                 TryInitializeUniqueKind(kind);
-                UpdateUniqueKindFields(status, kind);
+                UpdateUniqueKindFields(kind, status);
             }
         }
 
@@ -138,23 +138,22 @@ namespace Olymp_Project.Helpers
             }
         }
 
-        private void UpdateUniqueKindFields(AnimalStatus? status, Kind kind)
+        private void UpdateUniqueKindFields(Kind kind, AnimalStatus status)
         {
-            if (status.HasValue && !(status.Value == AnimalStatus.Gone))
-            {
-                _kindCount[kind.Id]++;
-            }
-
-            if (status.HasValue && (status.Value == AnimalStatus.Entered))
+            if (status == AnimalStatus.Arrived)
             {
                 _kindArrivedGone[kind.Id] =
                     (_kindArrivedGone[kind.Id].arrived + 1, _kindArrivedGone[kind.Id].gone);
             }
 
-            if (status.HasValue && status.Value == AnimalStatus.Gone)
+            if (status == AnimalStatus.Gone)
             {
                 _kindArrivedGone[kind.Id] =
-                    (_kindArrivedGone[kind.Id].arrived, _kindArrivedGone[kind.Id].gone + 1);
+                   (_kindArrivedGone[kind.Id].arrived, _kindArrivedGone[kind.Id].gone + 1);
+            }
+            else
+            {
+                _kindCount[kind.Id]++;
             }
         }
 
