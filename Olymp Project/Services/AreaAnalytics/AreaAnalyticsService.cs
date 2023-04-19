@@ -28,7 +28,7 @@ namespace Olymp_Project.Services.AreaAnalytics
                 return new ServiceResponse<AreaAnalyticsResponseDto>(HttpStatusCode.NotFound);
             }
 
-            return await GetAreaAnalytics(area, query);
+            return await GetAreaAnalyticsAsync(area, query);
         }
 
         private bool IsRequestValid(long? areaId, AreaAnalyticsQuery query)
@@ -36,7 +36,7 @@ namespace Olymp_Project.Services.AreaAnalytics
             return IdValidator.IsValid(areaId) && AreaAnalyticsValidator.IsValid(query);
         }
 
-        private async Task<IServiceResponse<AreaAnalyticsResponseDto>> GetAreaAnalytics(
+        private async Task<IServiceResponse<AreaAnalyticsResponseDto>> GetAreaAnalyticsAsync(
             Area area, AreaAnalyticsQuery query)
         {
             try
@@ -82,7 +82,7 @@ namespace Olymp_Project.Services.AreaAnalytics
         private AreaAnalyticsResponseDto AnalyzeAreaData(
             Area area, DateTime startDate, DateTime endDate, List<Animal> animals)
         {
-            _analyzer.SetInitialDates(startDate, endDate);
+            _analyzer.SetDateRange(startDate, endDate);
             _analyzer.SetInitialData(area, animals);
             return _analyzer.Analyze();
         }

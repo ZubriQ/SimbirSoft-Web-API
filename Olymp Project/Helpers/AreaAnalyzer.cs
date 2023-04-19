@@ -7,18 +7,33 @@ namespace Olymp_Project.Helpers
     public class AreaAnalyzer
     {
         private GeometryFactory _geometryFactory;
+
+        // Date range & initial data.
         private DateTime _startDate;
         private DateTime _endDate;
         private List<NpgsqlPoint>? _polygon;
         private List<Animal> _animals;
 
+        // AreaAnalyticsResponseDto filling.
+        long totalAnimalsArrived = 0;
+        long totalAnimalsGone = 0;
+        long totalQuantityAnimals = 0;
+
+        // AnimalsAnalyticsDto[] filling.
+        private Dictionary<long, string> _uniqueKinds;
+        private Dictionary<long, long> _kindCount;
+        private Dictionary<long, (long arrived, long gone)> _kindArrivedGone;
+
         public AreaAnalyzer()
         {
             _geometryFactory = new();
             _animals = new();
+            _uniqueKinds = new();
+            _kindCount = new();
+            _kindArrivedGone = new();
         }
 
-        public void SetInitialDates(DateTime startDate, DateTime endDate) 
+        public void SetDateRange(DateTime startDate, DateTime endDate) 
         {
             _startDate = startDate.Date;
             _endDate = endDate.Date;
@@ -34,134 +49,142 @@ namespace Olymp_Project.Helpers
         public AreaAnalyticsResponseDto Analyze()
         {
             List<Animal> involvedAnimals = new();
-            long totalAnimalsArrived = 0;
-            long totalAnimalsGone = 0;
-            long totalQuantityAnimals = 0;
-
-            Dictionary<long, string> uniqueKinds = new Dictionary<long, string>();
-
-            // Kinds
-            Dictionary<long, long> kindCount = new Dictionary<long, long>();
-            Dictionary<long, (long arrived, long gone)> kindArrivedGone = new Dictionary<long, (long, long)>();
-
             foreach (var animal in _animals)
             {
-                var visitedLocations = new List<VisitedLocation> { new VisitedLocation
+                TryExtractAnimalData(involvedAnimals, animal);
+            }
+
+            return CreateAreaAnalyticsResponseDto(totalQuantityAnimals, totalAnimalsArrived, totalAnimalsGone);
+        }
+
+        private void TryExtractAnimalData(List<Animal> involvedAnimals, Animal animal)
+        {
+            var visitedLocations = GetVisitedLocations(animal);
+            var status = GetAnimalStatus(visitedLocations);
+
+            if (status == AnimalStatus.Entered || status == AnimalStatus.Inside)
+            {
+                involvedAnimals.Add(animal);
+                totalQuantityAnimals++;
+
+                if (status == AnimalStatus.Entered)
                 {
-                    VisitDateTime = animal.ChippingDateTime,
-                    Location = animal.ChippingLocation
-                } };
-                visitedLocations.AddRange(animal.VisitedLocations
-                    .Where(vl => vl.VisitDateTime >= _startDate && vl.VisitDateTime <= _endDate)
-                    .OrderBy(vl => vl.VisitDateTime));
-
-                AnimalStatus? status = null;
-
-                bool isEarliestLocationInsideArea = IsLocationInsidePolygon(visitedLocations.First().Location);
-                bool isLastLocationInsideArea = IsLocationInsidePolygon(visitedLocations.Last().Location);
-
-                if (isEarliestLocationInsideArea && isLastLocationInsideArea)
-                {
-                    status = AnimalStatus.Inside;
-                }
-                else if (!isEarliestLocationInsideArea && isLastLocationInsideArea)
-                {
-                    status = AnimalStatus.Entered;
-                }
-                else if (isEarliestLocationInsideArea && !isLastLocationInsideArea)
-                {
-                    status = AnimalStatus.Gone;
-                    totalAnimalsGone++;
-                }
-
-                if (status.HasValue && (status.Value == AnimalStatus.Entered || status.Value == AnimalStatus.Inside))
-                {
-                    involvedAnimals.Add(animal);
-                    totalQuantityAnimals++; // Total quantity
-
-                    if (status.Value == AnimalStatus.Entered)
-                    {
-                        totalAnimalsArrived++;
-                    }
-
-                    // Also extract kinds
-                    foreach (var kind in animal.Kinds)
-                    {
-                        if (!uniqueKinds.ContainsKey(kind.Id))
-                        {
-                            uniqueKinds.Add(kind.Id, kind.Name);
-                            kindCount[kind.Id] = 0;
-                            kindArrivedGone[kind.Id] = (0, 0);
-                        }
-
-                        kindCount[kind.Id]++; // +
-
-                        if (status.HasValue && (status.Value == AnimalStatus.Entered || status.Value == AnimalStatus.Inside))
-                        {
-                            if (status.Value == AnimalStatus.Entered)
-                            {
-                                kindArrivedGone[kind.Id] = (kindArrivedGone[kind.Id].arrived + 1, kindArrivedGone[kind.Id].gone);
-                            }
-                        }
-                        else if (isEarliestLocationInsideArea && !isLastLocationInsideArea)
-                        {
-                            kindArrivedGone[kind.Id] = (kindArrivedGone[kind.Id].arrived, kindArrivedGone[kind.Id].gone + 1);
-                        }
-                    }
-                }
-                else if (status.HasValue && status.Value == AnimalStatus.Gone)
-                {
-                    // Also extract kinds
-                    foreach (var kind in animal.Kinds)
-                    {
-                        if (!uniqueKinds.ContainsKey(kind.Id))
-                        {
-                            uniqueKinds.Add(kind.Id, kind.Name);
-                            kindCount[kind.Id] = 0;
-                            kindArrivedGone[kind.Id] = (0, 0);
-                        }
-
-                        if (status.HasValue && (status.Value == AnimalStatus.Entered || status.Value == AnimalStatus.Inside))
-                        {
-                            if (status.Value == AnimalStatus.Entered)
-                            {
-                                kindArrivedGone[kind.Id] = (kindArrivedGone[kind.Id].arrived + 1, kindArrivedGone[kind.Id].gone);
-                            }
-                        }
-                        else if (isEarliestLocationInsideArea && !isLastLocationInsideArea)
-                        {
-                            kindArrivedGone[kind.Id] = (kindArrivedGone[kind.Id].arrived, kindArrivedGone[kind.Id].gone + 1);
-                        }
-                    }
+                    totalAnimalsArrived++;
                 }
             }
 
+            if (status == AnimalStatus.Gone)
+            {
+                totalAnimalsGone++;
+            }
+
+            if (status != AnimalStatus.None)
+            {
+                ExtractAnimalKindsInfo(animal, status);
+            }
+        }
+
+        private List<VisitedLocation> GetVisitedLocations(Animal animal)
+        {
+            var visitedLocations = new List<VisitedLocation> { new VisitedLocation
+                {
+                    VisitDateTime = animal.ChippingDateTime,
+                    Location = animal.ChippingLocation
+                }};
+            visitedLocations.AddRange(animal.VisitedLocations
+                .Where(vl => vl.VisitDateTime >= _startDate && vl.VisitDateTime <= _endDate)
+                .OrderBy(vl => vl.VisitDateTime));
+
+            return visitedLocations;
+        }
+
+        private AnimalStatus GetAnimalStatus(List<VisitedLocation> visitedLocations)
+        {
+            var isEarliestLocationInsideArea = IsLocationInsidePolygon(visitedLocations.First().Location);
+            var isLastLocationInsideArea = IsLocationInsidePolygon(visitedLocations.Last().Location);
+
+            if (isEarliestLocationInsideArea && isLastLocationInsideArea)
+            {
+                return AnimalStatus.Inside;
+            }    
+            if (!isEarliestLocationInsideArea && isLastLocationInsideArea)
+            {
+                return AnimalStatus.Entered;
+            }
+            if (isEarliestLocationInsideArea && !isLastLocationInsideArea)
+            {
+                return AnimalStatus.Gone;
+            }
+
+            return AnimalStatus.None;
+        }
+
+        private void ExtractAnimalKindsInfo(Animal animal, AnimalStatus? status)
+        {
+            foreach (var kind in animal.Kinds)
+            {
+                TryInitializeUniqueKind(kind);
+                UpdateUniqueKindFields(status, kind);
+            }
+        }
+
+        private void TryInitializeUniqueKind(Kind kind)
+        {
+            if (!_uniqueKinds.ContainsKey(kind.Id))
+            {
+                _uniqueKinds.Add(kind.Id, kind.Name);
+                _kindCount[kind.Id] = 0;
+                _kindArrivedGone[kind.Id] = (0, 0);
+            }
+        }
+
+        private void UpdateUniqueKindFields(AnimalStatus? status, Kind kind)
+        {
+            if (status.HasValue && !(status.Value == AnimalStatus.Gone))
+            {
+                _kindCount[kind.Id]++;
+            }
+
+            if (status.HasValue && (status.Value == AnimalStatus.Entered))
+            {
+                _kindArrivedGone[kind.Id] =
+                    (_kindArrivedGone[kind.Id].arrived + 1, _kindArrivedGone[kind.Id].gone);
+            }
+
+            if (status.HasValue && status.Value == AnimalStatus.Gone)
+            {
+                _kindArrivedGone[kind.Id] =
+                    (_kindArrivedGone[kind.Id].arrived, _kindArrivedGone[kind.Id].gone + 1);
+            }
+        }
+
+        private AreaAnalyticsResponseDto CreateAreaAnalyticsResponseDto(
+            long totalQuantityAnimals, long totalAnimalsArrived, long totalAnimalsGone)
+        {
             var responseDto = new AreaAnalyticsResponseDto
             {
-                TotalQuantityAnimals = 0,
-                TotalAnimalsArrived = 0,
-                TotalAnimalsGone = 0,
+                TotalQuantityAnimals = totalQuantityAnimals,
+                TotalAnimalsArrived = totalAnimalsArrived,
+                TotalAnimalsGone = totalAnimalsGone,
                 AnimalsAnalytics = new()
             };
-            responseDto.TotalQuantityAnimals = totalQuantityAnimals;
-            responseDto.TotalAnimalsArrived = totalAnimalsArrived;
-            responseDto.TotalAnimalsGone = totalAnimalsGone;
 
-            // Code exracted kinds
-            foreach (var kind in uniqueKinds)
+            foreach (var kind in _uniqueKinds)
             {
                 responseDto.AnimalsAnalytics.Add(new AnimalsAnalyticsDto
                 {
                     AnimalKind = kind.Value,
                     AnimalKindId = kind.Key,
-                    QuantityAnimals = kindCount[kind.Key],
-                    AnimalsArrived = kindArrivedGone[kind.Key].arrived,
-                    AnimalsGone = kindArrivedGone[kind.Key].gone
+                    QuantityAnimals = _kindCount[kind.Key],
+                    AnimalsArrived = _kindArrivedGone[kind.Key].arrived,
+                    AnimalsGone = _kindArrivedGone[kind.Key].gone
                 });
             }
 
             return responseDto;
         }
+
+        #region Geometry methods
 
         private bool IsLocationInsidePolygon(Location location)
         {
@@ -171,7 +194,7 @@ namespace Olymp_Project.Helpers
         private bool IsPointInsidePolygon(double x, double y)
         {
             var point = _geometryFactory.CreatePoint(new Coordinate(x, y));
-            var coordinates = _polygon.Select(p => new Coordinate(p.X, p.Y)).ToArray();
+            var coordinates = _polygon!.Select(p => new Coordinate(p.X, p.Y)).ToArray();
             var linearRing = new LinearRing(coordinates);
             var polygonShell = new Polygon(linearRing);
             var polygonBoundary = (LineString)polygonShell.Boundary;
@@ -180,5 +203,7 @@ namespace Olymp_Project.Helpers
             var isInside = polygonShell.Contains(point) || Math.Abs(distance) < 1e-6;
             return isInside;
         }
+
+        #endregion
     }
 }

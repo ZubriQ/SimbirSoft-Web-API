@@ -2,6 +2,7 @@
 {
     public enum AnimalStatus
     {
+        None,
         Inside,
         Entered,
         Gone
