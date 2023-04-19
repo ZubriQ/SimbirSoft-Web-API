@@ -179,28 +179,5 @@
 
             return responseDto;
         }
-
-        //#region Geometry methods
-
-        //private bool IsLocationInsidePolygon(Location location)
-        //{
-        //    return IsPointInsidePolygon(location.Longitude, location.Latitude);
-        //}
-
-        //private bool IsPointInsidePolygon(double x, double y)
-        //{
-        //    var coordinates = _polygon!.Select(p => new Coordinate(p.X, p.Y)).ToArray();
-        //    var linearRing = new LinearRing(coordinates);
-        //    var polygonShell = new Polygon(linearRing);
-        //    var polygonBoundary = (LineString)polygonShell.Boundary;
-            
-        //    var point = _geometryFactory.CreatePoint(new Coordinate(x, y));
-        //    var distance = point.Distance(polygonBoundary);
-
-        //    var isInside = polygonShell.Contains(point) || Math.Abs(distance) < 1e-6;
-        //    return isInside;
-        //}
-
-        //#endregion
     }
 }
