@@ -59,8 +59,8 @@ namespace Olymp_Project.Controllers
             [FromQuery] AccountQuery query,
             [FromQuery] Paging paging)
         {
-            var response = _service.GetAccounts(query, paging);
-            // TODO: task
+            var response = await _service.GetAccountsBySearchParametersAsync(query, paging);
+
             var accountsDto = response.Data!.Select(a => _mapper.Map<AccountResponseDto>(a));
             return ResponseHelper.GetActionResult(response.StatusCode, accountsDto);
         }

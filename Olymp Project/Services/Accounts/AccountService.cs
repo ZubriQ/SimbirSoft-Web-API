@@ -33,22 +33,23 @@ namespace Olymp_Project.Services.Accounts
 
         #region Get by search parameters
 
-        public IServiceResponse<ICollection<Account>> GetAccounts(AccountQuery query, Paging paging)
+        public async Task<IServiceResponse<ICollection<Account>>> GetAccountsBySearchParametersAsync(AccountQuery query, Paging paging)
         {
             if (!PagingValidator.IsValid(paging))
             {
                 return new CollectionServiceResponse<Account>(HttpStatusCode.BadRequest);
             }
 
-            return GetAccountsBySearchParameters(query, paging);
+            return await GetAccountsBySearchParameters(query, paging);
         }
 
-        private IServiceResponse<ICollection<Account>> GetAccountsBySearchParameters(AccountQuery query, Paging paging)
+        private async Task<IServiceResponse<ICollection<Account>>> GetAccountsBySearchParameters(
+            AccountQuery query, Paging paging)
         {
             try
             {
                 var filteredAccounts = GetAccountsWithFilter(query);
-                var pagedAccounts = PaginateAccounts(filteredAccounts, paging);
+                var pagedAccounts = await PaginateAccounts(filteredAccounts, paging);
                 return new CollectionServiceResponse<Account>(HttpStatusCode.OK, pagedAccounts);
             }
             catch (Exception)
@@ -76,13 +77,13 @@ namespace Olymp_Project.Services.Accounts
                     (email == null || a.Email.ToLower().Contains(email)));
         }
 
-        private List<Account> PaginateAccounts(IQueryable<Account> accounts, Paging paging)
+        private async Task<List<Account>> PaginateAccounts(IQueryable<Account> accounts, Paging paging)
         {
-            return accounts
+            return await accounts
                 .OrderBy(a => a.Id)
                 .Skip(paging.From!.Value)
                 .Take(paging.Size!.Value)
-                .ToList();
+                .ToListAsync();
         }
 
         #endregion
