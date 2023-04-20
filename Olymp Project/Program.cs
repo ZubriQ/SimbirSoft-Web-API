@@ -77,7 +77,7 @@ builder.Services
     });
 
 string connection = builder.Configuration.GetConnectionString("PostgreSQL");
-builder.Services.AddSqlServer<ChipizationDbContext>(connection);
+builder.Services.AddNpgsql<ChipizationDbContext>(connection);
 
 #endregion
 
