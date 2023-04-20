@@ -17,7 +17,7 @@
             return true;
         }
 
-        private static bool ValidatePoints(AreaPointsDto[] areaPoints)
+        private static bool ValidatePoints(AreaPointDto[] areaPoints)
         {
             return areaPoints.Length >= 3 && areaPoints.All(LocationPointValidator.IsValid);
         }

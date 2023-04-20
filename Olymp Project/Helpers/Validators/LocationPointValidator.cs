@@ -13,7 +13,7 @@
             return IsValidCoordinate(location.Latitude, location.Longitude);
         }
 
-        public static bool IsValid(AreaPointsDto point)
+        public static bool IsValid(AreaPointDto point)
         {
             return IsValidCoordinate(point.Latitude, point.Longitude);
         }

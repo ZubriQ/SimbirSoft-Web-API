@@ -33,16 +33,16 @@ namespace Olymp_Project.Mapping
             };
         }
 
-        public static AreaPointsDto ToAreaPointsDto(NpgsqlPoint point)
+        public static AreaPointDto ToAreaPointsDto(NpgsqlPoint point)
         {
-            return new AreaPointsDto
+            return new AreaPointDto
             {
                 Longitude = point.X,
                 Latitude = point.Y
             };
         }
 
-        private static NpgsqlPoint ToNpgsqlPoint(AreaPointsDto point)
+        private static NpgsqlPoint ToNpgsqlPoint(AreaPointDto point)
         {
             return new NpgsqlPoint(point.Longitude!.Value, point.Latitude!.Value);
         }
