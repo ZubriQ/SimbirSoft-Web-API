@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Olymp_Project.Helpers
+namespace Olymp_Project.Helpers.Geospatial
 {
     public static class GeohashHelper
     {

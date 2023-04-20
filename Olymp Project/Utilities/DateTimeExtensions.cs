@@ -1,6 +1,6 @@
-﻿namespace Olymp_Project.Helpers
+﻿namespace Olymp_Project.Utilities
 {
-    public static class DateTimeFormatHelper
+    public static class DateTimeExtensions
     {
         public static string ToISO8601(this DateTime dateTime)
         {

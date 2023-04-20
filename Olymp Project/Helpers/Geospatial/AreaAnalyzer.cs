@@ -1,4 +1,4 @@
-﻿namespace Olymp_Project.Helpers
+﻿namespace Olymp_Project.Helpers.Geospatial
 {
     public class AreaAnalyzer
     {
@@ -80,7 +80,7 @@
             if (isEarliestLocationInsideArea && isLastLocationInsideArea)
             {
                 return AnimalStatus.Inside;
-            }    
+            }
             if (!isEarliestLocationInsideArea && isLastLocationInsideArea)
             {
                 return AnimalStatus.Arrived;

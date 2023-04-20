@@ -2,7 +2,7 @@
 using NpgsqlTypes;
 using Location = Olymp_Project.Models.Location;
 
-namespace Olymp_Project.Helpers
+namespace Olymp_Project.Helpers.Geospatial
 {
     public class GeometryChecker
     {

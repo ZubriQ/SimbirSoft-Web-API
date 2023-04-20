@@ -1,4 +1,4 @@
-﻿using Olymp_Project.Helpers;
+﻿using Olymp_Project.Helpers.Geospatial;
 using Olymp_Project.Helpers.Validators;
 using Olymp_Project.Responses;
 
