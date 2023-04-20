@@ -57,7 +57,6 @@ namespace Olymp_Project.Controllers
 
         private (string? email, string? password) ExtractBasicAuthCredentials()
         {
-            // TODO: Optimize?
             var authHeader = Request.Headers["Authorization"].FirstOrDefault();
             if (authHeader != null && authHeader.StartsWith("Basic "))
             {

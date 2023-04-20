@@ -26,7 +26,7 @@ namespace Olymp_Project.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)] // TODO: ?
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AnimalResponseDto>> CreateAnimalKind(
             [FromRoute] long? animalId,
             [FromRoute] long? kindId)
