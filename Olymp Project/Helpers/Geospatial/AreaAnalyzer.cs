@@ -8,9 +8,9 @@
         private List<Animal> _animals;
 
         // AreaAnalyticsResponseDto filling.
-        private long totalAnimalsArrived = 0;
-        private long totalAnimalsGone = 0;
-        private long totalQuantityAnimals = 0;
+        private long _totalAnimalsArrived = 0;
+        private long _totalAnimalsGone = 0;
+        private long _totalQuantityAnimals = 0;
 
         // AnimalsAnalyticsDto[] filling.
         private Dictionary<long, string> _uniqueKinds;
@@ -51,17 +51,17 @@
             if (status == AnimalStatus.Arrived || status == AnimalStatus.Inside)
             {
                 involvedAnimals.Add(animal);
-                totalQuantityAnimals++;
+                _totalQuantityAnimals++;
 
                 if (status == AnimalStatus.Arrived)
                 {
-                    totalAnimalsArrived++;
+                    _totalAnimalsArrived++;
                 }
             }
 
             if (status == AnimalStatus.Gone)
             {
-                totalAnimalsGone++;
+                _totalAnimalsGone++;
             }
 
             if (status != AnimalStatus.None)
@@ -135,9 +135,9 @@
         {
             var responseDto = new AreaAnalyticsResponseDto
             {
-                TotalQuantityAnimals = totalQuantityAnimals,
-                TotalAnimalsArrived = totalAnimalsArrived,
-                TotalAnimalsGone = totalAnimalsGone,
+                TotalQuantityAnimals = _totalQuantityAnimals,
+                TotalAnimalsArrived = _totalAnimalsArrived,
+                TotalAnimalsGone = _totalAnimalsGone,
                 AnimalsAnalytics = new()
             };
 

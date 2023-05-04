@@ -32,7 +32,7 @@ namespace Olymp_Project.Services.Locations
 
         #region Get by coordinates
 
-        public async Task<IServiceResponse<Location>> GetLocationIdByCoordinatesAsync(LocationRequestDto request)
+        public async Task<IServiceResponse<Location>> GetLocationByCoordinatesAsync(LocationRequestDto request)
         {
             if (!LocationPointValidator.IsValid(request))
             {

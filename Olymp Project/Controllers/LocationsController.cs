@@ -46,7 +46,7 @@ namespace Olymp_Project.Controllers
         public async Task<ActionResult<long>> GetLocationIdByCoordinates(
             [FromQuery] LocationRequestDto request)
         {
-            var response = await _service.GetLocationIdByCoordinatesAsync(request);
+            var response = await _service.GetLocationByCoordinatesAsync(request);
             if (response.StatusCode is HttpStatusCode.OK)
             {
                 return ResponseHelper.GetActionResult(HttpStatusCode.OK, response.Data!.Id);
@@ -115,7 +115,7 @@ namespace Olymp_Project.Controllers
         public async Task<ActionResult<string>> GetGeohashByCoordinates(
             [FromQuery] LocationRequestDto request)
         {
-            var response = await _service.GetLocationIdByCoordinatesAsync(request);
+            var response = await _service.GetLocationByCoordinatesAsync(request);
             if (response.StatusCode is not HttpStatusCode.OK)
             {
                 return ResponseHelper.GetActionResult(response.StatusCode);
@@ -134,7 +134,7 @@ namespace Olymp_Project.Controllers
         public async Task<ActionResult<string>> GetGeohashByCoordinatesV2(
             [FromQuery] LocationRequestDto request)
         {
-            var response = await _service.GetLocationIdByCoordinatesAsync(request);
+            var response = await _service.GetLocationByCoordinatesAsync(request);
             if (response.StatusCode is not HttpStatusCode.OK)
             {
                 return ResponseHelper.GetActionResult(response.StatusCode);
@@ -153,7 +153,7 @@ namespace Olymp_Project.Controllers
         public async Task<ActionResult<string>> GetGeohashByCoordinatesV3(
             [FromQuery] LocationRequestDto request)
         {
-            var response = await _service.GetLocationIdByCoordinatesAsync(request);
+            var response = await _service.GetLocationByCoordinatesAsync(request);
             if (response.StatusCode is not HttpStatusCode.OK)
             {
                 return ResponseHelper.GetActionResult(response.StatusCode);
