@@ -13,14 +13,14 @@ using Olymp_Project.Models;
 namespace Olymp_Project.Migrations
 {
     [DbContext(typeof(ChipizationDbContext))]
-    [Migration("20230402123853_Postgres")]
-    partial class Postgres
+    [Migration("20230513200715_Function")]
+    partial class Function
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.13")
+                .HasAnnotation("ProductVersion", "6.0.16")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -99,6 +99,15 @@ namespace Olymp_Project.Migrations
                             LastName = "userLastName",
                             Password = "qwerty123",
                             Role = "USER"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Email = "4",
+                            FirstName = "Test",
+                            LastName = "Test",
+                            Password = "4",
+                            Role = "SUPERCHIPPER"
                         });
                 });
 
@@ -114,13 +123,13 @@ namespace Olymp_Project.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("ChippingDateTime")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<long>("ChippingLocationId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime?>("DeathDateTime")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Gender")
                         .IsRequired()
@@ -204,6 +213,35 @@ namespace Olymp_Project.Migrations
                     b.ToTable("Locations");
                 });
 
+            modelBuilder.Entity("Olymp_Project.Models.Path", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("EndLocationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsReversed")
+                        .HasColumnType("boolean");
+
+                    b.Property<long>("StartLocationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<double>("Weight")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EndLocationId");
+
+                    b.HasIndex("StartLocationId");
+
+                    b.ToTable("Paths");
+                });
+
             modelBuilder.Entity("Olymp_Project.Models.VisitedLocation", b =>
                 {
                     b.Property<long>("Id")
@@ -219,7 +257,7 @@ namespace Olymp_Project.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("VisitDateTime")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");
 
@@ -264,6 +302,25 @@ namespace Olymp_Project.Migrations
                     b.Navigation("ChippingLocation");
                 });
 
+            modelBuilder.Entity("Olymp_Project.Models.Path", b =>
+                {
+                    b.HasOne("Olymp_Project.Models.Location", "EndLocation")
+                        .WithMany("PathsTo")
+                        .HasForeignKey("EndLocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Olymp_Project.Models.Location", "StartLocation")
+                        .WithMany("PathsFrom")
+                        .HasForeignKey("StartLocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("EndLocation");
+
+                    b.Navigation("StartLocation");
+                });
+
             modelBuilder.Entity("Olymp_Project.Models.VisitedLocation", b =>
                 {
                     b.HasOne("Olymp_Project.Models.Animal", "Animal")
@@ -296,6 +353,10 @@ namespace Olymp_Project.Migrations
             modelBuilder.Entity("Olymp_Project.Models.Location", b =>
                 {
                     b.Navigation("Animals");
+
+                    b.Navigation("PathsFrom");
+
+                    b.Navigation("PathsTo");
 
                     b.Navigation("VisitedLocations");
                 });

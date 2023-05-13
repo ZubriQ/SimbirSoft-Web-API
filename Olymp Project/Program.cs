@@ -12,6 +12,9 @@ using Olymp_Project.Services.AreaAnalytics;
 using Olymp_Project.Services.Areas;
 using Olymp_Project.Services.Kinds;
 using Olymp_Project.Services.Locations;
+using Olymp_Project.Services.LocationsPaths;
+using Olymp_Project.Services.Paths;
+using Olymp_Project.Services.PathsV2;
 using Olymp_Project.Services.Registration;
 using Olymp_Project.Services.VisitedLocations;
 
@@ -81,9 +84,7 @@ builder.Services.AddNpgsql<ChipizationDbContext>(connection);
 
 #endregion
 
-#region Configurate AutoMapper, Services and 8080 Port
-
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
+#region Configurate Services
 
 builder.Services.AddScoped<IApiAuthenticationService, ApiAuthenticationService>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
@@ -95,14 +96,22 @@ builder.Services.AddScoped<IAnimalKindService, AnimalKindService>();
 builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
 builder.Services.AddScoped<IAreaService, AreaService>();
 builder.Services.AddScoped<IAreaAnalyticsService, AreaAnalyticsService>();
+builder.Services.AddScoped<IPathService, PathService>();
+builder.Services.AddScoped<IShortestPathService, ShortestPathService>();
+builder.Services.AddScoped<IPathV2Service, PathV2Service>();
 
-builder.WebHost.UseUrls("http://0.0.0.0:8080");
+#endregion
+
+#region Configurate Mapper and Port
+
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+//builder.WebHost.UseUrls("http://0.0.0.0:8080");
 
 #endregion
 
 var app = builder.Build();
 
-//Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -118,7 +127,7 @@ using (var scope = app.Services.CreateScope())
     {
         if (context.Database.GetPendingMigrations().Any())
         {
-            context.Database.EnsureCreated();
+            context.Database.Migrate();
         }
     }
 }

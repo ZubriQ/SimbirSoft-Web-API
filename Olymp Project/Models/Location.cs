@@ -8,6 +8,8 @@ namespace Olymp_Project.Models
         {
             Animals = new HashSet<Animal>();
             VisitedLocations = new HashSet<VisitedLocation>();
+            PathsFrom = new HashSet<Path>();
+            PathsTo = new HashSet<Path>();
         }
 
         [Key]
@@ -17,5 +19,8 @@ namespace Olymp_Project.Models
 
         public virtual ICollection<Animal> Animals { get; set; }
         public virtual ICollection<VisitedLocation> VisitedLocations { get; set; }
+
+        public virtual ICollection<Path> PathsFrom { get; set; }
+        public virtual ICollection<Path> PathsTo { get; set; }
     }
 }

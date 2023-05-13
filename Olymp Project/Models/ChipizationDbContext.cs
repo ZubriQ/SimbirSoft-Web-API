@@ -1,4 +1,8 @@
-﻿namespace Olymp_Project.Models
+﻿using Microsoft.EntityFrameworkCore;
+using System.Data;
+using System.Reflection;
+
+namespace Olymp_Project.Models
 {
     public partial class ChipizationDbContext : DbContext
     {
@@ -16,6 +20,7 @@
         public DbSet<Location> Locations { get; set; } = null!;
         public DbSet<VisitedLocation> VisitedLocations { get; set; } = null!;
         public DbSet<Area> Areas { get; set; } = null!;
+        public DbSet<Path> Paths { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -24,8 +29,27 @@
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            #region Path
+
+            modelBuilder.Entity<Path>().HasKey(p => p.Id);
+                //.HasKey(p => new { p.StartLocationId, p.EndLocationId });
+
+            modelBuilder.Entity<Path>()
+                .HasOne(p => p.StartLocation)
+                .WithMany(l => l.PathsFrom)
+                //.HasForeignKey(p => p.StartLocationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Path>()
+                .HasOne(p => p.EndLocation)
+                .WithMany(l => l.PathsTo)
+                //.HasForeignKey(p => p.EndLocationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            #endregion
+
             #region Add initial account data
-            
+
             modelBuilder.Entity<Account>().HasData(
                 new Account()
                 {
@@ -57,7 +81,29 @@
 
             #endregion
 
+            #region Hypothetical SuperChipper initial test data
+
+            modelBuilder.Entity<Account>().HasData(
+                new Account()
+                {
+                    Id = 4,
+                    FirstName = "Test",
+                    LastName = "Test",
+                    Email = "4",
+                    Password = "4",
+                    Role = "SUPERCHIPPER"
+                });
+
+            #endregion
+
+            modelBuilder.HasDbFunction(typeof(ChipizationDbContext)
+                .GetMethod(nameof(GetAllPaths))!)
+                .HasName("GetAllPaths");
+
             base.OnModelCreating(modelBuilder);
         }
+
+        public IQueryable<Path> GetAllPaths() =>
+            Paths.FromSqlInterpolated($"SELECT * FROM GetAllPaths()");
     }
 }

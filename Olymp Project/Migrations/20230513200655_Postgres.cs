@@ -81,9 +81,9 @@ namespace Olymp_Project.Migrations
                     Gender = table.Column<string>(type: "text", nullable: false),
                     LifeStatus = table.Column<string>(type: "text", nullable: false),
                     ChipperId = table.Column<int>(type: "integer", nullable: false),
-                    ChippingDateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ChippingDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     ChippingLocationId = table.Column<long>(type: "bigint", nullable: false),
-                    DeathDateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeathDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -100,6 +100,34 @@ namespace Olymp_Project.Migrations
                         principalTable: "Locations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Paths",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    StartLocationId = table.Column<long>(type: "bigint", nullable: false),
+                    EndLocationId = table.Column<long>(type: "bigint", nullable: false),
+                    Weight = table.Column<double>(type: "double precision", nullable: false),
+                    IsReversed = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Paths", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Paths_Locations_EndLocationId",
+                        column: x => x.EndLocationId,
+                        principalTable: "Locations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Paths_Locations_StartLocationId",
+                        column: x => x.StartLocationId,
+                        principalTable: "Locations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -134,7 +162,7 @@ namespace Olymp_Project.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     LocationId = table.Column<long>(type: "bigint", nullable: false),
                     AnimalId = table.Column<long>(type: "bigint", nullable: false),
-                    VisitDateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    VisitDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -160,7 +188,8 @@ namespace Olymp_Project.Migrations
                 {
                     { 1, "admin@simbirsoft.com", "adminFirstName", "adminLastName", "qwerty123", "ADMIN" },
                     { 2, "chipper@simbirsoft.com", "chipperFirstName", "chipperLastName", "qwerty123", "CHIPPER" },
-                    { 3, "user@simbirsoft.com", "userFirstName", "userLastName", "qwerty123", "USER" }
+                    { 3, "user@simbirsoft.com", "userFirstName", "userLastName", "qwerty123", "USER" },
+                    { 4, "4", "Test", "Test", "4", "SUPERCHIPPER" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -177,6 +206,16 @@ namespace Olymp_Project.Migrations
                 name: "IX_Animals_ChippingLocationId",
                 table: "Animals",
                 column: "ChippingLocationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Paths_EndLocationId",
+                table: "Paths",
+                column: "EndLocationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Paths_StartLocationId",
+                table: "Paths",
+                column: "StartLocationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_VisitedLocations_AnimalId",
@@ -196,6 +235,9 @@ namespace Olymp_Project.Migrations
 
             migrationBuilder.DropTable(
                 name: "Areas");
+
+            migrationBuilder.DropTable(
+                name: "Paths");
 
             migrationBuilder.DropTable(
                 name: "VisitedLocations");

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Olymp_Project.Dtos.Path;
 
 namespace Olymp_Project.Mapping
 {
@@ -42,6 +43,9 @@ namespace Olymp_Project.Mapping
             CreateMap<Area, AreaResponseDto>()
                 .ForMember(d => d.AreaPoints, 
                     o => o.MapFrom(s => s.Points.Select(AreaMapper.ToAreaPointsDto).ToArray()));
+
+            // Path mapping
+            CreateMap<Models.Path, PathResponseDto>();
         }
     }
 }
