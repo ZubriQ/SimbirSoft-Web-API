@@ -1,0 +1,13 @@
+﻿global using Microsoft.EntityFrameworkCore;
+global using SimbirSoft_Web_API.Dtos.Account;
+global using SimbirSoft_Web_API.Dtos.Area;
+global using SimbirSoft_Web_API.Dtos.AreaAnalytics;
+global using SimbirSoft_Web_API.Dtos.Animal;
+global using SimbirSoft_Web_API.Dtos.AnimalKind;
+global using SimbirSoft_Web_API.Dtos.Kind;
+global using SimbirSoft_Web_API.Dtos.Location;
+global using SimbirSoft_Web_API.Dtos.VisitedLocation;
+global using SimbirSoft_Web_API.Models;
+global using SimbirSoft_Web_API.Queries;
+global using SimbirSoft_Web_API.Utilities;
+global using System.Net;
