@@ -471,3 +471,232 @@ Response:
 }
 ```
 
+### 1) Animals
+<i>API 1: Get animal information</i>
+
+Endpoint: `GET /animals/{animalId}`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+{
+ "id": "long",                     // Animal ID
+ "animalTypes": "[long]",           // Array of animal type IDs
+ "weight": "float",                // Animal weight in kg
+ "length": "float",                // Animal length in m
+ "height": "float",                // Animal height in m
+ "gender": "string",                // Animal gender (MALE, FEMALE, OTHER)
+ "lifeStatus": "string",            // Animal life status (ALIVE, DEAD)
+ "chippingDateTime": "dateTime",    // Animal chipping date and time in ISO-8601 format
+ "chipperId": "int",                // Chipper account ID
+ "chippingLocationId": "long",      // Animal chipping location ID
+ "visitedLocations": "[long]",      // Array of visited location IDs
+ "deathDateTime": "dateTime"        // Animal death date and time in ISO-8601 format (null while lifeStatus is ALIVE)
+}
+```
+
+<i>API 2: Search animals by parameters</i>
+
+Endpoint: `GET /animals/search?startDateTime={startDateTime}&endDateTime={endDateTime}&chipperId={chipperId}&chippingLocationId={chippingLocationId}&lifeStatus={lifeStatus}&gender={gender}&from=0&size=10`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+[
+ {
+  "id": "long",                     // Animal ID
+  "animalTypes": "[long]",           // Array of animal type IDs
+  "weight": "float",                // Animal weight in kg
+  "length": "float",                // Animal length in m
+  "height": "float",                // Animal height in m
+  "gender": "string",                // Animal gender (MALE, FEMALE, OTHER)
+  "lifeStatus": "string",            // Animal life status (ALIVE, DEAD)
+  "chippingDateTime": "dateTime",    // Animal chipping date and time in ISO-8601 format
+  "chipperId": "int",                // Chipper account ID
+  "chippingLocationId": "long",      // Animal chipping location ID
+  "visitedLocations": "[long]",      // Array of visited location IDs
+  "deathDateTime": "dateTime"        // Animal death date and time in ISO-8601 format (null while lifeStatus is ALIVE)
+ }
+]
+```
+
+<i>API 3: Add a new animal</i>
+
+Endpoint: `POST /animals`
+
+Request:
+```json
+{
+ "animalTypes": "[long]",           // Array of animal type IDs
+ "weight": "float",                // Animal weight in kg
+ "length": "float",                // Animal length in m
+ "height": "float",                // Animal height in m
+ "gender": "string",                // Animal gender (MALE, FEMALE, OTHER)
+ "chipperId": "int",                // Chipper account ID
+ "chippingLocationId": "long"       // Animal chipping location ID
+}
+```
+Response:
+```json
+{
+ "id": "long",                     // Animal ID
+ "animalTypes": "[long]",           // Array of animal type IDs
+ "weight": "float",                // Animal weight in kg
+ "length": "float",                // Animal length in m
+ "height": "float",                // Animal height in m
+ "gender": "string",                // Animal gender (MALE, FEMALE, OTHER)
+ "lifeStatus": "string",            // Animal life status (ALIVE, DEAD)
+ "chippingDateTime": "dateTime",    // Animal chipping date and time in ISO-8601 format
+ "chipperId": "int",                // Chipper account ID
+ "chippingLocationId": "long",      // Animal chipping location ID
+ "visitedLocations": "[long]",      // Array of visited location IDs
+ "deathDateTime": "dateTime"        // Animal death date and time in ISO-8601 format (null while lifeStatus is ALIVE)
+}
+```
+
+<i>API 4: Update animal information</i>
+
+Endpoint: `PUT /animals/{animalId}`
+
+Request:
+```json
+{
+ "weight": "float",                // Animal weight in kg
+ "length": "float",                // Animal length in m
+ "height": "float",                // Animal height in m
+ "gender": "string",                // Animal gender (MALE, FEMALE, OTHER)
+ "lifeStatus": "string",            // Animal life status (ALIVE, DEAD)
+ "chipperId": "int",                // Chipper account ID
+ "chippingLocationId": "long"       // Animal chipping location ID
+}
+```
+Response:
+```json
+{
+ "id": "long",                     // Animal ID
+ "animalTypes": "[long]",           // Array of animal type IDs
+ "weight": "float",                // Animal weight in kg
+ "length": "float",                // Animal length in m
+ "height": "float",                // Animal height in m
+ "gender": "string",                // Animal gender (MALE, FEMALE, OTHER)
+ "lifeStatus": "string",            // Animal life status (ALIVE, DEAD)
+ "chippingDateTime": "dateTime",    // Animal chipping date and time in ISO-8601 format
+ "chipperId": "int",                // Chipper account ID
+ "chippingLocationId": "long",      // Animal chipping location ID
+ "visitedLocations": "[long]",      // Array of visited location IDs
+ "deathDateTime": "dateTime"        // Animal death date and time in ISO-8601 format (null while lifeStatus is ALIVE)
+}
+```
+
+<i>API 5: Delete an animal</i>
+
+Endpoint: `DELETE /animals/{animalId}`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+{
+ // No response body
+}
+```
+
+<i>API 6: Add an animal type to an animal</i>
+
+Endpoint: `POST /animals/{animalId}/types/{typeId}`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+{
+ "id": "long",                   // Animal ID
+ "animalTypes": "[long]",          // Array of animal type IDs
+ "weight": "float",               // Animal weight in kg
+ "length": "float",               // Animal length in m
+ "height": "float",               // Animal height in m
+ "gender": "string",               // Animal gender (MALE, FEMALE, OTHER)
+ "lifeStatus": "string",           // Animal life status (ALIVE, DEAD)
+ "chippingDateTime": "dateTime",   // Animal chipping date and time in ISO-8601 format
+ "chipperId": "int",               // Chipper account ID
+ "chippingLocationId": "long",     // Animal chipping location ID
+ "visitedLocations": "[long]",     // Array of visited location IDs
+ "deathDateTime": "dateTime"       // Animal death date and time in ISO-8601 format (null while lifeStatus is ALIVE)
+}
+```
+
+<i>API 7: Change the animal type of an animal</i>
+
+Endpoint: `PUT /animals/{animalId}/types`
+
+Request:
+```json
+{
+ "oldTypeId": "long", 			// Current animal type ID
+ "newTypeId": "long" 			// New animal type ID for replacement
+}
+```
+Response:
+```json
+{
+ "id": "long",                   // Animal ID
+ "animalTypes": "[long]",          // Array of animal type IDs
+ "weight": "float",               // Animal weight in kg
+ "length": "float",               // Animal length in m
+ "height": "float",               // Animal height in m
+ "gender": "string",               // Animal gender (MALE, FEMALE, OTHER)
+ "lifeStatus": "string",           // Animal life status (ALIVE, DEAD)
+ "chippingDateTime": "dateTime",   // Animal chipping date and time in ISO-8601 format
+ "chipperId": "int",               // Chipper account ID
+ "chippingLocationId": "long",     // Animal chipping location ID
+ "visitedLocations": "[long]",     // Array of visited location IDs
+ "deathDateTime": "dateTime"       // Animal death date and time in ISO-8601 format (null while lifeStatus is ALIVE)
+}
+```
+
+<i>API 8: Delete the animal type of an animal</i>
+
+Endpoint: `DELETE /animals/{animalId}/types/{typeId}`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+{
+ "id": "long",                   // Animal ID
+ "animalTypes": "[long]",          // Array of animal type IDs
+ "weight": "float",               // Animal weight in kg
+ "length": "float",               // Animal length in m
+ "height": "float",               // Animal height in m
+ "gender": "string",               // Animal gender (MALE, FEMALE, OTHER)
+ "lifeStatus": "string",           // Animal life status (ALIVE, DEAD)
+ "chippingDateTime": "dateTime",   // Animal chipping date and time in ISO-8601 format
+ "chipperId": "int",               // Chipper account ID
+ "chippingLocationId": "long",     // Animal chipping location ID
+ "visitedLocations": "[long]",     // Array of visited location IDs
+ "deathDateTime": "dateTime"       // Animal death date and time in ISO-8601 format (null while lifeStatus is ALIVE)
+}
+```
+
