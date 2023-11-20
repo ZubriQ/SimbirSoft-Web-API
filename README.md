@@ -778,9 +778,9 @@ Response:
 ```
 
 ### 8) Zone analytics
-<i>API 1: name</i>
+<i>API 1: View animal movement information in a zone</i>
 
-Endpoint: `POST /registration`
+Endpoint: `GET /areas/{areaId}/analytics?startDate=&endDate=`
 
 Request:
 ```json
