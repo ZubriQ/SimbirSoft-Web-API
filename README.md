@@ -700,3 +700,80 @@ Response:
 }
 ```
 
+### 7) Location point visited by the animal
+<i>API 1: View location points visited by the animal</i>
+
+Endpoint: `GET /animals/{animalId}/locations?startDateTime=&endDateTime=&from={from}&size={size}`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+[
+ { 
+ "id": "long",                 // ID of the location object
+ "dateTimeOfVisitLocationPoint": "dateTime", // Date and time of the location visit in ISO-8601 format
+ "locationPointId": "long"     // ID of the visited location point
+ }
+]
+```
+
+<i>API 2: Add a location point visited by an animal</i>
+
+Endpoint: `POST /animals/{animalId}/locations/{pointId}`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+{ 
+ "id": "long",                 // ID of the location object
+ "dateTimeOfVisitLocationPoint": "dateTime", // Date and time of the location visit in ISO-8601 format
+ "locationPointId": "long"     // ID of the visited location point
+}
+```
+
+<i>API 3: Change the location point visited by the animal</i>
+
+Endpoint: `PUT /animals/{animalId}/locations`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+{ 
+ "id": "long",                 // ID of the location object
+ "dateTimeOfVisitLocationPoint": "dateTime", // Date and time of the location visit in ISO-8601 format
+ "locationPointId": "long"     // ID of the visited location point
+}
+```
+
+<i>API 4: Deleting a location visited by an animal</i>
+
+Endpoint: `DELETE /animals/{animalId}/locations/{visitedPointId}`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+{ 
+ // No response body
+}
+```
+
