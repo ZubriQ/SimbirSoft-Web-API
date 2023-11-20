@@ -53,7 +53,7 @@ Area:
 Area Analytics:
 - View animal movements in the area
 
-At the first launch of the application, the following accounts are automatically created in the database:
+### At the first launch of the application, the following accounts are automatically created in the database:
 ```json
 {
   "id": 1,				// User account identifier
@@ -80,3 +80,142 @@ At the first launch of the application, the following accounts are automatically
   "role": "USER"			// User's account role
 }
 ```
+
+# 🐾 API Declarations
+### 1) User authentication
+<i>API 1. Register a new account</i>
+
+Endpoint: `POST /registration`
+
+Request:
+```json
+{
+  "firstName": "string",  // User's first name
+  "lastName": "string",   // User's last name
+  "email": "string",      // Email address
+  "password": "string"    // User's account password
+}
+```
+Response:
+```json
+{
+  "id": "int",            // User's account ID
+  "firstName": "string",  // User's first name
+  "lastName": "string",   // User's last name
+  "email": "string",      // Email address
+  "role": "string"        // User's account role, defaults to "USER" upon registration
+}
+```
+
+### 2) User account
+<i>API 1: Get user account information</i>
+
+Endpoint: `GET /accounts/{accountId}`
+
+Request:
+```json
+{
+// No request body
+}
+```
+Response:
+```json
+{
+ "id": "int",           // User's account ID
+ "firstName": "string", // User's first name
+ "lastName": "string",  // User's last name
+ "email": "string",     // Email address
+ "role": "string"       // User's account role, defaults to "USER" upon registration
+}
+```
+
+<i>API 2: Search user accounts</i>
+
+Endpoint: `GET /accounts/search/?firstName={firstName}&lastName={lastName}&email={email}&from={from}&size={size}`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+[
+ {
+  "id": "int",          // User's account ID
+  "firstName": "string", // User's first name
+  "lastName": "string", // User's last name
+  "email": "string",    // Email address
+  "role": "string"      // User's account role, defaults to "USER" upon registration
+ }
+]
+```
+
+<i>API 3: Add a new user account</i>
+
+Endpoint: `POST /accounts`
+
+Request:
+```json
+{
+ "firstName": "string", // User's first name
+ "lastName": "string",  // User's last name
+ "email": "string",     // Email address
+ "password": "string",  // User's account password
+ "role": "string"       // User's account role, available values "ADMIN", "CHIPPER", "USER"
+}
+```
+Response:
+```json
+{
+ "id": "int",           // User's account ID
+ "firstName": "string", // User's first name
+ "lastName": "string",  // User's last name
+ "email": "string",     // Email address
+ "role": "string"       // User's account role
+}
+```
+
+<i>API 4: Update user account information</i>
+
+Endpoint: `PUT /accounts/{accountId}`
+
+Request:
+```json
+{
+ "firstName": "string", // New user's first name
+ "lastName": "string",  // New user's last name
+ "email": "string",     // New email address
+ "password": "string",  // New user's account password
+ "role": "string"       // New user's account role, available values "ADMIN", "CHIPPER", "USER"
+}
+```
+Response:
+```json
+{
+ "id": "int",           // User's account ID
+ "firstName": "string", // New user's first name
+ "lastName": "string",  // New user's last name
+ "email": "string",     // New email address
+ "role": "string"       // New user's account role
+}
+```
+
+<i>API 5: Delete a user account</i>
+
+Endpoint: `DELETE /accounts/{accountId}`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+{
+ // No response body
+}
+```
+
