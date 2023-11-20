@@ -219,3 +219,80 @@ Response:
 }
 ```
 
+### 3) Animal Location Point
+<i>API 1: Get animal location point information</i>
+
+Endpoint: `GET /locations/{pointId}`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+{
+ "id": "long",          // Location point ID
+ "latitude": "double",  // Geographic latitude in degrees
+ "longitude": "double"  // Geographic longitude in degrees
+}
+```
+
+<i>API 2: Add a new animal location point</i>
+
+Endpoint: `POST /locations`
+
+Request:
+```json
+{
+ "latitude": "double",  // Geographic latitude in degrees
+ "longitude": "double"  // Geographic longitude in degrees
+}
+```
+Response:
+```json
+{
+ "id": "long",          // Location point ID
+ "latitude": "double",  // Geographic latitude in degrees
+ "longitude": "double"  // Geographic longitude in degrees
+}
+```
+
+<i>API 3: Update animal location point information</i>
+
+Endpoint: `PUT /locations/{pointId}`
+
+Request:
+```json
+{
+ "latitude": "double",  // New geographic latitude in degrees
+ "longitude": "double"  // New geographic longitude in degrees
+}
+```
+Response:
+```json
+{
+ "id": "long",          // Location point ID
+ "latitude": "double",  // New geographic latitude in degrees
+ "longitude": "double"  // New geographic longitude in degrees
+}
+```
+
+<i>API 4: Delete an animal location point</i>
+
+Endpoint: `DELETE /locations/{pointId}`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+{
+ // No response body
+}
+```
+
