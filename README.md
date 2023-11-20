@@ -777,3 +777,31 @@ Response:
 }
 ```
 
+### 8) Zone analytics
+<i>API 1: name</i>
+
+Endpoint: `POST /registration`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+{ 
+ "totalQuantityAnimals": "long", 	// Total number of animals in this zone during the specified time interval
+ "totalAnimalsArrived": "long", 	// Total number of visits to the zone during the specified time interval
+ "totalAnimalsGone": "long", 		// Total number of exits from the zone during the specified time interval
+ "animalsAnalytics": [ 
+   {
+     "animalType": "string", 	// Type of animals
+     "animalTypeId": "long", 	// ID of animal types
+     "quantityAnimals": "long", 	// Number of animals of this type in this zone during the specified time interval
+     "animalsArrived": "long", 	// Number of animals of this type that arrived in this zone during the specified time interval
+     "animalsGone": "long", 	// Number of animals of this type that left this zone during the specified time interval
+   }
+ ]
+}
+```
