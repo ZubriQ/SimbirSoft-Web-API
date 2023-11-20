@@ -52,3 +52,31 @@ Area:
 
 Area Analytics:
 - View animal movements in the area
+
+At the first launch of the application, the following accounts are automatically created in the database:
+```json
+{
+  "id": 1,				// User account identifier
+  "firstName": "adminFirstName",	// User's first name
+  "lastName": "adminLastName",	        // User's last name
+  "email": "admin@simbirsoft.com",	// User's email address
+  "password": "qwerty123",		// User's account password
+  "role": "ADMIN"			// User's account role
+},
+{
+  "id": 2,			        // User account identifier
+  "firstName": "chipperFirstName",	// User's first name
+  "lastName": "chipperLastName",	// User's last name
+  "email": "chipper@simbirsoft.com",	// User's email address
+  "password": "qwerty123",		// User's account password
+  "role": "CHIPPER"			// User's account role
+},
+{
+  "id": 3,				// User account identifier
+  "firstName": "userFirstName",		// User's first name
+  "lastName": "userLastName",		// User's last name
+  "email": "user@simbirsoft.com",	// User's email address
+  "password": "qwerty123",		// User's account password
+  "role": "USER"			// User's account role
+}
+```
