@@ -296,7 +296,7 @@ Response:
 }
 ```
 
-### 1) Zones
+### 4) Zones
 <i>API 1: Get zone information</i>
 
 Endpoint: `GET /areas/{areaId}`
@@ -398,3 +398,76 @@ Response:
  // No response body
 }
 ```
+
+### 5) Animal Types
+<i>API 1: Get animal type information</i>
+
+Endpoint: `GET /animals/types/{typeId}`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+{
+ "id": "long",        // Animal type ID
+ "type": "string"     // Animal type
+}
+```
+
+<i>API 2: Add a new animal type</i>
+
+Endpoint: `POST /animals/types`
+
+Request:
+```json
+{
+ "type": "string"     // Animal type
+}
+```
+Response:
+```json
+{
+ "id": "long",        // Animal type ID
+ "type": "string"     // Animal type
+}
+```
+
+<i>API 3: Update animal type information</i>
+
+Endpoint: `PUT /animals/types/{typeId}`
+
+Request:
+```json
+{
+ "type": "string"     // New animal type
+}
+```
+Response:
+```json
+{
+ "id": "long",        // Animal type ID
+ "type": "string"     // New animal type
+}
+```
+
+<i>API 4: Delete an animal type</i>
+
+Endpoint: `DELETE /animals/types/{typeId}`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+{
+ // No response body
+}
+```
+
