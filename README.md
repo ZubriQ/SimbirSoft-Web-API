@@ -83,7 +83,7 @@ Area Analytics:
 
 # 🐾 API Declarations
 ### 1) User authentication
-<i>API 1. Register a new account</i>
+<i>API 1: Register a new account</i>
 
 Endpoint: `POST /registration`
 
@@ -296,3 +296,105 @@ Response:
 }
 ```
 
+### 1) Zones
+<i>API 1: Get zone information</i>
+
+Endpoint: `GET /areas/{areaId}`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+{
+ "id": "long",         // Zone ID
+ "name": "string",     // Zone name
+ "areaPoints": [
+   {
+    "longitude": "double", // Geographic longitude in degrees
+    "latitude": "double"  // Geographic latitude in degrees
+   },
+ ]
+}
+```
+
+<i>API 2: Add a new zone</i>
+
+Endpoint: `POST /areas`
+
+Request:
+```json
+{
+ "name": "string",     // Zone name
+ "areaPoints": [
+   {
+    "longitude": "double", // Geographic longitude in degrees
+    "latitude": "double"  // Geographic latitude in degrees
+   },
+ ]
+}
+```
+Response:
+```json
+{
+ "id": "long",         // Zone ID
+ "name": "string",     // Zone name
+ "areaPoints": [
+   {
+    "longitude": "double", // Geographic longitude in degrees
+    "latitude": "double"  // Geographic latitude in degrees
+   },
+ ]
+}
+```
+
+<i>API 3: Update zone information</i>
+
+Endpoint: `PUT /areas/{areaId}`
+
+Request:
+```json
+{
+ "name": "string",     // Zone name
+ "areaPoints": [
+   {
+    "longitude": "double", // Geographic longitude in degrees
+    "latitude": "double"  // Geographic latitude in degrees
+   },
+ ]
+}
+```
+Response:
+```json
+{
+ "id": "long",         // Zone ID
+ "name": "string",     // Zone name
+ "areaPoints": [
+   {
+    "longitude": "double", // Geographic longitude in degrees
+    "latitude": "double"  // Geographic latitude in degrees
+   },
+ ]
+}
+
+```
+
+<i>API 4: Delete a zone</i>
+
+Endpoint: `DELETE /areas/{areaId}`
+
+Request:
+```json
+{
+ // No request body
+}
+```
+Response:
+```json
+{
+ // No response body
+}
+```
